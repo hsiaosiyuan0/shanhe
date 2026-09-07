@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Check, CircleAlert, LoaderCircle, Monitor, RefreshCw, Terminal } from 'lucide-react';
 import type { AgentProbe } from '../shared/schema';
 import { api, json } from './api';
+import { Button, Disclosure, Input, Select } from './ui';
 
 export default function AgentConnection({
   path,
@@ -82,24 +83,28 @@ export default function AgentConnection({
       )}
       <label className="field-label">
         探索模型
-        <select value={model} disabled={!ready} onChange={(e) => onModel(e.target.value)}>
-          <option value="">沿用 Codex 默认模型</option>
-          {model && !probe?.models.some((m) => m.id === model) && (
-            <option value={model}>{model} · 上次选择</option>
-          )}
-          {probe?.models.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.name}
-              {m.isDefault ? ' · 默认' : ''}
-            </option>
-          ))}
-        </select>
+        <Select
+          label="探索模型"
+          value={model}
+          disabled={!ready}
+          onValueChange={onModel}
+          options={[
+            { value: '', label: '沿用 Codex 默认模型', description: '跟随本机 Codex 的模型设置' },
+            ...(model && !probe?.models.some((m) => m.id === model)
+              ? [{ value: model, label: model, badge: '上次选择' }]
+              : []),
+            ...(probe?.models.map((m) => ({
+              value: m.id,
+              label: m.name,
+              badge: m.isDefault ? '默认' : undefined,
+            })) || []),
+          ]}
+        />
       </label>
-      <details className="agent-advanced">
-        <summary>程序位置</summary>
+      <Disclosure className="agent-advanced" title="程序位置">
         <label className="field-label">
           Codex 可执行文件
-          <input
+          <Input
             value={path}
             placeholder="自动查找，或填写完整路径"
             spellCheck={false}
@@ -112,8 +117,8 @@ export default function AgentConnection({
             }}
           />
         </label>
-      </details>
-      <button
+      </Disclosure>
+      <Button
         type="button"
         className="agent-recheck"
         onClick={() => void check()}
@@ -121,7 +126,7 @@ export default function AgentConnection({
       >
         <RefreshCw size={14} className={checking ? 'spin' : ''} />
         重新检测连接
-      </button>
+      </Button>
       <p className="field-hint">
         无需另填 API Key。模型请求使用 Codex 的服务配置；故事与对话保存在本机。首版支持 Codex CLI
         0.153 及更新版本。

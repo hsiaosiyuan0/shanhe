@@ -12,6 +12,7 @@ import { journeyFeatures, evidenceLabels } from './map/journeyGeometry';
 import { CollapsedAttributionControl } from './map/CollapsedAttributionControl';
 import { MapPopupController } from './map/MapPopupController';
 import { annotationElement } from './map/annotationElement';
+import { Button } from './ui';
 import { declutterLabels } from './map/declutterLabels';
 import {
   findMajorRiver,
@@ -692,7 +693,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       {story.layers.rivers && (
         <div className="river-key" aria-label="主要河流，现代河道参考">
           {majorRivers.map((river) => (
-            <button
+            <Button
               key={river.id}
               type="button"
               aria-label={`${river.label}，查看河道说明`}
@@ -711,7 +712,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
             >
               <span style={{ backgroundColor: river.color }} aria-hidden="true" />
               {river.label}
-            </button>
+            </Button>
           ))}
         </div>
       )}

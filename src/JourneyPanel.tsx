@@ -1,6 +1,7 @@
 import { Route, X, LocateFixed, ExternalLink, Footprints, Ship, CircleHelp } from 'lucide-react';
 import type { MapRoute } from '../shared/schema';
 import { evidenceLabels, transportLabels } from './map/journeyGeometry';
+import { Button, Disclosure, Select } from './ui';
 
 export default function JourneyPanel({
   route,
@@ -22,46 +23,46 @@ export default function JourneyPanel({
         <Route size={16} />
         <strong>行程考证</strong>
         <span>{journey.status === 'reconstructed' ? '概略重建' : '待核验'}</span>
-        <button className="icon-button" aria-label="关闭行程考证" onClick={onClose}>
+        <Button className="icon-button" aria-label="关闭行程考证" onClick={onClose}>
           <X size={16} />
-        </button>
+        </Button>
       </header>
       <label className="sr-only" htmlFor="journey-picker">
         选择行程
       </label>
-      <select
+      <Select
         id="journey-picker"
+        label="选择行程"
         value={route.id}
-        onChange={(event) => onChange(event.target.value)}
-      >
-        {routes.map((r) => (
-          <option key={r.id} value={r.id}>
-            {r.label}
-          </option>
-        ))}
-      </select>
+        onValueChange={onChange}
+        options={routes.map((r) => ({ value: r.id, label: r.label }))}
+      />
       <div className="journey-period">
         <span>
           {journey.startYear} 年出发 · {journey.endYear} 年抵达
         </span>
-        <button onClick={() => onFocus()}>
+        <Button onClick={() => onFocus()}>
           <LocateFixed size={13} /> 全程
-        </button>
+        </Button>
       </div>
       <div className="journey-legs">
         {journey.legs.map((leg, index) => {
           const Icon = leg.mode === 'water' ? Ship : leg.mode === 'land' ? Footprints : CircleHelp;
           return (
-            <details key={index}>
-              <summary>
-                <Icon size={15} />
-                <span>
-                  {leg.label}
-                  <small>
-                    {transportLabels[leg.mode]} · {evidenceLabels[leg.evidence]}
-                  </small>
-                </span>
-              </summary>
+            <Disclosure
+              key={index}
+              title={
+                <>
+                  <Icon size={15} />
+                  <span>
+                    {leg.label}
+                    <small>
+                      {transportLabels[leg.mode]} · {evidenceLabels[leg.evidence]}
+                    </small>
+                  </span>
+                </>
+              }
+            >
               <p>{leg.note}</p>
               <p className="journey-waypoints">
                 {journey.stops
@@ -69,10 +70,10 @@ export default function JourneyPanel({
                   .map((s) => s.label.split(' · ')[0])
                   .join(' → ')}
               </p>
-              <button className="journey-focus" onClick={() => onFocus(index)}>
+              <Button className="journey-focus" onClick={() => onFocus(index)}>
                 <LocateFixed size={13} /> 在地图上看这一段
-              </button>
-            </details>
+              </Button>
+            </Disclosure>
           );
         })}
       </div>

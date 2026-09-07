@@ -604,34 +604,6 @@ button svg {
   width: 1px;
   background: var(--line);
 }
-.menu-container {
-  position: relative;
-}
-.dropdown {
-  position: absolute;
-  right: 0;
-  top: 42px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fffefa;
-  min-width: 175px;
-  padding: 5px;
-  box-shadow: 0 9px 30px #2b42231a;
-  z-index: 60;
-}
-.dropdown button {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  width: 100%;
-  padding: 10px;
-  border-radius: 5px;
-  font-size: 12px;
-  text-align: left;
-}
-.dropdown button:hover {
-  background: #eff1e7;
-}
 .mobile-menu {
   display: none;
 }
@@ -970,35 +942,6 @@ button svg {
   font-size: 11px;
   padding: 10px 0;
   color: #66755d;
-}
-.layer-row > .switch {
-  margin-left: auto;
-}
-.switch {
-  height: 15px;
-  width: 27px;
-  border-radius: 10px;
-  background: #d9dece;
-  position: relative;
-  transition: background 0.2s;
-}
-.switch:after {
-  content: '';
-  height: 11px;
-  width: 11px;
-  background: white;
-  border-radius: 50%;
-  position: absolute;
-  left: 2px;
-  top: 2px;
-  box-shadow: 0 1px 2px #0002;
-  transition: transform 0.2s;
-}
-.switch.on {
-  background: #6c8955;
-}
-.switch.on:after {
-  transform: translateX(12px);
 }
 .layer-panel > p {
   font-size: 9px;
@@ -2019,10 +1962,6 @@ button svg {
   max-height: calc(100dvh - 48px);
   overflow: auto;
 }
-.dialog::backdrop {
-  background: #26382755;
-  backdrop-filter: blur(5px);
-}
 .dialog.wide {
   width: 600px;
 }
@@ -2057,8 +1996,7 @@ button svg {
   margin-bottom: 17px;
 }
 .field-label > input,
-.field-label > textarea,
-.field-label > select {
+.field-label > textarea {
   width: 100%;
   border: 1px solid #dde4d1;
   border-radius: 6px;
@@ -2094,11 +2032,6 @@ button svg {
   gap: 8px;
   margin: 0 0 23px;
 }
-.kind-options legend {
-  font-size: 12px;
-  color: #6d7d5d;
-  margin-bottom: 10px;
-}
 .kind-options > button {
   border: 1px solid #dce4cf;
   border-radius: 6px;
@@ -2106,11 +2039,6 @@ button svg {
   font-size: 12px;
   flex: 1;
   color: #8a9b76;
-}
-.kind-options > button.active {
-  border-color: #7f9a67;
-  background: #edf3e1;
-  color: #597942;
 }
 .template-title {
   font-size: 11px;
@@ -2160,9 +2088,6 @@ button svg {
   font-size: 11px;
   color: #889877;
   margin-top: 13px;
-}
-.check-label input {
-  accent-color: var(--green);
 }
 .form-error {
   font-size: 11px;
@@ -3269,16 +3194,6 @@ button {
   width: 24px;
   height: 24px;
 }
-.journey-panel select {
-  width: 100%;
-  padding: 9px;
-  background: #f4f2e8;
-  border: 1px solid #dce1d2;
-  color: #354c3d;
-  border-radius: 5px;
-  font-size: 13px;
-  font-weight: 600;
-}
 .journey-period {
   display: flex;
   align-items: center;
@@ -3313,36 +3228,6 @@ button {
 }
 .journey-legs {
   margin-top: 12px;
-}
-.journey-legs details {
-  border-top: 1px solid #e5e5d8;
-}
-.journey-legs summary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 0;
-  font-size: 12px;
-  cursor: pointer;
-  list-style: none;
-  scroll-margin-top: 50px;
-}
-.journey-legs summary::-webkit-details-marker {
-  display: none;
-}
-.journey-legs summary::after {
-  content: '+';
-  margin-left: auto;
-  color: #879077;
-}
-.journey-legs details[open] summary::after {
-  content: '−';
-}
-.journey-legs summary small {
-  display: block;
-  margin-top: 4px;
-  font-size: 10px;
-  color: #888d7b;
 }
 .journey-legs p {
   font-size: 11px;
@@ -3455,11 +3340,6 @@ button {
   font-size: 12px;
   color: #77836b;
 }
-.connection-picker button[aria-pressed='true'] {
-  border-color: #6c8460;
-  background: #edf1e3;
-  box-shadow: 0 0 0 1px #6c8460;
-}
 .agent-card {
   display: flex;
   align-items: center;
@@ -3512,10 +3392,6 @@ button {
   margin: 12px 0;
   color: #687a5a;
   font-size: 13px;
-}
-.agent-advanced summary {
-  cursor: pointer;
-  padding: 6px 0;
 }
 .agent-advanced input {
   font-family: ui-monospace, monospace;

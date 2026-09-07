@@ -59,6 +59,18 @@ import AgentConnection from './AgentConnection';
 import MapCanvas, { type MapHandle } from './MapCanvas';
 import { elevationGradient, elevationStops } from './map/elevation';
 import JourneyPanel from './JourneyPanel';
+import {
+  ActionMenu,
+  Button,
+  Checkbox,
+  Dialog,
+  Input,
+  RadioGroup,
+  RadioItem,
+  Select,
+  Switch,
+  Textarea,
+} from './ui';
 
 const kindLabels = { biography: '人物传记', history: '历史长卷', travel: '旅行手记' };
 const categoryLabels = {
@@ -102,7 +114,7 @@ function IconButton({
   disabled?: boolean;
 }) {
   return (
-    <button
+    <Button
       className={'icon-button ' + className}
       aria-label={label}
       title={label}
@@ -110,43 +122,7 @@ function IconButton({
       disabled={disabled}
     >
       {children}
-    </button>
-  );
-}
-function Dialog({
-  title,
-  children,
-  onClose,
-  wide = false,
-}: {
-  title: string;
-  children: ReactNode;
-  onClose: () => void;
-  wide?: boolean;
-}) {
-  const ref = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    const dialog = ref.current;
-    dialog?.showModal();
-    return () => dialog?.close();
-  }, []);
-  return (
-    <dialog
-      ref={ref}
-      className={'dialog ' + (wide ? 'wide' : '')}
-      onCancel={onClose}
-      onClick={(e) => {
-        if (e.target === ref.current) onClose();
-      }}
-    >
-      <div className="dialog-heading">
-        <h2>{title}</h2>
-        <IconButton label="关闭弹窗" onClick={onClose}>
-          <X size={19} />
-        </IconButton>
-      </div>
-      {children}
-    </dialog>
+    </Button>
   );
 }
 
@@ -288,6 +264,7 @@ export default function App() {
   }, [playing, story?.events]);
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return;
       if (event.key === 'Escape') {
         setShowLayers(false);
         setShowMenu(false);
@@ -524,7 +501,7 @@ export default function App() {
         </div>
       </nav>
       {showLibrary && (
-        <button
+        <Button
           className="library-scrim"
           aria-label="关闭故事库"
           onClick={() => setShowLibrary(false)}
@@ -542,12 +519,12 @@ export default function App() {
             <Upload size={16} />
           </IconButton>
         </div>
-        <button className="new-story" onClick={() => setModal('new')}>
+        <Button className="new-story" onClick={() => setModal('new')}>
           <Plus size={18} /> 开启一个新故事 <span>⌘</span>
-        </button>
+        </Button>
         <label className="search-field">
           <Search size={15} />
-          <input
+          <Input
             id="story-search"
             aria-label="搜索故事"
             placeholder="寻找一个故事…"
@@ -562,19 +539,19 @@ export default function App() {
             ['history', '历史'],
             ['travel', '旅行'],
           ].map(([value, label]) => (
-            <button
+            <Button
               key={value}
               onClick={() => setFilter(value)}
               className={filter === value ? 'active' : ''}
               aria-pressed={filter === value}
             >
               {label}
-            </button>
+            </Button>
           ))}
         </div>
         <div className="story-list">
           {filtered.map((s) => (
-            <button
+            <Button
               key={s.id}
               className={'story-tile ' + (story?.id === s.id ? 'active' : '')}
               onClick={() => void openStory(s.id)}
@@ -598,7 +575,7 @@ export default function App() {
                 <small>{s.era}</small>
               </div>
               {story?.id === s.id && <span className="active-dot" />}
-            </button>
+            </Button>
           ))}
           {!filtered.length && (
             <p className="muted empty-filter">
@@ -618,13 +595,13 @@ export default function App() {
             <br />
             或只是去看看山的那一边。
           </p>
-          <button
+          <Button
             onClick={() => {
               setModal('new');
             }}
           >
             从灵感开始 <ArrowUpRight size={14} />
-          </button>
+          </Button>
         </div>
         <div className="library-footer">
           <span className="online-dot" />
@@ -657,7 +634,7 @@ export default function App() {
             <span className="online-dot" />
             {disableEdit ? '正在处理…' : '已保存到本地'}
           </span>
-          <button
+          <Button
             aria-label="保存快照"
             className="subtle-button snapshot-button"
             onClick={snapshot}
@@ -665,38 +642,34 @@ export default function App() {
           >
             <BookmarkPlus size={16} />
             <span>保存快照</span>
-          </button>
-          <div className="menu-container">
-            <IconButton label="故事操作" onClick={() => setShowMenu((v) => !v)}>
-              <MoreHorizontal size={20} />
-            </IconButton>
-            {showMenu && (
-              <div className="dropdown">
-                <button onClick={exportStory} disabled={!story || disableEdit}>
-                  <Download size={16} />
-                  导出完整故事
-                </button>
-                <button
-                  onClick={() => {
-                    setModal('snapshots');
-                    setShowMenu(false);
-                  }}
-                >
-                  <History size={16} />
-                  版本记录
-                </button>
-                <button
-                  onClick={() => {
-                    importRef.current?.click();
-                    setShowMenu(false);
-                  }}
-                >
-                  <Upload size={16} />
-                  导入故事
-                </button>
-              </div>
-            )}
-          </div>
+          </Button>
+          <ActionMenu
+            open={showMenu}
+            onOpenChange={setShowMenu}
+            trigger={
+              <Button className="icon-button" aria-label="故事操作">
+                <MoreHorizontal size={20} />
+              </Button>
+            }
+            items={[
+              {
+                label: '导出完整故事',
+                icon: <Download size={16} />,
+                disabled: !story || disableEdit,
+                onSelect: exportStory,
+              },
+              {
+                label: '版本记录',
+                icon: <History size={16} />,
+                onSelect: () => setModal('snapshots'),
+              },
+              {
+                label: '导入故事',
+                icon: <Upload size={16} />,
+                onSelect: () => importRef.current?.click(),
+              },
+            ]}
+          />
           <span className="header-divider" />
           <IconButton
             label={showChat ? '收起探索助手' : '展开探索助手'}
@@ -784,7 +757,7 @@ export default function App() {
                   现代地理参考
                 </div>
                 <div className="map-tools">
-                  <button
+                  <Button
                     aria-label="查看行程依据"
                     title={
                       journeys.length
@@ -797,8 +770,8 @@ export default function App() {
                   >
                     <Route size={15} />
                     <span>行程</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     aria-label="现代行政区对照"
                     title="叠加现代省界与省名，点击地图查看所属行政区"
                     aria-pressed={story.layers.admin}
@@ -808,8 +781,8 @@ export default function App() {
                   >
                     <Map size={15} />
                     <span>今地对照</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     aria-label="地图图层"
                     className={showLayers ? 'active' : ''}
                     onClick={() => setShowLayers((v) => !v)}
@@ -820,8 +793,8 @@ export default function App() {
                     <span className="layer-count">
                       {Object.values(story.layers).filter(Boolean).length}
                     </span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() =>
                       void mutate(async () => {
                         await apply([
@@ -845,7 +818,7 @@ export default function App() {
                     aria-pressed={story.layers.terrain}
                   >
                     3D
-                  </button>
+                  </Button>
                 </div>
               </div>
               {showLayers && (
@@ -859,17 +832,16 @@ export default function App() {
                   {(Object.keys(layerLabels) as (keyof Layers)[]).map((key) => {
                     const Icon = layerIcons[key];
                     return (
-                      <button
-                        key={key}
-                        className="layer-row"
-                        onClick={() => toggleLayer(key)}
-                        disabled={disableEdit}
-                        aria-pressed={story.layers[key]}
-                      >
-                        <Icon size={17} />
+                      <label key={key} className="layer-row">
+                        <Icon size={17} aria-hidden="true" />
                         <span>{layerLabels[key]}</span>
-                        <span className={'switch ' + (story.layers[key] ? 'on' : '')} />
-                      </button>
+                        <Switch
+                          checked={story.layers[key]}
+                          onCheckedChange={() => toggleLayer(key)}
+                          disabled={disableEdit}
+                          aria-label={layerLabels[key]}
+                        />
+                      </label>
                     );
                   })}
                   <p>海拔颜色与三维视角可独立切换。省界为现代参考，未加载历史疆界。</p>
@@ -958,14 +930,14 @@ export default function App() {
                       ? '开启三维地形并放大，可查询高程'
                       : `地表高程 ≈ ${point.elevation} m · 数据估算`}
                   </small>
-                  <button
+                  <Button
                     className="primary-button"
                     onClick={() => setModal('marker')}
                     disabled={disableEdit}
                   >
                     <Plus size={15} />
                     添加地点标记
-                  </button>
+                  </Button>
                 </div>
               )}
               <div className="map-controls">
@@ -1069,7 +1041,7 @@ export default function App() {
                   </span>
                 </div>
                 <div className="timeline-actions">
-                  <button
+                  <Button
                     aria-label="添加事件"
                     className="text-button"
                     onClick={() => {
@@ -1080,7 +1052,7 @@ export default function App() {
                   >
                     <Plus size={14} />
                     <span>添加事件</span>
-                  </button>
+                  </Button>
                   <div className="play-controls">
                     <IconButton
                       label="上一个事件"
@@ -1121,7 +1093,7 @@ export default function App() {
               </div>
               <div className="timeline-track" ref={timelineRef}>
                 {story.events.map((e, i) => (
-                  <button
+                  <Button
                     key={e.id}
                     data-event-id={e.id}
                     className={
@@ -1144,10 +1116,10 @@ export default function App() {
                       <MapPin size={10} />
                       {e.place}
                     </small>
-                  </button>
+                  </Button>
                 ))}
                 {!story.events.length && (
-                  <button
+                  <Button
                     className="empty-timeline"
                     onClick={() => {
                       setEditingEvent(undefined);
@@ -1156,7 +1128,7 @@ export default function App() {
                   >
                     <Plus size={20} />
                     <span>添加第一个事件，让故事有一个起点</span>
-                  </button>
+                  </Button>
                 )}
               </div>
               <div className="timeline-footer">
@@ -1173,10 +1145,10 @@ export default function App() {
             <Mountain size={52} strokeWidth={1} />
             <h1>每段故事，都有山河</h1>
             <p>创建你的第一个故事，从一处地点开始。</p>
-            <button className="primary-button" onClick={() => setModal('new')}>
+            <Button className="primary-button" onClick={() => setModal('new')}>
               <Plus size={17} />
               开启一个新故事
-            </button>
+            </Button>
           </div>
         )}
       </main>
@@ -1194,7 +1166,7 @@ export default function App() {
             <PanelRightClose size={18} />
           </IconButton>
         </div>
-        <button
+        <Button
           className="context-strip"
           onClick={() => {
             if (story) flash(`当前对话会参考「${story.title}」中的全部事件、标记与路线`);
@@ -1208,7 +1180,7 @@ export default function App() {
             {story ? `${story.events.length} 个事件` : '未选择故事'}
             <Check size={13} />
           </span>
-        </button>
+        </Button>
         <div className="chat-scroll">
           <div className="assistant-intro">
             <span className="intro-eyebrow">A LITTLE CURIOSITY, A BIG WORLD</span>
@@ -1261,7 +1233,7 @@ export default function App() {
                   '在地图上标记主要山川',
                   '开启三维地形',
                 ].map((text, i) => (
-                  <button
+                  <Button
                     key={text}
                     onClick={() => void sendChat(text)}
                     disabled={!story || disableEdit}
@@ -1275,7 +1247,7 @@ export default function App() {
                     )}
                     <span>{text}</span>
                     <ArrowUpRight size={13} />
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -1345,7 +1317,7 @@ export default function App() {
             <label className="sr-only" htmlFor="chat-input">
               与山河对话
             </label>
-            <textarea
+            <Textarea
               id="chat-input"
               placeholder="问一段往事，或去一个地方…"
               value={chatInput}
@@ -1361,7 +1333,7 @@ export default function App() {
               maxLength={8000}
             />
             <div className="composer-bottom">
-              <button type="button" onClick={() => setModal('settings')}>
+              <Button type="button" onClick={() => setModal('settings')}>
                 <span className="model-dot" />
                 {settings?.connection === 'codex'
                   ? `Codex · ${settings.agentModel || '默认模型'}`
@@ -1369,9 +1341,9 @@ export default function App() {
                     ? settings.model
                     : '演示模式'}
                 <ChevronDown size={12} />
-              </button>
+              </Button>
               {chatBusy ? (
-                <button
+                <Button
                   className="send-button stop-button"
                   type="button"
                   aria-label="停止生成"
@@ -1394,16 +1366,16 @@ export default function App() {
                   ) : (
                     <Square size={15} fill="currentColor" />
                   )}
-                </button>
+                </Button>
               ) : (
-                <button
+                <Button
                   className="send-button"
                   type="submit"
                   aria-label="发送消息"
                   disabled={!chatInput.trim() || !story || disableEdit}
                 >
                   <ArrowUp size={18} />
-                </button>
+                </Button>
               )}
             </div>
           </form>
@@ -1414,7 +1386,7 @@ export default function App() {
           </p>
         </div>
       </aside>
-      <input
+      <Input
         ref={importRef}
         type="file"
         accept=".json,application/json"
@@ -1428,7 +1400,7 @@ export default function App() {
       {error && (
         <div className="error-banner" role="alert">
           <span>{error}</span>
-          {story && <button onClick={() => void openStory(story.id)}>刷新故事</button>}
+          {story && <Button onClick={() => void openStory(story.id)}>刷新故事</Button>}
           <IconButton label="关闭错误提示" onClick={() => setError('')}>
             <X size={17} />
           </IconButton>
@@ -1468,8 +1440,11 @@ export default function App() {
         />
       )}
       {modal === 'snapshots' && (
-        <Dialog title="故事的每一个版本" onClose={() => setModal(null)}>
-          <p className="dialog-intro">快照保存故事、地图视角与对话。恢复之前会自动备份当前版本。</p>
+        <Dialog
+          title="故事的每一个版本"
+          description="快照保存故事、地图视角与对话。恢复之前会自动备份当前版本。"
+          onClose={() => setModal(null)}
+        >
           <div className="snapshot-list">
             {detail?.snapshots.map((s) => (
               <div key={s.id}>
@@ -1477,7 +1452,7 @@ export default function App() {
                   <strong>{s.name}</strong>
                   <small>{new Date(s.createdAt).toLocaleString('zh-CN')}</small>
                 </div>
-                <button
+                <Button
                   className="subtle-button"
                   disabled={disableEdit}
                   onClick={() =>
@@ -1495,7 +1470,7 @@ export default function App() {
                   }
                 >
                   恢复
-                </button>
+                </Button>
               </div>
             ))}
             {!detail?.snapshots.length && (
@@ -1506,14 +1481,14 @@ export default function App() {
               </div>
             )}
           </div>
-          <button
+          <Button
             className="primary-button full-width"
             disabled={!story || disableEdit}
             onClick={snapshot}
           >
             <BookmarkPlus size={16} />
             保存现在这一刻
-          </button>
+          </Button>
         </Dialog>
       )}
       {modal === 'marker' && story && (
@@ -1647,12 +1622,15 @@ function NewStoryDialog({
     }
   };
   return (
-    <Dialog title="一个新的故事，始于好奇" onClose={onClose}>
-      <p className="dialog-intro">跟随一个人，走进一个时代，或规划下一次远行。</p>
+    <Dialog
+      title="一个新的故事，始于好奇"
+      description="跟随一个人，走进一个时代，或规划下一次远行。"
+      onClose={onClose}
+    >
       <form onSubmit={submit}>
         <label className="field-label">
           故事名称
-          <input
+          <Input
             autoFocus
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -1661,21 +1639,23 @@ function NewStoryDialog({
             maxLength={80}
           />
         </label>
-        <fieldset className="kind-options">
+        <fieldset className="kind-fieldset">
           <legend>故事类型</legend>
-          {(Object.keys(kindLabels) as Story['kind'][]).map((k) => (
-            <button
-              type="button"
-              key={k}
-              className={kind === k ? 'active' : ''}
-              onClick={() => {
-                setKind(k);
-                setTemplate('blank');
-              }}
-            >
-              {kindLabels[k]}
-            </button>
-          ))}
+          <RadioGroup
+            className="kind-options"
+            aria-label="故事类型"
+            value={kind}
+            onValueChange={(value) => {
+              setKind(value as Story['kind']);
+              setTemplate('blank');
+            }}
+          >
+            {(Object.keys(kindLabels) as Story['kind'][]).map((k) => (
+              <RadioItem key={k} value={k}>
+                {kindLabels[k]}
+              </RadioItem>
+            ))}
+          </RadioGroup>
         </fieldset>
         <div className="template-title">
           从一份种子故事开始 <span>也可以直接创建空白故事</span>
@@ -1686,7 +1666,7 @@ function NewStoryDialog({
             ['five', '五代十国', 'history'],
             ['travel', '江南三日漫游', 'travel'],
           ].map(([id, name, type]) => (
-            <button
+            <Button
               type="button"
               key={id}
               className={template === id ? 'active' : ''}
@@ -1695,26 +1675,26 @@ function NewStoryDialog({
               <BookOpen size={16} />
               {name}
               {template === id && <Check size={14} />}
-            </button>
+            </Button>
           ))}
         </div>
         {template !== 'blank' && (
-          <button
+          <Button
             type="button"
             className="text-button blank-option"
             onClick={() => setTemplate('blank')}
           >
             改为空白故事
-          </button>
+          </Button>
         )}
         {error && (
           <p className="form-error" role="alert">
             {error}
           </p>
         )}
-        <button className="primary-button full-width" disabled={busy || !title.trim()}>
+        <Button className="primary-button full-width" disabled={busy || !title.trim()}>
           {busy ? <LoaderCircle className="spin" size={17} /> : <Plus size={17} />}创建故事
-        </button>
+        </Button>
       </form>
     </Dialog>
   );
@@ -1739,10 +1719,11 @@ function SettingsDialog({
   const [agentModel, setAgentModel] = useState(settings?.agentModel || '');
   const [agentReady, setAgentReady] = useState(false);
   return (
-    <Dialog title="连接你的探索助手" onClose={onClose}>
-      <p className="dialog-intro">
-        选择探索助手，为故事添加事件、标记地点、绘制路线。可以使用本机 Codex，也可以连接模型 API。
-      </p>
+    <Dialog
+      title="连接你的探索助手"
+      description="选择探索助手，为故事添加事件、标记地点、绘制路线。可以使用本机 Codex，也可以连接模型 API。"
+      onClose={onClose}
+    >
       <form
         onSubmit={async (e) => {
           e.preventDefault();
@@ -1764,26 +1745,24 @@ function SettingsDialog({
           }
         }}
       >
-        <div className="connection-picker" role="group" aria-label="连接方式">
-          <button
-            type="button"
-            aria-pressed={connection === 'codex'}
-            onClick={() => setConnection('codex')}
-          >
-            <Monitor size={18} />
+        <RadioGroup
+          className="connection-picker"
+          aria-label="连接方式"
+          value={connection}
+          onValueChange={(value) => setConnection(value as 'api' | 'codex')}
+          disabled={busy}
+        >
+          <RadioItem value="codex">
+            <Monitor size={18} aria-hidden="true" />
             <strong>本地 Agent</strong>
             <span>复用已登录的 Codex</span>
-          </button>
-          <button
-            type="button"
-            aria-pressed={connection === 'api'}
-            onClick={() => setConnection('api')}
-          >
-            <Plug size={18} />
+          </RadioItem>
+          <RadioItem value="api">
+            <Plug size={18} aria-hidden="true" />
             <strong>模型 API</strong>
             <span>云端服务或 Ollama</span>
-          </button>
-        </div>
+          </RadioItem>
+        </RadioGroup>
         {connection === 'codex' ? (
           <AgentConnection
             path={agentPath}
@@ -1796,7 +1775,7 @@ function SettingsDialog({
           <>
             <label className="field-label">
               API 地址
-              <input
+              <Input
                 type="url"
                 required
                 value={baseUrl}
@@ -1806,7 +1785,7 @@ function SettingsDialog({
             </label>
             <label className="field-label">
               模型名称
-              <input
+              <Input
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
                 placeholder="填写服务商提供的模型 ID"
@@ -1815,7 +1794,7 @@ function SettingsDialog({
             </label>
             <label className="field-label">
               API Key
-              <input
+              <Input
                 type="password"
                 autoComplete="new-password"
                 value={key}
@@ -1829,10 +1808,9 @@ function SettingsDialog({
             </p>
             {settings?.hasKey && (
               <label className="check-label">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={clearKey}
-                  onChange={(e) => setClearKey(e.target.checked)}
+                  onCheckedChange={(checked) => setClearKey(checked === true)}
                 />
                 清除已保存的密钥
               </label>
@@ -1844,12 +1822,12 @@ function SettingsDialog({
             {error}
           </p>
         )}
-        <button
+        <Button
           className="primary-button full-width"
           disabled={busy || (connection === 'codex' && !agentReady)}
         >
           {busy ? <LoaderCircle className="spin" size={17} /> : <Check size={17} />}保存配置
-        </button>
+        </Button>
       </form>
     </Dialog>
   );
@@ -1893,21 +1871,26 @@ function MarkerDialog({
       >
         <label className="field-label">
           地点名称
-          <input name="label" required autoFocus maxLength={100} placeholder="例如：东坡赤壁" />
+          <Input name="label" required autoFocus maxLength={100} placeholder="例如：东坡赤壁" />
         </label>
         <label className="field-label">
           标记类型
-          <select name="kind">
-            <option value="place">地点</option>
-            <option value="mountain">山峰 / 山脉</option>
-            <option value="river">河流</option>
-            <option value="note">笔记</option>
-          </select>
+          <Select
+            name="kind"
+            label="标记类型"
+            defaultValue="place"
+            options={[
+              { value: 'place', label: '地点' },
+              { value: 'mountain', label: '山峰 / 山脉' },
+              { value: 'river', label: '河流' },
+              { value: 'note', label: '笔记' },
+            ]}
+          />
         </label>
         <div className="field-grid">
           <label className="field-label">
             经度
-            <input
+            <Input
               name="lng"
               type="number"
               step="any"
@@ -1919,7 +1902,7 @@ function MarkerDialog({
           </label>
           <label className="field-label">
             纬度
-            <input
+            <Input
               name="lat"
               type="number"
               step="any"
@@ -1932,7 +1915,7 @@ function MarkerDialog({
         </div>
         <label className="field-label">
           地点笔记
-          <textarea
+          <Textarea
             name="description"
             rows={3}
             maxLength={2000}
@@ -1940,10 +1923,10 @@ function MarkerDialog({
           />
         </label>
         {error && <p className="form-error">{error}</p>}
-        <button className="primary-button full-width" disabled={busy}>
+        <Button className="primary-button full-width" disabled={busy}>
           <MapPin size={16} />
           保存标记
-        </button>
+        </Button>
       </form>
     </Dialog>
   );
@@ -1992,7 +1975,7 @@ function EventDialog({
       >
         <label className="field-label">
           事件名称
-          <input
+          <Input
             name="title"
             required
             autoFocus
@@ -2004,7 +1987,7 @@ function EventDialog({
         <div className="field-grid">
           <label className="field-label">
             {isTravel ? '第几天' : '公历年份（负数为公元前）'}
-            <input
+            <Input
               name="year"
               type="number"
               min={-10000}
@@ -2015,18 +1998,17 @@ function EventDialog({
           </label>
           <label className="field-label">
             事件类型
-            <select name="category" defaultValue={event?.category || 'life'}>
-              {Object.entries(categoryLabels).map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-            </select>
+            <Select
+              name="category"
+              label="事件类型"
+              defaultValue={event?.category || 'life'}
+              options={Object.entries(categoryLabels).map(([value, label]) => ({ value, label }))}
+            />
           </label>
         </div>
         <label className="field-label">
           地点名称
-          <input
+          <Input
             name="place"
             required
             maxLength={100}
@@ -2037,7 +2019,7 @@ function EventDialog({
         <div className="field-grid">
           <label className="field-label">
             经度
-            <input
+            <Input
               name="lng"
               type="number"
               step="any"
@@ -2049,7 +2031,7 @@ function EventDialog({
           </label>
           <label className="field-label">
             纬度
-            <input
+            <Input
               name="lat"
               type="number"
               step="any"
@@ -2062,7 +2044,7 @@ function EventDialog({
         </div>
         <label className="field-label">
           事件描述
-          <textarea
+          <Textarea
             name="description"
             rows={3}
             maxLength={4000}
@@ -2071,7 +2053,7 @@ function EventDialog({
         </label>
         <label className="field-label">
           一句诗 / 一句话
-          <input
+          <Input
             name="quote"
             maxLength={500}
             defaultValue={event?.quote}
@@ -2083,10 +2065,10 @@ function EventDialog({
             {error}
           </p>
         )}
-        <button className="primary-button full-width" disabled={busy}>
+        <Button className="primary-button full-width" disabled={busy}>
           <Check size={16} />
           保存事件
-        </button>
+        </Button>
       </form>
     </Dialog>
   );
