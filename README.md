@@ -41,7 +41,9 @@ npm start
 ## 这一版能做什么
 
 - 故事库：创建空白历史、人物、旅行故事，或从「苏轼的一生」「五代十国」「江南三日漫游」开始。
-- 地图：缩放、拖动、事件定位、全路线适配、山川图层显隐、在线三维地形。开启地形后，点击空白处可查询加载范围内的估算高程。
+- 地图：缩放、拖动、事件定位、全路线适配、山川图层显隐。默认按真实海拔分层设色，配合山体阴影、海拔图例和主要盆地/平原名称；可独立切换三维地形。开启三维后，点击空白处可查询加载范围内的估算高程。
+- 今地对照：地图右上角一键叠加现代省界和省名，点击地图显示「今属 · 省名」。当前内置中国大陆 31 个省级行政区，数据可离线读取，图层状态随故事、快照与导出保存。
+- 行迹：原始地点保持不变，以平滑曲线呈现。时间线经过的部分沿同一曲线高亮；只有与事件坐标序列一致的路线才推断进度。
 - 时间线：按事件排列，点击与地图联动，前后切换、播放/暂停、手动添加和编辑事件。时间轴当前不是按年份等比例排布。
 - 对话：参考当前 Story，添加事件、地点、路线、修改视角与图层；每轮回答显示地图操作回执。
 - 保存：编辑与对话自动写入 SQLite。快照额外保存当前地图视角，支持完整恢复，恢复前自动创建备份。
@@ -63,7 +65,7 @@ LLM_MODEL=your-tool-capable-model
 LLM_API_KEY=your-key
 ```
 
-演示指令：「聊聊苏轼在黄州的岁月」「在地图上标记主要山川」「显示旅途路线」「开启三维地形」。自由主题的故事内容生成需要连接真实模型。
+演示指令：「聊聊苏轼在黄州的岁月」「在地图上标记主要山川」「显示旅途路线」「开启三维地形」「显示海拔分层」「打开今地对照」。自由主题的故事内容生成需要连接真实模型。
 
 模型凭据只在服务端使用，保存在权限受限的本机 SQLite 中，不发送回前端，不进入 Git 或故事导出。它不是加密数据库。真实对话时会向配置的服务发送当前故事与最近 16 条消息。模型新增内容一律标记为待核验，并移除未经检索核验的来源 URL。
 
@@ -73,10 +75,11 @@ Web/开发版数据库默认在 `data/shanhe.sqlite`，可通过 `DATA_DIR` 更�
 
 - 海岸线与河流：[Natural Earth](https://www.naturalearthdata.com/about/terms-of-use/)，公共领域。小比例尺数据内置在 `public/data/`，无网络时仍可显示。
 - 在线晕渲地形：Esri / USGS World Shaded Relief。
-- 在线高程：Mapzen Terrarium，AWS Open Data。地形夸张系数为 1.3，高程查询来自地形数据。
+- 在线高程：Mapzen Terrarium，AWS Open Data。使用 MapLibre `color-relief` 与 `hillshade` 绘制海拔颜色和山体明暗；三维地形夸张系数为 1.3，高程查询来自地形数据。色彩表示绝对海拔，盆地与平原还需结合周围地势判断。
+- 现代省界：Natural Earth 1:10m，内置中国大陆省级范围；不是权威行政区划数据，也不随历史年份变化。详见 `public/data/README.md`。
 - 示例历史事件附参考链接，地点采用现代 WGS84 概略坐标；还不是经过逐条文献校勘的历史数据库。
 - **尚未实现按年份变化的历史疆界**，现代海岸线与河道不能当作古代地理复原。
-- 路线是按事件节点连接的示意，既非考证过的古道，也非旅行导航。
+- 路线是经过地点节点的平滑示意，既非考证过的古道，也非旅行导航。曲线只用于显示，不会覆盖保存的原始路线坐标。
 - 在线地形及远程 LLM 需要网络；界面字体使用本机字体，不依赖在线字体服务。当前不预下载地形瓦片。
 
 ## 工程结构
@@ -87,7 +90,7 @@ server/              独立 HTTP API、SQLite、模型工具循环、种子故�
 shared/schema.ts     前后端共用的数据结构与地图操作校验
 desktop/main.swift   macOS WebKit 外壳与本地 API 生命周期
 scripts/             打包原生 App，内置 Node 与生产依赖
-public/data/         可离线读取的海岸线、河流 GeoJSON
+public/data/         可离线读取的海岸线、河流、现代省级行政区 GeoJSON
 tests/               持久化、并发、工具协议与回滚集成测试
 docs/ARCHITECTURE.md  产品模型、接口与下一阶段设计
 ```
@@ -96,6 +99,7 @@ docs/ARCHITECTURE.md  产品模型、接口与下一阶段设计
 npm test        # 临时 SQLite + 本机模拟 LLM，不调用外部付费模型
 npm run check  # TypeScript 校验
 npm run build  # 类型检查 + 前后端生产构建
+npm run icons  # 从 public/icon.svg 生成 PNG；macOS 同时生成桌面 ICNS
 ```
 
 参考实现文档：[MapLibre 地形](https://maplibre.org/maplibre-gl-js/docs/examples/3d-terrain/)、[Node SQLite](https://nodejs.org/api/sqlite.html)、[函数调用](https://developers.openai.com/api/docs/guides/function-calling)、[Apple WKWebView](https://developer.apple.com/documentation/webkit/wkwebview)。

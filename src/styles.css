@@ -2883,3 +2883,165 @@ button {
 .map-top {
   z-index: 12;
 }
+.brand-symbol img {
+  display: block;
+  transition: transform 180ms ease;
+}
+.brand-symbol:hover img {
+  transform: translateY(-1px);
+}
+.map-section {
+  container-type: inline-size;
+}
+.map-tools .admin-toggle.active {
+  background: #f0e9f0;
+  border-color: #bcaabb;
+  color: #68566e;
+}
+.admin-label {
+  pointer-events: none;
+  color: #71566e;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-shadow:
+    0 0 3px #fffdf6,
+    0 0 6px #fffdf6,
+    1px 1px 1px #fffdf6;
+  z-index: 1;
+}
+.landform-label {
+  pointer-events: none;
+  color: #675f39;
+  font-family: var(--serif);
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-shadow:
+    0 0 4px #faf4dd,
+    0 0 7px #faf4dd;
+}
+.event-pin {
+  z-index: 3;
+}
+.annotation-pin {
+  z-index: 4;
+}
+.event-pin.selected {
+  z-index: 5;
+}
+.elevation-legend {
+  position: absolute;
+  bottom: 42px;
+  right: 66px;
+  width: 230px;
+  padding: 9px 11px 7px;
+  z-index: 10;
+  border: 1px solid #ffffffe0;
+  border-radius: 6px;
+  background: #faf8f0ed;
+  box-shadow: 0 2px 12px #35492d0a;
+  pointer-events: none;
+  color: #5f6757;
+}
+.elevation-legend-heading {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  margin-bottom: 6px;
+}
+.elevation-legend-heading small {
+  color: #7c8273;
+  margin-left: 3px;
+}
+.elevation-legend-heading > span:last-child {
+  color: #7c8273;
+  font-size: 9px;
+}
+.elevation-ramp {
+  height: 6px;
+  border-radius: 2px;
+  border: 1px solid #746d5320;
+}
+.elevation-ticks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.admin-caption {
+  position: absolute;
+  top: 61px;
+  left: 21px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 7px;
+  color: #71566e;
+  background: #faf6f0dc;
+  border-radius: 3px;
+  font-size: 10px;
+  z-index: 10;
+  pointer-events: none;
+}
+.admin-caption > span {
+  width: 17px;
+  border-top: 1px dashed #786779;
+}
+.point-card .point-region {
+  color: #71566e;
+  font-weight: 600;
+  font-size: 12px;
+  margin-top: 0;
+}
+@container (max-width: 610px) {
+  .map-mode {
+    display: none;
+  }
+  .map-top {
+    justify-content: flex-end;
+  }
+  .elevation-legend {
+    top: 61px;
+    left: 15px;
+    bottom: auto;
+    right: auto;
+    width: 195px;
+  }
+  .admin-caption {
+    top: 126px;
+    left: 15px;
+  }
+}
+@media (max-width: 767px) {
+  .brand-symbol img {
+    width: 33px;
+    height: 33px;
+  }
+  .map-tools button.admin-toggle > span:not(.layer-count) {
+    display: inline;
+  }
+  .elevation-legend {
+    top: 52px;
+    left: 10px;
+    width: 177px;
+    padding: 6px 9px;
+  }
+  .elevation-legend-heading {
+    font-size: 9px;
+    margin-bottom: 4px;
+  }
+  .elevation-ticks {
+    font-size: 8px;
+  }
+  .admin-caption {
+    top: 111px;
+    left: 10px;
+    font-size: 9px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brand-symbol img {
+    transition: none;
+  }
+}

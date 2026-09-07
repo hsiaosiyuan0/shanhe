@@ -37,6 +37,16 @@ export const routeSchema = z.object({
   approximate: z.literal(true).default(true),
 });
 export const layersSchema = z.object({
+  elevation: z
+    .boolean()
+    .default(true)
+    .describe('Color terrain by real elevation, with hillshade; independent of the 3D camera.'),
+  admin: z
+    .boolean()
+    .default(false)
+    .describe(
+      'Overlay modern province boundaries and labels. Currently mainland China; never historical borders.',
+    ),
   terrain: z.boolean(),
   rivers: z.boolean(),
   mountains: z.boolean(),

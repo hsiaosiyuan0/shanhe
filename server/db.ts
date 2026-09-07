@@ -46,7 +46,7 @@ export class Store {
   list(): Story[] {
     return (
       this.db.prepare('SELECT document FROM stories ORDER BY rowid').all() as { document: string }[]
-    ).map((r) => JSON.parse(r.document));
+    ).map((r) => storySchema.parse(JSON.parse(r.document)));
   }
   get(id: string): Story {
     const row = this.db.prepare('SELECT document FROM stories WHERE id=?').get(id) as

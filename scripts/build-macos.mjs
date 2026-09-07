@@ -32,6 +32,7 @@ execFileSync(
   { stdio: 'inherit' },
 );
 cpSync(process.execPath, join(resources, 'node'));
+cpSync('desktop/Shanhe.icns', join(resources, 'Shanhe.icns'));
 chmodSync(join(resources, 'node'), 0o755);
 for (const folder of ['dist', 'dist-server'])
   cpSync(folder, join(resources, folder), { recursive: true });
@@ -49,6 +50,6 @@ writeFileSync(
 );
 writeFileSync(
   join(app, 'Contents', 'Info.plist'),
-  `<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>CFBundleName</key><string>山河</string><key>CFBundleDisplayName</key><string>山河</string><key>CFBundleIdentifier</key><string>local.shanhe.atlas</string><key>CFBundleExecutable</key><string>Shanhe</string><key>CFBundlePackageType</key><string>APPL</string><key>CFBundleShortVersionString</key><string>0.1.0</string><key>CFBundleVersion</key><string>1</string><key>LSMinimumSystemVersion</key><string>12.0</string><key>NSHighResolutionCapable</key><true/><key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/></dict></dict></plist>`,
+  `<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>CFBundleName</key><string>山河</string><key>CFBundleDisplayName</key><string>山河</string><key>CFBundleIdentifier</key><string>local.shanhe.atlas</string><key>CFBundleIconFile</key><string>Shanhe</string><key>CFBundleExecutable</key><string>Shanhe</string><key>CFBundlePackageType</key><string>APPL</string><key>CFBundleShortVersionString</key><string>0.1.0</string><key>CFBundleVersion</key><string>1</string><key>LSMinimumSystemVersion</key><string>12.0</string><key>NSHighResolutionCapable</key><true/><key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/></dict></dict></plist>`,
 );
 console.log(`本地 App 已生成：${app}`);

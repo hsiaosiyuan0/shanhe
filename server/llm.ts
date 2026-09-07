@@ -73,13 +73,27 @@ function demo(story: Story, prompt: string): { content: string; actions: MapActi
     });
     content =
       '已显示主要山川，并补充秦岭、大巴山、庐山、长江和黄河的概略标记。\n\n这些是现代地理参考；山脉标记代表大致位置，河流采用小比例尺数据。历史河道会发生变化，尤其不能把今天的黄河河道直接用于解释宋代事件。';
-  } else if (/三维|3D|海拔|地形/i.test(prompt)) {
+  } else if (/今地|行政区|省界|现代.*对照/.test(prompt)) {
+    const enabled = !/关闭|隐藏|取消/.test(prompt);
+    actions.push({ type: 'set_layers', layers: { ...story.layers, admin: enabled } });
+    content = enabled
+      ? '已打开今地对照：叠加现代省界和省名，点击地图可查看「今属」行政区。当前覆盖中国大陆省级范围，可再次点击右上角「今地对照」关闭。'
+      : '已关闭现代行政区对照。';
+  } else if (/三维|3D/i.test(prompt)) {
+    const enabled = !/关闭|隐藏|取消/.test(prompt);
     actions.push(
-      { type: 'set_layers', layers: { ...story.layers, terrain: true } },
-      { type: 'set_view', view: { ...story.view, pitch: 50 } },
+      { type: 'set_layers', layers: { ...story.layers, terrain: enabled } },
+      { type: 'set_view', view: { ...story.view, pitch: enabled ? 50 : 0 } },
     );
-    content =
-      '已打开三维地形。放大地图可以观察山谷与地势；点击地图上的空白处，可以查看坐标和当前可用的高程估算。\n\n高程来自在线地形瓦片，是现代地表参考，并非历史地貌复原。';
+    content = enabled
+      ? '已打开三维地形。放大地图可以观察山谷与地势；点击地图上的空白处，可以查看坐标和当前可用的高程估算。\n\n高程来自在线地形瓦片，是现代地表参考，并非历史地貌复原。'
+      : '已关闭三维视角，回到平面地图。';
+  } else if (/海拔|地形|分层|设色|高程/.test(prompt)) {
+    const enabled = !/关闭|隐藏|取消/.test(prompt);
+    actions.push({ type: 'set_layers', layers: { ...story.layers, elevation: enabled } });
+    content = enabled
+      ? '已打开海拔分层设色。绿色表示较低海拔，向黄色、棕色和灰白色逐渐升高，结合阴影可观察山脉、盆地与平原。地图图例给出对应高程。颜色来自现代高程数据，三维视角可以独立切换。'
+      : '已关闭海拔分层设色，回到山川底图。';
   } else if (/路线|旅途|行迹/.test(prompt)) {
     if (story.events.length < 2)
       content =

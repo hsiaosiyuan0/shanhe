@@ -15,8 +15,9 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "check": "tsc --noEmit",
     "desktop": "npm run desktop:pack && node scripts/open-macos.mjs",
-    "desktop:pack": "npm run build && node scripts/build-macos.mjs",
-    "format": "prettier --write src server shared tests scripts *.json vite.config.ts index.html"
+    "desktop:pack": "npm run icons && npm run build && node scripts/build-macos.mjs",
+    "format": "prettier --write src server shared tests scripts *.json vite.config.ts index.html",
+    "icons": "node scripts/build-icons.mjs"
   },
   "dependencies": {
     "dotenv": "^17.2.3",
@@ -28,6 +29,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "@types/express": "^5.0.5",
     "@types/geojson": "^7946.0.16",
     "@types/node": "^24.10.0",

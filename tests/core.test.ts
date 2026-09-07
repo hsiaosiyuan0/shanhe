@@ -151,6 +151,31 @@ test('demo chat commits maps and messages together, persists on read, and export
     await f.cleanup();
   }
 });
+test('conversation toggles elevation and modern boundaries independently of 3D', async () => {
+  const f = await fixture();
+  try {
+    f.store.setSettings({ baseUrl: 'https://api.example.com/v1', model: '', apiKey: '' });
+    let story = f.store.list()[0];
+    for (const [content, key, expected] of [
+      ['打开今地对照', 'admin', true],
+      ['关闭海拔设色', 'elevation', false],
+      ['显示海拔分层', 'elevation', true],
+    ] as const) {
+      const result = await f.request(`/stories/${story.id}/chat`, 'POST', {
+        prompt: content,
+        revision: story.revision,
+      });
+      assert.equal(result.status, 200);
+      story = result.data.story;
+      assert.equal(story.layers[key], expected);
+      assert.equal(story.layers.terrain, false);
+      assert.equal(f.store.get(story.id).layers[key], expected);
+    }
+    assert.equal(story.layers.admin, true);
+  } finally {
+    await f.cleanup();
+  }
+});
 test('CRUD, validation, conflict, origin checks, and invalid imports', async () => {
   const f = await fixture();
   try {

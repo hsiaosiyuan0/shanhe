@@ -53,6 +53,7 @@ import type {
 } from '../shared/schema';
 import { api, json } from './api';
 import MapCanvas, { type MapHandle } from './MapCanvas';
+import { elevationGradient, elevationStops } from './map/elevation';
 
 const kindLabels = { biography: '人物传记', history: '历史长卷', travel: '旅行手记' };
 const categoryLabels = {
@@ -63,14 +64,23 @@ const categoryLabels = {
   culture: '人文',
 };
 const layerLabels: Record<keyof Layers, string> = {
+  elevation: '海拔分层设色',
+  admin: '现代行政区对照',
   terrain: '三维地形',
   rivers: '主要河流',
-  mountains: '山脉地名',
+  mountains: '山脉与地貌',
   routes: '行迹路线',
 };
-const layerIcons = { terrain: Mountain, rivers: Waves, mountains: MapPin, routes: Route };
+const layerIcons = {
+  elevation: Layers3,
+  admin: Map,
+  terrain: Mountain,
+  rivers: Waves,
+  mountains: MapPin,
+  routes: Route,
+};
 type Modal = 'new' | 'settings' | 'snapshots' | 'marker' | 'event' | 'about' | null;
-type Point = { coordinates: [number, number]; elevation: number | null };
+type Point = { coordinates: [number, number]; elevation: number | null; modernRegion?: string };
 function IconButton({
   label,
   children,
@@ -391,7 +401,7 @@ export default function App() {
     >
       <nav className="rail" aria-label="主导航">
         <a className="brand-symbol" href="/" aria-label="山河首页">
-          <Mountain size={29} strokeWidth={1.5} />
+          <img src="/icon.svg" width="38" height="38" alt="" />
         </a>
         <div className="rail-nav">
           <IconButton
@@ -675,11 +685,28 @@ export default function App() {
               <div className="map-top">
                 <div className="map-mode">
                   <span className="online-dot" />
-                  <span>{story.layers.terrain ? '三维地形' : '山川底图'}</span>
+                  <span>
+                    {story.layers.terrain
+                      ? '三维地形'
+                      : story.layers.elevation
+                        ? '分层设色'
+                        : '山川底图'}
+                  </span>
                   <span className="map-mode-divider" />
                   现代地理参考
                 </div>
                 <div className="map-tools">
+                  <button
+                    aria-label="现代行政区对照"
+                    title="叠加现代省界与省名，点击地图查看所属行政区"
+                    aria-pressed={story.layers.admin}
+                    className={story.layers.admin ? 'active admin-toggle' : 'admin-toggle'}
+                    onClick={() => toggleLayer('admin')}
+                    disabled={disableEdit}
+                  >
+                    <Map size={15} />
+                    <span>今地对照</span>
+                  </button>
                   <button
                     aria-label="地图图层"
                     className={showLayers ? 'active' : ''}
@@ -712,6 +739,8 @@ export default function App() {
                     }
                     disabled={disableEdit}
                     className={story.layers.terrain ? 'active' : ''}
+                    aria-label="三维地形"
+                    aria-pressed={story.layers.terrain}
                   >
                     3D
                   </button>
@@ -741,7 +770,7 @@ export default function App() {
                       </button>
                     );
                   })}
-                  <p>地形为现代高程；未加载历史疆界。</p>
+                  <p>海拔颜色与三维视角可独立切换。省界为现代参考，未加载历史疆界。</p>
                 </div>
               )}
               <div className="map-compass" aria-hidden="true">
@@ -807,6 +836,9 @@ export default function App() {
                   <p>
                     {point.coordinates[1].toFixed(4)}° N &nbsp; {point.coordinates[0].toFixed(4)}° E
                   </p>
+                  {point.modernRegion && (
+                    <p className="point-region">今属 · {point.modernRegion}</p>
+                  )}
                   <small>
                     {point.elevation === null
                       ? '开启三维地形并放大，可查询高程'
@@ -856,12 +888,40 @@ export default function App() {
                 </IconButton>
               </div>
               <div className="map-legend">
-                <span className="legend-route" />
-                行迹示意
+                {story.layers.routes && (
+                  <>
+                    <span className="legend-route" />
+                    曲线行迹示意
+                  </>
+                )}
                 <span className="legend-pin" />
                 事件地点
               </div>
-              <div className="map-caption">山河有迹 · 故事无界</div>
+              {story.layers.elevation && (
+                <div
+                  className="elevation-legend"
+                  aria-label="海拔图例，单位米，从绿色低海拔到棕色、灰白色高海拔"
+                >
+                  <div className="elevation-legend-heading">
+                    <span>
+                      海拔 <small>m</small>
+                    </span>
+                    <span>低海拔 → 高海拔</span>
+                  </div>
+                  <div className="elevation-ramp" style={{ background: elevationGradient }} />
+                  <div className="elevation-ticks">
+                    {elevationStops.map(([height]) => (
+                      <span key={height}>{height >= 1000 ? `${height / 1000}k` : height}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {story.layers.admin && (
+                <div className="admin-caption">
+                  <span />
+                  现代省界 · 中国大陆
+                </div>
+              )}
             </section>
             <section className="timeline">
               <div className="timeline-heading">
@@ -1314,7 +1374,7 @@ export default function App() {
       {modal === 'about' && (
         <Dialog title="山河 · Story Atlas" onClose={() => setModal(null)}>
           <div className="about-mark">
-            <Mountain size={38} strokeWidth={1.3} />
+            <img src="/icon.svg" width="56" height="56" alt="山河" />
             <p>在地图上，读懂每一个故事。</p>
           </div>
           <div className="about-details">
