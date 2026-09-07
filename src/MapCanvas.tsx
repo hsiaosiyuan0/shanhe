@@ -18,6 +18,7 @@ import { declutterLabels } from './map/declutterLabels';
 import { customRiverFeatures, customRiverLabels, customRiverLayers } from './map/customRivers';
 import { riverLines } from '../shared/rivers';
 import { ModernAdminController, type AdminDetailStatus } from './map/ModernAdminController';
+import type { BoundaryStatus } from './map/AdminBoundaryOverview';
 import {
   adminDetailMinZoom,
   adminScaleLabel,
@@ -26,6 +27,8 @@ import {
   placeLayerIds,
   provinceLabels,
   provinceLabelFeatures,
+  cityBoundaryMinZoom,
+  countyBoundaryMinZoom,
 } from './map/modernAdmin';
 import {
   findMajorRiver,
@@ -263,6 +266,8 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   const [regions, setRegions] = useState<{ name: string; center: [number, number] }[]>([]);
   const [adminError, setAdminError] = useState(false);
   const [detailStatus, setDetailStatus] = useState<AdminDetailStatus>('idle');
+  const [boundaryStatus, setBoundaryStatus] = useState<BoundaryStatus>({ status: 'idle' });
+  const [adminZoom, setAdminZoom] = useState(Math.floor(story.view.zoom));
   const [adminScale, setAdminScale] = useState(adminScaleLabel(story.view.zoom));
   const [showAdminDetail, setShowAdminDetail] = useState(story.view.zoom >= adminDetailMinZoom);
   const failedSources = useRef(new Set<string>());
@@ -381,7 +386,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     }
     map.current = m;
     popups.current = new MapPopupController(m);
-    adminDetail.current = new ModernAdminController(m, setDetailStatus);
+    adminDetail.current = new ModernAdminController(m, setDetailStatus, setBoundaryStatus);
     const updateLabelVisibility = () => declutterLabels(m.getContainer());
     m.on('moveend', updateLabelVisibility);
     const onPopupKeyDown = (event: KeyboardEvent) => {
@@ -396,6 +401,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       container.current?.classList.toggle('journey-detail', m.getZoom() >= 6.5);
       setAdminScale(adminScaleLabel(m.getZoom()));
       setShowAdminDetail(m.getZoom() >= adminDetailMinZoom);
+      setAdminZoom(Math.floor(m.getZoom()));
     };
     updateLabelDetail();
     m.on('zoom', updateLabelDetail);
@@ -846,7 +852,10 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
         </div>
       )}
       {(offline ||
-        (story.layers.admin && (adminError || (showAdminDetail && detailStatus === 'error')))) && (
+        (story.layers.admin &&
+          (adminError ||
+            boundaryStatus.status === 'error' ||
+            (showAdminDetail && detailStatus === 'error')))) && (
         <div className="map-network" role="status">
           {offline && <p>在线地形暂不可用 · 本地地理底图仍可浏览</p>}
           {adminError && story.layers.admin && <p>省级数据加载失败，请刷新重试</p>}
@@ -856,15 +865,42 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
               <Button onClick={() => adminDetail.current?.retry()}>重试市县数据</Button>
             </p>
           )}
+          {story.layers.admin && boundaryStatus.status === 'error' && (
+            <p>
+              {boundaryStatus.message}{' '}
+              <Button onClick={() => adminDetail.current?.retry()}>重试边界</Button>
+            </p>
+          )}
         </div>
       )}
       {story.layers.admin &&
         !offline &&
         !adminError &&
+        boundaryStatus.status !== 'error' &&
         !(showAdminDetail && detailStatus === 'error') && (
-          <div className="admin-caption" aria-label={`现代行政区对照：${adminScale}`}>
-            <span />
-            {showAdminDetail && detailStatus === 'loading' ? '市县数据加载中…' : adminScale}
+          <div
+            className="admin-caption"
+            aria-label={`现代行政区对照：${adminScale}`}
+            title={adminScale}
+          >
+            <span className="admin-boundary-key">
+              <i className="province-line" />
+              省界
+            </span>
+            <span className="admin-boundary-key" data-active={adminZoom >= cityBoundaryMinZoom}>
+              <i className="city-line" />
+              市界
+            </span>
+            <span className="admin-boundary-key" data-active={adminZoom >= countyBoundaryMinZoom}>
+              <i className="county-line" />
+              区县界
+            </span>
+            {(detailStatus === 'loading' || boundaryStatus.status === 'loading') &&
+            showAdminDetail ? (
+              <small>加载中…</small>
+            ) : (
+              adminZoom < cityBoundaryMinZoom && <small>放大显示市县界</small>
+            )}
           </div>
         )}
       {fatal && (

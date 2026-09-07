@@ -6,6 +6,9 @@ import type {
 import type { FeatureCollection, Point } from 'geojson';
 
 export const modernAdminSourceId = 'modern-admin-detail';
+export const boundaryOverviewSourceId = 'modern-admin-boundary-overview';
+export const cityBoundaryMinZoom = 7;
+export const countyBoundaryMinZoom = 8;
 export const modernAdminSource: VectorSourceSpecification = {
   type: 'vector',
   url: 'https://tiles.openfreemap.org/planet',
@@ -17,9 +20,10 @@ export const placeLayerIds = ['modern-city-label', 'modern-county-label', 'moder
 
 export function adminScaleLabel(zoom: number) {
   if (zoom < 5) return '省级概览 · 放大查看市县';
-  if (zoom < 8) return '省市对照 · 继续放大查看区县';
-  if (zoom < 11) return '市 / 区县对照';
-  return '区县 / 乡镇地名';
+  if (zoom < cityBoundaryMinZoom) return '城市地名 · 放大显示市县界';
+  if (zoom < countyBoundaryMinZoom) return '省 / 市界 · 放大显示区县界';
+  if (zoom < 11) return '省 / 市 / 区县界';
+  return '区县界 / 乡镇地名';
 }
 export function modernPlaceName(properties: Record<string, unknown>) {
   return ['name:zh-Hans', 'name:zh', 'name']
@@ -83,20 +87,25 @@ export function modernAdminLayers(): LayerSpecification[] {
     level: number,
     minzoom: number,
     width: number,
-    opacity: number,
+    overview = false,
+    casing = false,
   ): LayerSpecification => ({
-    id,
+    id: casing ? `${id}-casing` : id,
     type: 'line',
-    source: modernAdminSourceId,
-    'source-layer': 'boundary',
+    source: overview ? boundaryOverviewSourceId : modernAdminSourceId,
+    ...(!overview && { 'source-layer': 'boundary' }),
     minzoom,
+    ...(overview && { maxzoom: 9 }),
     filter: ['all', ['==', ['get', 'admin_level'], level], ['!=', ['get', 'maritime'], 1]],
     layout: { visibility: 'none', 'line-join': 'round' },
     paint: {
-      'line-color': '#85778b',
-      'line-width': width,
-      'line-opacity': opacity,
-      'line-dasharray': level === 4 ? [5, 3] : level === 5 ? [3, 3] : [1.5, 3],
+      'line-color': casing ? '#fff8e9' : level === 6 ? '#7b617b' : '#68456b',
+      'line-width': casing ? width + (level === 6 ? 1.2 : 1.8) : width,
+      'line-opacity': casing ? 0.78 : 0.95,
+      ...(!casing &&
+        level !== 6 && {
+          'line-dasharray': level === 4 ? [6, 2] : [3, 1.7],
+        }),
     },
   });
   const label = (
@@ -132,10 +141,20 @@ export function modernAdminLayers(): LayerSpecification[] {
       'text-halo-blur': 0.35,
     },
   });
+  const borders = [
+    ['modern-county-overview', 6, countyBoundaryMinZoom, 1.15, true],
+    ['modern-city-overview', 5, cityBoundaryMinZoom, 2, true],
+    ['modern-county-boundary', 6, 9, 1.15, false],
+    ['modern-city-boundary', 5, 9, 2, false],
+    ['modern-province-boundary', 4, 6, 2.4, false],
+  ] as const;
   return [
-    boundary('modern-province-boundary', 4, 6, 1.6, 0.65),
-    boundary('modern-city-boundary', 5, 6, 1.1, 0.65),
-    boundary('modern-county-boundary', 6, 8, 0.85, 0.65),
+    ...borders.map(([id, level, zoom, width, overview]) =>
+      boundary(id, level, zoom, width, overview, true),
+    ),
+    ...borders.map(([id, level, zoom, width, overview]) =>
+      boundary(id, level, zoom, width, overview),
+    ),
     label(
       'modern-city-label',
       5,

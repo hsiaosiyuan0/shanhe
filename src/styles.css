@@ -3190,9 +3190,28 @@ button {
   z-index: 10;
   pointer-events: none;
 }
-.admin-caption > span {
-  width: 17px;
-  border-top: 1px dashed #786779;
+.admin-boundary-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.admin-boundary-key[data-active='false'] {
+  opacity: 0.4;
+}
+.admin-boundary-key i {
+  width: 18px;
+  border-top: 2px dashed #68456b;
+}
+.admin-boundary-key .province-line {
+  border-top-width: 3px;
+}
+.admin-boundary-key .county-line {
+  border-top: 1.5px solid #7b617b;
+}
+.admin-caption small {
+  font-size: 9px;
+  color: var(--muted);
 }
 .point-card .point-region {
   color: #71566e;

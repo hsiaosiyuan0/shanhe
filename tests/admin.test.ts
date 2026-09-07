@@ -11,6 +11,7 @@ import {
   modernAdminLayers,
   modernAdminSource,
   modernAdminSourceId,
+  boundaryOverviewSourceId,
   modernPlaceName,
   modernPlaceKind,
   provinceLabels,
@@ -51,8 +52,10 @@ test('actual Chinese city, district and county place records are assigned to dis
 
 test('prefecture and county boundaries use Chinese admin levels 5 and 6, not class=city', () => {
   for (const [id, level, zoom] of [
-    ['modern-city-boundary', 5, 6],
-    ['modern-county-boundary', 6, 8],
+    ['modern-city-boundary', 5, 9],
+    ['modern-county-boundary', 6, 9],
+    ['modern-city-overview', 5, 7],
+    ['modern-county-overview', 6, 8],
   ] as const) {
     const layer = layers.find((l) => l.id === id)!;
     assert.equal(layer.minzoom, zoom);
@@ -89,6 +92,10 @@ test('admin labels use collision detection and source styles validate with exist
       version: 8,
       sources: {
         [modernAdminSourceId]: modernAdminSource,
+        [boundaryOverviewSourceId]: {
+          type: 'geojson',
+          data: { type: 'FeatureCollection', features: [] },
+        },
         'province-labels': { type: 'geojson', data: points },
       },
       layers: [provinceLabels, ...layers],
@@ -99,7 +106,7 @@ test('admin labels use collision detection and source styles validate with exist
     if (layer.type === 'symbol') assert.equal(layer.layout?.['text-allow-overlap'], false);
   }
   assert.match(adminScaleLabel(4), /省级/);
-  assert.match(adminScaleLabel(6), /省市/);
+  assert.match(adminScaleLabel(6), /放大显示市县界/);
   assert.match(adminScaleLabel(9), /区县/);
   assert.match(adminScaleLabel(12), /乡镇/);
 });
@@ -155,7 +162,7 @@ test('detail tiles load lazily, reuse their source, hide completely and recover 
   emit('zoomend');
   assert.equal(sources.size, 0, 'disabled comparison must not request detailed tiles');
   controller.setEnabled(true);
-  assert.equal(sources.size, 1);
+  assert.equal(sources.size, 2);
   assert.deepEqual(states, ['loading']);
   emit('sourcedata', {
     sourceId: modernAdminSourceId,
@@ -197,7 +204,7 @@ test('detail tiles load lazily, reuse their source, hide completely and recover 
   controller.setEnabled(false);
   for (const info of addedLayers.values()) assert.equal(info.visibility, 'none');
   controller.setEnabled(true);
-  assert.equal(sources.size, 1);
+  assert.equal(sources.size, 2);
   zoom = 4;
   emit('zoomend');
   for (const info of addedLayers.values()) assert.equal(info.visibility, 'none');

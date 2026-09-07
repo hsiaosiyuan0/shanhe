@@ -113,7 +113,7 @@ export const layersSchema = z.object({
     .boolean()
     .default(false)
     .describe(
-      'Overlay modern province, city and county/district boundaries and place names. Zoom 5+ for cities, 8+ for counties, 11+ for town/local names. City/county data loads online for the viewport. Never historical boundaries or exact reverse geocoding.',
+      'Overlay modern administrative boundaries and place names. Zoom 5+ for city names, 7+ for city boundaries, 8+ for county/district boundaries and names, 11+ for town/local names. City/county data loads online for the viewport. Never historical boundaries or exact reverse geocoding.',
     ),
   terrain: z.boolean(),
   rivers: z.boolean(),
