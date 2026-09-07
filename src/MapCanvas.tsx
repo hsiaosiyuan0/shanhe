@@ -11,6 +11,8 @@ import { elevationStops } from './map/elevation';
 import { journeyFeatures, evidenceLabels } from './map/journeyGeometry';
 import { CollapsedAttributionControl } from './map/CollapsedAttributionControl';
 import { MapPopupController } from './map/MapPopupController';
+import { annotationElement } from './map/annotationElement';
+import { declutterLabels } from './map/declutterLabels';
 
 export type MapHandle = {
   fit: () => void;
@@ -308,6 +310,8 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     }
     map.current = m;
     popups.current = new MapPopupController(m);
+    const updateLabelVisibility = () => declutterLabels(m.getContainer());
+    m.on('moveend', updateLabelVisibility);
     const onPopupKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && popups.current?.close(true)) {
         event.preventDefault();
@@ -363,6 +367,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     observer.observe(container.current);
     return () => {
       observer.disconnect();
+      m.off('moveend', updateLabelVisibility);
       m.getContainer().removeEventListener('keydown', onPopupKeyDown);
       popups.current?.close();
       popups.current = null;
@@ -585,10 +590,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
         (marker.kind === 'river' && !story.layers.rivers)
       )
         return;
-      const el = document.createElement('button');
-      el.className = 'annotation-pin ' + marker.kind;
-      el.textContent =
-        (marker.kind === 'mountain' ? '△ ' : marker.kind === 'river' ? '≈ ' : '+ ') + marker.label;
+      const el = annotationElement(marker);
       el.setAttribute('aria-label', marker.label + '，查看地点笔记');
       el.setAttribute('aria-haspopup', 'dialog');
       el.setAttribute('aria-expanded', 'false');
@@ -600,10 +602,12 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
           marker.coordinates,
           marker.label,
           marker.description,
+          'center',
         );
       };
-      add(el, marker.coordinates, 'bottom');
+      add(el, marker.coordinates);
     });
+    declutterLabels(m.getContainer());
   }, [
     ready,
     story.events,

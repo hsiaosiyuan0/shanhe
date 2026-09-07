@@ -22,6 +22,7 @@ export class MapPopupController {
     coordinates: [number, number],
     heading: string,
     description: string,
+    anchor: 'center' | 'bottom' = 'bottom',
   ) {
     const same = this.active?.key === key;
     this.close();
@@ -36,7 +37,7 @@ export class MapPopupController {
 
     const popup = new Popup({
       maxWidth: '260px',
-      offset: Math.max(18, trigger.offsetHeight + 8),
+      offset: Math.max(18, trigger.offsetHeight / (anchor === 'center' ? 2 : 1) + 8),
       closeOnClick: false,
       padding: { top: 12, right: 12, bottom: 12, left: 12 },
     })

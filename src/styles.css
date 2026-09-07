@@ -1071,6 +1071,9 @@ button svg {
   user-select: none;
   z-index: 1;
 }
+.map-label-obscured {
+  visibility: hidden;
+}
 .mountain-label {
   font-family: var(--serif);
   font-size: 10px;
@@ -1087,22 +1090,117 @@ button svg {
   transform: rotate(-8deg);
 }
 .annotation-pin {
-  border-radius: 4px;
-  border: 1px solid #94a786;
-  background: #f8fbe8ed;
-  color: #557245;
-  font-size: 10px;
-  padding: 4px 7px;
+  --annotation-color: #485f3d;
+  --annotation-halo: #fff9e9;
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--annotation-color);
   z-index: 4;
-  box-shadow: 0 2px 8px #52674322;
+  isolation: isolate;
+  box-shadow: none;
+}
+.annotation-pin::before {
+  content: '';
+  position: absolute;
+  inset: -5px -9px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse, #fff9e9b8 5%, #fff9e95c 40%, #fff9e900 72%);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+.annotation-ink {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  pointer-events: none;
+}
+.annotation-symbol {
+  width: 28px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 2px var(--annotation-halo));
+  opacity: 0.85;
+  transition: opacity 180ms ease;
+}
+.annotation-label {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--serif);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.6;
+  letter-spacing: 3px;
+  text-shadow:
+    0 0 2px var(--annotation-halo),
+    0 0 4px var(--annotation-halo),
+    0 1px 6px var(--annotation-halo);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
 }
 .annotation-pin.river {
-  color: #53828d;
-  border-color: #9abdc2;
+  --annotation-color: #326c79;
+  --annotation-halo: #edf5e9;
+}
+.annotation-pin.river .annotation-ink {
+  flex-direction: column-reverse;
+  gap: 0;
+  transform: rotate(-7deg);
+}
+.annotation-pin.river .annotation-label {
+  padding-left: 6px;
+  letter-spacing: 6px;
+}
+.annotation-pin.river .annotation-symbol {
+  width: 48px;
+  height: 10px;
+  stroke-width: 1.1;
 }
 .annotation-pin.note {
-  color: #9b7445;
-  border-color: #cbbb92;
+  --annotation-color: #85603d;
+}
+.annotation-pin.place .annotation-symbol,
+.annotation-pin.note .annotation-symbol {
+  width: 18px;
+  height: 20px;
+}
+.annotation-pin:hover:not(:disabled),
+.annotation-pin[aria-expanded='true'] {
+  color: var(--annotation-color);
+}
+.annotation-pin:hover::before,
+.annotation-pin:focus-visible::before,
+.annotation-pin[aria-expanded='true']::before {
+  opacity: 1;
+}
+.annotation-pin:hover .annotation-symbol,
+.annotation-pin[aria-expanded='true'] .annotation-symbol {
+  opacity: 1;
+}
+.annotation-pin[aria-expanded='true'] .annotation-label {
+  text-decoration-line: underline;
+}
+.annotation-pin:focus-visible {
+  outline: 2px solid var(--annotation-color);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .annotation-pin::before,
+  .annotation-symbol {
+    transition: none;
+  }
 }
 .maplibregl-popup {
   z-index: 15;
@@ -1125,7 +1223,6 @@ button svg {
   padding: 3px 8px;
   font-size: 20px;
 }
-.annotation-pin[aria-expanded='true'],
 .journey-stop[aria-expanded='true'] {
   outline: 2px solid #687f52;
   outline-offset: 2px;
