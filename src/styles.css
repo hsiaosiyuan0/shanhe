@@ -1135,6 +1135,20 @@ button svg {
   opacity: 1;
   transition: opacity 180ms ease;
 }
+.annotation-pin.mountain .annotation-symbol {
+  width: 22px;
+  height: 20px;
+  fill: currentColor;
+  stroke: none;
+  filter: none;
+}
+.annotation-pin.mountain .annotation-symbol path:first-child {
+  opacity: 0.32;
+}
+.annotation-pin.mountain .annotation-symbol path:last-child {
+  fill: var(--annotation-halo);
+  opacity: 0.55;
+}
 .annotation-label {
   max-width: 180px;
   overflow: hidden;

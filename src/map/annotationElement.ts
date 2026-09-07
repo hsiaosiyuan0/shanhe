@@ -3,7 +3,11 @@ import type { MapMarker } from '../../shared/schema';
 const symbols: Record<MapMarker['kind'], { viewBox: string; paths: string[] }> = {
   mountain: {
     viewBox: '0 0 32 24',
-    paths: ['M2 20 11 5 17 15 22 8 30 20', 'm8 10 3 2 2-3', 'm19 13 3 1 2-2'],
+    paths: [
+      'M12 18.5 18.7 7.6q.8-1.2 1.6 0L28 19.5c-5 .7-10 .5-16-1Z',
+      'M2 19c3.8-3.2 5.9-9.2 9.2-14.1.4-.6 1.2-.6 1.6.1 2.5 5 4.6 10.4 9.5 14-6 1.7-14.5 1.8-20.3 0Z',
+      'M12 6c.8 4.7 2.5 8.3 6.4 12.4-2.8-1-5.3-2.8-7.4-5.3Z',
+    ],
   },
   river: {
     viewBox: '0 0 56 12',
