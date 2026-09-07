@@ -57,6 +57,7 @@ import type {
 } from '../shared/schema';
 import { api, json, streamChat } from './api';
 import AgentConnection from './AgentConnection';
+import DesktopGuide from './DesktopGuide';
 import MapCanvas, { type MapHandle } from './MapCanvas';
 import { elevationGradient, elevationStops } from './map/elevation';
 import JourneyPanel from './JourneyPanel';
@@ -99,7 +100,7 @@ const layerIcons = {
   routes: Route,
   connections: Route,
 };
-type Modal = 'new' | 'settings' | 'snapshots' | 'marker' | 'event' | 'about' | null;
+type Modal = 'new' | 'settings' | 'snapshots' | 'marker' | 'event' | 'about' | 'desktop' | null;
 type Point = { coordinates: [number, number]; elevation: number | null; modernRegion?: string };
 function IconButton({
   label,
@@ -149,7 +150,7 @@ export default function App() {
   useEffect(() => () => chatController.current?.abort(), []);
   const [chatInput, setChatInput] = useState('');
   const [playing, setPlaying] = useState(false);
-  const [showChat, setShowChat] = useState(() => window.innerWidth >= 1100);
+  const [showChat, setShowChat] = useState(() => !browserMode && window.innerWidth >= 1100);
   const [showLibrary, setShowLibrary] = useState(false);
   const [showLayers, setShowLayers] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -210,7 +211,10 @@ export default function App() {
   }, []);
   useEffect(() => {
     let cancelled = false;
-    Promise.all([api<Story[]>('/stories'), api<Settings>('/settings')])
+    Promise.all([
+      api<Story[]>('/stories'),
+      browserMode ? Promise.resolve(null) : api<Settings>('/settings'),
+    ])
       .then(([list, config]) => {
         if (cancelled) return;
         setStories(list);
@@ -461,7 +465,12 @@ export default function App() {
 
   return (
     <div
-      className={'app ' + (!showChat ? 'chat-hidden ' : '') + (showLibrary ? 'library-open' : '')}
+      className={
+        'app ' +
+        (browserMode ? 'browser-edition ' : '') +
+        (!showChat || browserMode ? 'chat-hidden ' : '') +
+        (showLibrary ? 'library-open' : '')
+      }
     >
       <nav className="rail" aria-label="主导航">
         <a className="brand-symbol" href={assetUrl('')} aria-label="山河首页">
@@ -493,9 +502,15 @@ export default function App() {
           <IconButton label="关于山河" onClick={() => setModal('about')}>
             <CircleHelp size={20} />
           </IconButton>
-          <IconButton label="模型设置" onClick={() => setModal('settings')}>
-            <Settings2 size={21} />
-          </IconButton>
+          {browserMode ? (
+            <IconButton label="桌面版安装指引" onClick={() => setModal('desktop')}>
+              <Monitor size={21} />
+            </IconButton>
+          ) : (
+            <IconButton label="模型设置" onClick={() => setModal('settings')}>
+              <Settings2 size={21} />
+            </IconButton>
+          )}
           <div className="avatar" title={browserMode ? '浏览器工作空间' : '本地工作空间'}>
             山
           </div>
@@ -672,12 +687,19 @@ export default function App() {
             ]}
           />
           <span className="header-divider" />
-          <IconButton
-            label={showChat ? '收起探索助手' : '展开探索助手'}
-            onClick={() => setShowChat((v) => !v)}
-          >
-            {showChat ? <PanelRightClose size={20} /> : <PanelRightOpen size={20} />}
-          </IconButton>
+          {browserMode ? (
+            <Button className="desktop-entry" onClick={() => setModal('desktop')}>
+              <Monitor size={16} aria-hidden="true" />
+              使用桌面版
+            </Button>
+          ) : (
+            <IconButton
+              label={showChat ? '收起探索助手' : '展开探索助手'}
+              onClick={() => setShowChat((v) => !v)}
+            >
+              {showChat ? <PanelRightClose size={20} /> : <PanelRightOpen size={20} />}
+            </IconButton>
+          )}
         </div>
       </header>
 
@@ -1154,239 +1176,241 @@ export default function App() {
         )}
       </main>
 
-      <aside className="assistant-panel">
-        <div className="assistant-heading">
-          <div className="assistant-symbol">
-            <Sparkles size={17} />
-          </div>
-          <div>
-            <h2>与山河对话</h2>
-            <span>让好奇心，带你走得更远</span>
-          </div>
-          <IconButton label="收起探索助手" onClick={() => setShowChat(false)}>
-            <PanelRightClose size={18} />
-          </IconButton>
-        </div>
-        <Button
-          className="context-strip"
-          onClick={() => {
-            if (story) flash(`当前对话会参考「${story.title}」中的全部事件、标记与路线`);
-          }}
-        >
-          <span>
-            <BookOpen size={13} />
-            当前故事上下文
-          </span>
-          <span>
-            {story ? `${story.events.length} 个事件` : '未选择故事'}
-            <Check size={13} />
-          </span>
-        </Button>
-        <div className="chat-scroll">
-          <div className="assistant-intro">
-            <span className="intro-eyebrow">A LITTLE CURIOSITY, A BIG WORLD</span>
-            <h3>
-              {story?.kind === 'biography' ? (
-                <>
-                  文字之外，
-                  <br />
-                  还有一整个山河。
-                </>
-              ) : (
-                <>
-                  展开地图，
-                  <br />
-                  让故事继续。
-                </>
-              )}
-            </h3>
-            <p>我会陪你沿着时间与地理，发现故事里的更多细节。你也可以让我在地图上添一笔。</p>
-            <div className="mode-note">
-              <span className="online-dot" />
-              {settings?.connection === 'codex'
-                ? `本地 Codex · ${settings.agentModel || '默认模型'}`
-                : settings?.mode === 'live'
-                  ? `${browserMode ? '模型 API' : '已连接'} · ${settings.model}`
-                  : '演示模式 · 连接模型后可自由探索'}
+      {!browserMode && (
+        <aside className="assistant-panel">
+          <div className="assistant-heading">
+            <div className="assistant-symbol">
+              <Sparkles size={17} />
             </div>
-          </div>
-          {!detail?.messages.length && (
-            <div className="starter-content">
-              <div className="assistant-message-avatar">
-                <Sparkles size={13} />
-                <span>山河</span>
-              </div>
-              <p>
-                {!story?.events.length
-                  ? '故事正等待第一笔。你可以手动添加事件，或连接模型，让它帮你展开这个故事。'
-                  : story.events.some((e) => e.id === 'su-1037')
-                    ? '我们已经把苏轼的主要人生节点放在地图上。从眉山到儋州，仕途起伏与诗意人生，都藏在这条旅途中。'
-                    : story?.kind === 'history'
-                      ? '事件已经铺在时间与地图上。你可以从一次王朝更替出发，观察它与山川、城池的关系。'
-                      : story?.events.length
-                        ? '旅程已在地图上展开。点击一个节点，看看下一站的故事。'
-                        : '故事正等待第一笔。你可以手动添加事件，或连接模型，让它帮你展开这个故事。'}
-              </p>
-              <div className="suggestion-label">不妨从这里开始</div>
-              <div className="suggestions">
-                {[
-                  story?.kind === 'biography' ? '聊聊苏轼在黄州的岁月' : '显示旅途路线',
-                  '在地图上标记主要山川',
-                  '开启三维地形',
-                ].map((text, i) => (
-                  <Button
-                    key={text}
-                    onClick={() => void sendChat(text)}
-                    disabled={!story || disableEdit}
-                  >
-                    {i === 0 ? (
-                      <Feather size={15} />
-                    ) : i === 1 ? (
-                      <Mountain size={15} />
-                    ) : (
-                      <Globe2 size={15} />
-                    )}
-                    <span>{text}</span>
-                    <ArrowUpRight size={13} />
-                  </Button>
-                ))}
-              </div>
+            <div>
+              <h2>与山河对话</h2>
+              <span>让好奇心，带你走得更远</span>
             </div>
-          )}
-          {detail?.messages.map((message) => (
-            <ChatMessage key={message.id} message={message} />
-          ))}
-          {chatBusy && (
-            <>
-              <div className="chat-message user">
-                <p>{pendingPrompt}</p>
-              </div>
-              {toolProgress.length > 0 && (
-                <div className="agent-tool-progress" aria-live="polite">
-                  {toolProgress.map((text, i) => (
-                    <div key={i}>
-                      <Check size={13} />
-                      <span>{text}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {streamText && (
-                <ChatMessage
-                  message={{
-                    id: 'stream',
-                    role: 'assistant',
-                    content: streamText,
-                    actions: [],
-                    mode: 'live',
-                    createdAt: '',
-                  }}
-                />
-              )}
-              <div className="thinking" role="status">
-                <span />
-                <span />
-                <span />
-                {streamText ? '正在完成回答…' : agentStatus}
-              </div>
-            </>
-          )}
-          <div ref={chatEnd} />
-        </div>
-        <div className="chat-bottom">
-          <div className="chat-capabilities">
-            <span>
-              <MapPin size={12} />
-              地点标记
-            </span>
-            <span>
-              <Route size={12} />
-              路线绘制
-            </span>
-            <span>
-              <History size={12} />
-              事件补充
-            </span>
+            <IconButton label="收起探索助手" onClick={() => setShowChat(false)}>
+              <PanelRightClose size={18} />
+            </IconButton>
           </div>
-          <form
-            className="chat-composer"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void sendChat();
+          <Button
+            className="context-strip"
+            onClick={() => {
+              if (story) flash(`当前对话会参考「${story.title}」中的全部事件、标记与路线`);
             }}
           >
-            <label className="sr-only" htmlFor="chat-input">
-              与山河对话
-            </label>
-            <Textarea
-              id="chat-input"
-              placeholder="问一段往事，或去一个地方…"
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-                  e.preventDefault();
-                  void sendChat();
-                }
-              }}
-              disabled={!story || chatBusy}
-              rows={3}
-              maxLength={8000}
-            />
-            <div className="composer-bottom">
-              <Button type="button" onClick={() => setModal('settings')}>
-                <span className="model-dot" />
+            <span>
+              <BookOpen size={13} />
+              当前故事上下文
+            </span>
+            <span>
+              {story ? `${story.events.length} 个事件` : '未选择故事'}
+              <Check size={13} />
+            </span>
+          </Button>
+          <div className="chat-scroll">
+            <div className="assistant-intro">
+              <span className="intro-eyebrow">A LITTLE CURIOSITY, A BIG WORLD</span>
+              <h3>
+                {story?.kind === 'biography' ? (
+                  <>
+                    文字之外，
+                    <br />
+                    还有一整个山河。
+                  </>
+                ) : (
+                  <>
+                    展开地图，
+                    <br />
+                    让故事继续。
+                  </>
+                )}
+              </h3>
+              <p>我会陪你沿着时间与地理，发现故事里的更多细节。你也可以让我在地图上添一笔。</p>
+              <div className="mode-note">
+                <span className="online-dot" />
                 {settings?.connection === 'codex'
-                  ? `Codex · ${settings.agentModel || '默认模型'}`
+                  ? `本地 Codex · ${settings.agentModel || '默认模型'}`
                   : settings?.mode === 'live'
-                    ? settings.model
-                    : '演示模式'}
-                <ChevronDown size={12} />
-              </Button>
-              {chatBusy ? (
-                <Button
-                  className="send-button stop-button"
-                  type="button"
-                  aria-label="停止生成"
-                  title="停止生成"
-                  disabled={stopping}
-                  onClick={async () => {
-                    const controller = chatController.current;
-                    setStopping(true);
-                    try {
-                      if (story) await api(`/stories/${story.id}/chat/cancel`, json('POST', {}));
-                    } catch {
-                      /* The interrupted stream reconciles against the saved story below. */
-                    } finally {
-                      controller?.abort();
-                    }
-                  }}
-                >
-                  {stopping ? (
-                    <LoaderCircle size={15} className="spin" />
-                  ) : (
-                    <Square size={15} fill="currentColor" />
-                  )}
-                </Button>
-              ) : (
-                <Button
-                  className="send-button"
-                  type="submit"
-                  aria-label="发送消息"
-                  disabled={!chatInput.trim() || !story || disableEdit}
-                >
-                  <ArrowUp size={18} />
-                </Button>
-              )}
+                    ? `已连接 · ${settings.model}`
+                    : '演示模式 · 连接模型后可自由探索'}
+              </div>
             </div>
-          </form>
-          <p className="chat-disclaimer">
-            {settings?.mode === 'live'
-              ? `模型生成内容需核验 · 修改自动保存在${browserMode ? '浏览器' : '本地'}`
-              : '演示指令可直接体验 · 不是实时模型回答'}
-          </p>
-        </div>
-      </aside>
+            {!detail?.messages.length && (
+              <div className="starter-content">
+                <div className="assistant-message-avatar">
+                  <Sparkles size={13} />
+                  <span>山河</span>
+                </div>
+                <p>
+                  {!story?.events.length
+                    ? '故事正等待第一笔。你可以手动添加事件，或连接模型，让它帮你展开这个故事。'
+                    : story.events.some((e) => e.id === 'su-1037')
+                      ? '我们已经把苏轼的主要人生节点放在地图上。从眉山到儋州，仕途起伏与诗意人生，都藏在这条旅途中。'
+                      : story?.kind === 'history'
+                        ? '事件已经铺在时间与地图上。你可以从一次王朝更替出发，观察它与山川、城池的关系。'
+                        : story?.events.length
+                          ? '旅程已在地图上展开。点击一个节点，看看下一站的故事。'
+                          : '故事正等待第一笔。你可以手动添加事件，或连接模型，让它帮你展开这个故事。'}
+                </p>
+                <div className="suggestion-label">不妨从这里开始</div>
+                <div className="suggestions">
+                  {[
+                    story?.kind === 'biography' ? '聊聊苏轼在黄州的岁月' : '显示旅途路线',
+                    '在地图上标记主要山川',
+                    '开启三维地形',
+                  ].map((text, i) => (
+                    <Button
+                      key={text}
+                      onClick={() => void sendChat(text)}
+                      disabled={!story || disableEdit}
+                    >
+                      {i === 0 ? (
+                        <Feather size={15} />
+                      ) : i === 1 ? (
+                        <Mountain size={15} />
+                      ) : (
+                        <Globe2 size={15} />
+                      )}
+                      <span>{text}</span>
+                      <ArrowUpRight size={13} />
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {detail?.messages.map((message) => (
+              <ChatMessage key={message.id} message={message} />
+            ))}
+            {chatBusy && (
+              <>
+                <div className="chat-message user">
+                  <p>{pendingPrompt}</p>
+                </div>
+                {toolProgress.length > 0 && (
+                  <div className="agent-tool-progress" aria-live="polite">
+                    {toolProgress.map((text, i) => (
+                      <div key={i}>
+                        <Check size={13} />
+                        <span>{text}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {streamText && (
+                  <ChatMessage
+                    message={{
+                      id: 'stream',
+                      role: 'assistant',
+                      content: streamText,
+                      actions: [],
+                      mode: 'live',
+                      createdAt: '',
+                    }}
+                  />
+                )}
+                <div className="thinking" role="status">
+                  <span />
+                  <span />
+                  <span />
+                  {streamText ? '正在完成回答…' : agentStatus}
+                </div>
+              </>
+            )}
+            <div ref={chatEnd} />
+          </div>
+          <div className="chat-bottom">
+            <div className="chat-capabilities">
+              <span>
+                <MapPin size={12} />
+                地点标记
+              </span>
+              <span>
+                <Route size={12} />
+                路线绘制
+              </span>
+              <span>
+                <History size={12} />
+                事件补充
+              </span>
+            </div>
+            <form
+              className="chat-composer"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void sendChat();
+              }}
+            >
+              <label className="sr-only" htmlFor="chat-input">
+                与山河对话
+              </label>
+              <Textarea
+                id="chat-input"
+                placeholder="问一段往事，或去一个地方…"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                    e.preventDefault();
+                    void sendChat();
+                  }
+                }}
+                disabled={!story || chatBusy}
+                rows={3}
+                maxLength={8000}
+              />
+              <div className="composer-bottom">
+                <Button type="button" onClick={() => setModal('settings')}>
+                  <span className="model-dot" />
+                  {settings?.connection === 'codex'
+                    ? `Codex · ${settings.agentModel || '默认模型'}`
+                    : settings?.mode === 'live'
+                      ? settings.model
+                      : '演示模式'}
+                  <ChevronDown size={12} />
+                </Button>
+                {chatBusy ? (
+                  <Button
+                    className="send-button stop-button"
+                    type="button"
+                    aria-label="停止生成"
+                    title="停止生成"
+                    disabled={stopping}
+                    onClick={async () => {
+                      const controller = chatController.current;
+                      setStopping(true);
+                      try {
+                        if (story) await api(`/stories/${story.id}/chat/cancel`, json('POST', {}));
+                      } catch {
+                        /* The interrupted stream reconciles against the saved story below. */
+                      } finally {
+                        controller?.abort();
+                      }
+                    }}
+                  >
+                    {stopping ? (
+                      <LoaderCircle size={15} className="spin" />
+                    ) : (
+                      <Square size={15} fill="currentColor" />
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    className="send-button"
+                    type="submit"
+                    aria-label="发送消息"
+                    disabled={!chatInput.trim() || !story || disableEdit}
+                  >
+                    <ArrowUp size={18} />
+                  </Button>
+                )}
+              </div>
+            </form>
+            <p className="chat-disclaimer">
+              {settings?.mode === 'live'
+                ? '模型生成内容需核验 · 修改自动保存在本地'
+                : '演示指令可直接体验 · 不是实时模型回答'}
+            </p>
+          </div>
+        </aside>
+      )}
       <Input
         ref={importRef}
         type="file"
@@ -1426,7 +1450,7 @@ export default function App() {
           }}
         />
       )}
-      {modal === 'settings' && (
+      {!browserMode && modal === 'settings' && (
         <SettingsDialog
           settings={settings}
           onClose={() => setModal(null)}
@@ -1438,6 +1462,13 @@ export default function App() {
               next.mode === 'live' ? '模型配置已保存，可开始对话' : '已保存设置，当前使用演示模式',
             );
           }}
+        />
+      )}
+      {browserMode && modal === 'desktop' && (
+        <DesktopGuide
+          onClose={() => setModal(null)}
+          onExport={exportStory}
+          canExport={!!story && !disableEdit}
         />
       )}
       {modal === 'snapshots' && (
@@ -1558,14 +1589,14 @@ export default function App() {
               <strong>像 App 一样使用</strong>
               <br />
               {browserMode
-                ? '可在支持安装的浏览器中将山河安装为应用。在线版无需启动本地后端；地形瓦片及远程模型需要网络。'
+                ? '可在支持安装的浏览器中将在线版添加到桌面；这仍是在线版，AI 探索需另行安装山河桌面 App。地形瓦片需要网络。'
                 : '运行生产版本后，可在支持安装的浏览器中将山河安装为应用。本地后端需要保持运行；地形瓦片及远程模型需要网络。'}
             </p>
             <p>
               <strong>连接你自己的模型</strong>
               <br />
               {browserMode
-                ? '在线版通过浏览器直连支持 CORS 的 HTTPS 模型 API，密钥仅在当前页面内存中使用。需要本机 Codex 或 Ollama 时，请运行本地版。'
+                ? 'AI 探索在桌面版中使用。可以导出当前故事，在桌面版导入后，通过本机 Codex 或模型 API 继续对话。'
                 : '支持 Chat Completions 工具调用协议，也支持本地模型服务。只有发送对话时，当前故事和最近对话才会发送到你配置的服务。'}
             </p>
           </div>
@@ -1727,11 +1758,7 @@ function SettingsDialog({
   return (
     <Dialog
       title="连接你的探索助手"
-      description={
-        browserMode
-          ? '连接模型，为故事添加事件、标记地点、绘制路线。在线版由浏览器直接请求你配置的模型 API。'
-          : '选择探索助手，为故事添加事件、标记地点、绘制路线。可以使用本机 Codex，也可以连接模型 API。'
-      }
+      description="选择探索助手，为故事添加事件、标记地点、绘制路线。可以使用本机 Codex，也可以连接模型 API。"
       onClose={onClose}
     >
       <form
@@ -1762,30 +1789,17 @@ function SettingsDialog({
           onValueChange={(value) => setConnection(value as 'api' | 'codex')}
           disabled={busy}
         >
-          <RadioItem value="codex" disabled={browserMode}>
+          <RadioItem value="codex">
             <Monitor size={18} aria-hidden="true" />
             <strong>本地 Agent</strong>
-            <span>{browserMode ? '请在本地版中连接' : '复用已登录的 Codex'}</span>
+            <span>复用已登录的 Codex</span>
           </RadioItem>
           <RadioItem value="api">
             <Plug size={18} aria-hidden="true" />
             <strong>模型 API</strong>
-            <span>{browserMode ? '支持浏览器跨域的服务' : '云端服务或 Ollama'}</span>
+            <span>云端服务或 Ollama</span>
           </RadioItem>
         </RadioGroup>
-        {browserMode && (
-          <p className="field-hint">
-            本地 Codex 与 Ollama 需要运行
-            <a
-              href="https://github.com/hsiaosiyuan0/shanhe#quick-start"
-              target="_blank"
-              rel="noreferrer"
-            >
-              山河本地版
-            </a>
-            ，在线页面无法启动本机程序。
-          </p>
-        )}
         {connection === 'codex' ? (
           <AgentConnection
             path={agentPath}
@@ -1822,19 +1836,12 @@ function SettingsDialog({
                 autoComplete="new-password"
                 value={key}
                 onChange={(e) => setKey(e.target.value)}
-                placeholder={
-                  settings?.hasKey
-                    ? '已设置，留空则保留'
-                    : browserMode
-                      ? '仅用于当前页面，刷新后需重新填写'
-                      : '本地模型可留空'
-                }
+                placeholder={settings?.hasKey ? '已设置，留空则保留' : '本地模型可留空'}
               />
             </label>
             <p className="field-hint">
-              {browserMode
-                ? '密钥仅在当前页面内存中使用，刷新或关闭后清除。服务须支持 HTTPS 和浏览器跨域请求（CORS）；只有发送对话时，故事与近期对话才会发送到此地址。模型名称留空可体验演示。'
-                : '密钥仅保存在本机 SQLite，不会返回浏览器，也不包含在故事导出中。模型名称留空可切回演示模式。'}
+              密钥仅保存在本机
+              SQLite，不会返回浏览器，也不包含在故事导出中。模型名称留空可切回演示模式。
             </p>
             {settings?.hasKey && (
               <label className="check-label">
@@ -1842,7 +1849,7 @@ function SettingsDialog({
                   checked={clearKey}
                   onCheckedChange={(checked) => setClearKey(checked === true)}
                 />
-                {browserMode ? '清除本页使用的密钥' : '清除已保存的密钥'}
+                清除已保存的密钥
               </label>
             )}
           </>

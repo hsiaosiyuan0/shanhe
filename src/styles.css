@@ -114,6 +114,96 @@ button svg {
 .app.chat-hidden {
   grid-template-columns: 64px 234px minmax(400px, 1fr) 0;
 }
+.desktop-entry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 13px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--green-soft);
+  color: var(--green);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.desktop-entry:hover {
+  background: #dce5d7;
+}
+.desktop-guide-feature {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 19px;
+  background: var(--green-soft);
+  border-radius: 12px;
+  color: var(--green);
+}
+.desktop-guide-icon {
+  display: flex;
+  flex-shrink: 0;
+}
+.desktop-guide-feature strong {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 600;
+}
+.desktop-guide p {
+  margin: 6px 0 0;
+  line-height: 1.8;
+  font-size: 12px;
+  color: var(--muted);
+}
+.desktop-guide-steps {
+  list-style: none;
+  margin: 24px 0;
+  padding: 0;
+  display: grid;
+  gap: 20px;
+}
+.desktop-guide-steps li {
+  display: flex;
+  gap: 14px;
+}
+.desktop-guide-steps li > span {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--rust);
+  padding-top: 4px;
+}
+.desktop-guide-steps strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.desktop-guide-actions {
+  display: grid;
+  gap: 10px;
+}
+.desktop-guide-install,
+.desktop-guide-export {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  border-radius: 8px;
+}
+.desktop-guide-export {
+  border: 1px solid var(--line);
+  font-size: 13px;
+}
+.desktop-guide .desktop-guide-note {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 17px;
+  font-size: 11px;
+}
+.desktop-guide-note svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
 .icon-button {
   display: inline-flex;
   align-items: center;

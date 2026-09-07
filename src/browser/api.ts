@@ -1,71 +1,19 @@
 import { z } from 'zod';
-import {
-  actionsSchema,
-  applyActions,
-  storySchema,
-  type ChatProgress,
-  type Message,
-  type Settings,
-  type StoryDetail,
-} from '../../shared/schema';
+import { actionsSchema, applyActions, storySchema } from '../../shared/schema';
 import { createStory } from '../../shared/seeds';
-import { demo } from '../../shared/demo';
-import { respondWithApi } from '../../shared/llm-client';
 import { BrowserStore } from './store';
 
-// Only endpoint/model persist. Keys stay in this page's memory and disappear on reload.
+export const desktopOnlyMessage = 'AI 探索请使用山河桌面版。';
+
 export function createBrowserApi(store: BrowserStore) {
-  let credential = { baseUrl: '', value: '' };
-  const chats = new Map<string, AbortController>();
-  async function settings(): Promise<Settings> {
-    const config = await store.settings();
-    const hasKey = credential.baseUrl === config.baseUrl && !!credential.value;
-    return {
-      ...config,
-      hasKey,
-      mode: config.model ? 'live' : 'demo',
-      connection: 'api',
-      agentPath: '',
-      agentModel: '',
-    };
-  }
   async function api<T>(path: string, options?: RequestInit): Promise<T> {
     const method = options?.method || 'GET';
     const body = options?.body ? JSON.parse(String(options.body)) : {};
     const parts = path.split('/').filter(Boolean).map(decodeURIComponent);
     let result: unknown;
-    if (path === '/settings') {
-      if (method === 'PUT') {
-        const next = z
-          .object({
-            connection: z.literal('api').default('api'),
-            baseUrl: z.url().refine((v) => {
-              const url = new URL(v);
-              return (
-                url.protocol === 'https:' &&
-                !url.username &&
-                !url.password &&
-                !url.search &&
-                !url.hash &&
-                !url.pathname.endsWith('/chat/completions')
-              );
-            }, '在线版请填写 HTTPS API 根地址，例如 https://api.example.com/v1'),
-            model: z.string().trim().max(200),
-            apiKey: z.string().max(2000).optional(),
-            clearKey: z.boolean().optional(),
-          })
-          .parse(body);
-        const baseUrl = next.baseUrl.replace(/\/+$/, '');
-        await store.setSettings({ baseUrl, model: next.model });
-        credential = {
-          baseUrl,
-          value: next.clearKey
-            ? ''
-            : next.apiKey || (credential.baseUrl === baseUrl ? credential.value : ''),
-        };
-      }
-      result = await settings();
-    } else if (path === '/stories') {
+    if (path === '/settings' || parts[0] === 'agents' || parts[2] === 'chat')
+      throw new Error(desktopOnlyMessage);
+    if (path === '/stories') {
       if (method === 'POST') {
         const input = z
           .object({
@@ -145,84 +93,11 @@ export function createBrowserApi(store: BrowserStore) {
             id,
             z.object({ name: z.string().trim().min(1).max(100) }).parse(body).name,
           );
-      } else if (action === 'chat' && parts[3] === 'cancel') {
-        const controller = chats.get(id);
-        controller?.abort();
-        result = { stopped: !!controller };
       } else throw new Error('在线版不支持此操作');
-    } else throw new Error('在线版不支持本地 Agent，请使用桌面版或本地服务。');
+    } else throw new Error('在线版不支持此操作');
     return result as T;
   }
-  async function streamChat(
-    id: string,
-    input: { prompt: string; revision: number },
-    emit: (event: ChatProgress) => void,
-    signal: AbortSignal,
-  ): Promise<StoryDetail> {
-    const { prompt, revision } = z
-      .object({ prompt: z.string().trim().min(1).max(8000), revision: z.number().int() })
-      .parse(input);
-    const run = async () => {
-      if (chats.has(id)) throw new Error('这个故事正在生成回答，请稍候。');
-      const controller = new AbortController();
-      chats.set(id, controller);
-      const combined = AbortSignal.any([signal, controller.signal]);
-      try {
-        combined.throwIfAborted();
-        const current = await store.detail(id);
-        if (current.story.revision !== revision) throw new Error('故事已更新，请刷新后再提问。');
-        const config = await settings();
-        emit({ type: 'status', text: config.model ? '正在连接模型服务…' : '正在执行演示指令…' });
-        const reply = config.model
-          ? await respondWithApi(
-              { ...config, apiKey: credential.baseUrl === config.baseUrl ? credential.value : '' },
-              current.story,
-              current.messages,
-              prompt,
-              { signal: combined, emit },
-            )
-          : { ...demo(current.story, prompt), mode: 'demo' as const };
-        combined.throwIfAborted();
-        const message = (
-          role: Message['role'],
-          content: string,
-          actions: Message['actions'],
-        ): Message => ({
-          id: crypto.randomUUID(),
-          role,
-          content,
-          actions,
-          mode: reply.mode,
-          createdAt: new Date().toISOString(),
-        });
-        const detail = await store.commitChat(
-          applyActions(current.story, { actions: reply.actions }),
-          revision,
-          [message('user', prompt, []), message('assistant', reply.content, reply.actions)],
-          combined,
-        );
-        emit({ type: 'complete', detail });
-        return detail;
-      } catch (error) {
-        if (combined.aborted) throw new Error('已停止，本轮未保存。');
-        if (error instanceof Error && /模型连接失败/.test(error.message))
-          throw new Error(
-            '浏览器无法连接模型。请检查 HTTPS 地址、网络，以及服务是否允许本站的跨域请求（CORS）；本轮未保存。可使用本地版连接此服务。',
-          );
-        throw error;
-      } finally {
-        chats.delete(id);
-      }
-    };
-    if (typeof navigator !== 'undefined' && navigator.locks) {
-      return navigator.locks.request(`shanhe-chat:${id}`, { ifAvailable: true }, (lock) => {
-        if (!lock) throw new Error('这个故事正在另一标签页生成回答，请稍候。');
-        return run();
-      });
-    }
-    return run();
-  }
-  return { api, streamChat };
+  return { api };
 }
 
 let singleton: ReturnType<typeof createBrowserApi> | undefined;

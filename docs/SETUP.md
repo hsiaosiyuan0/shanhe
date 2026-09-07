@@ -2,7 +2,7 @@
 
 [← 返回产品介绍](../README.md)
 
-无需安装可直接体验 [Pages 在线版](https://hsiaosiyuan0.github.io/shanhe/)。它使用浏览器存储；模型连接与本地版的区别见[在线版说明](PAGES.md)。
+无需安装可直接体验 [Pages 在线版](https://hsiaosiyuan0.github.io/shanhe/)。它支持地图阅读、故事编辑与浏览器保存；AI 探索请使用[桌面版](DESKTOP.md)或下方的本地 Web 版。[版本差异](PAGES.md)
 
 ## 运行
 
@@ -27,9 +27,9 @@ npm run desktop
 npm run desktop:pack
 ```
 
-产物在 `release/`。macOS Apple Silicon 为 `release/mac-arm64/山河.app`。当前是本地开发构建，未进行开发者证书签名或公证。macOS 原生外壳使用系统 WebKit；Windows/Linux 可使用浏览器版本，暂无桌面打包。
+产物在 `release/`。macOS Apple Silicon 为 `release/mac-arm64/山河.app`。当前是本地开发构建，未进行开发者证书签名或公证。macOS 原生外壳使用系统 WebKit；Windows/Linux 可使用带本地后端的 Web 版，暂无桌面打包。
 
-纯浏览器生产运行：
+本地 Web 生产运行：
 
 ```sh
 npm run build

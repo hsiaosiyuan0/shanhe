@@ -9,7 +9,6 @@ import { seedStories } from '../../shared/seeds';
 
 type SavedSnapshot = Snapshot & { story: Story; messages: Message[] };
 type RecordData = { id: string; story: Story; messages: Message[]; snapshots: SavedSnapshot[] };
-export type BrowserSettings = { baseUrl: string; model: string };
 
 const request = <T>(req: IDBRequest<T>) =>
   new Promise<T>((resolve, reject) => {
@@ -36,6 +35,7 @@ export class BrowserStore {
       const req = indexedDB.open(name, 1);
       req.onupgradeneeded = () => {
         const stories = req.result.createObjectStore('stories', { keyPath: 'id' });
+        // Keep the v1 store layout compatible with existing browser libraries.
         req.result.createObjectStore('settings');
         const now = Date.now();
         seedStories().forEach((story, index) =>
@@ -126,14 +126,6 @@ export class BrowserStore {
   async save(story: Story, revision: number) {
     return this.mutate(story.id, (record) => this.update(record, story, revision));
   }
-  async commitChat(story: Story, revision: number, messages: Message[], signal: AbortSignal) {
-    return this.mutate(story.id, (record) => {
-      signal.throwIfAborted();
-      this.update(record, story, revision);
-      record.messages.push(...messages);
-      return detail(record);
-    });
-  }
   private backup(record: RecordData, name: string) {
     const snapshot = { id: crypto.randomUUID(), name, createdAt: new Date().toISOString() };
     record.snapshots.unshift({
@@ -159,20 +151,6 @@ export class BrowserStore {
   async delete(id: string) {
     return this.transaction('stories', 'readwrite', async (store) => {
       await request(store.delete(id));
-    });
-  }
-  async settings(): Promise<BrowserSettings> {
-    return this.transaction(
-      'settings',
-      'readonly',
-      async (store) =>
-        (await request(store.get('model'))) || { baseUrl: 'https://api.openai.com/v1', model: '' },
-    );
-  }
-  async setSettings(settings: BrowserSettings) {
-    return this.transaction('settings', 'readwrite', async (store) => {
-      // Explicit allowlist: credentials never enter IndexedDB.
-      await request(store.put({ baseUrl: settings.baseUrl, model: settings.model }, 'model'));
     });
   }
   async close() {

@@ -2,8 +2,8 @@ import 'fake-indexeddb/auto';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { BrowserStore } from '../src/browser/store';
-import { createBrowserApi } from '../src/browser/api';
-import type { Story, Settings, StoryDetail, Snapshot } from '../shared/schema';
+import { createBrowserApi, desktopOnlyMessage } from '../src/browser/api';
+import type { Story, Message, StoryDetail, Snapshot } from '../shared/schema';
 
 const json = (method: string, body: unknown) => ({ method, body: JSON.stringify(body) });
 function fixture() {
@@ -32,39 +32,82 @@ test('browser stories survive reopening; clearing the library does not reseed it
   await empty.close();
 });
 
-test('browser demo, snapshots, restore and JSON migration retain a complete story', async () => {
-  const { store, api, streamChat } = fixture();
+test('browser edits, snapshots and JSON migration preserve imported conversation history', async () => {
+  const { name, store, api } = fixture();
   try {
-    const story = (await store.list())[0];
+    const original = (await store.list())[0];
+    const history: Message[] = [
+      {
+        id: 'old-user',
+        role: 'user',
+        content: '聊聊苏轼',
+        actions: [],
+        mode: 'live',
+        createdAt: original.createdAt,
+      },
+      {
+        id: 'old-reply',
+        role: 'assistant',
+        content: '这是此前保存的探索记录。',
+        actions: [],
+        mode: 'live',
+        createdAt: original.createdAt,
+      },
+    ];
+    const story = await api<Story>(
+      '/import',
+      json('POST', {
+        format: 'shanhe-story/v1',
+        story: original,
+        messages: history,
+      }),
+    );
+    const importedHistory = (await store.detail(story.id)).messages;
+    assert.deepEqual(
+      importedHistory.map((m) => m.content),
+      history.map((m) => m.content),
+    );
     const snapshot = await api<Snapshot>(
       `/stories/${story.id}/snapshots`,
-      json('POST', { name: '探索之前' }),
+      json('POST', { name: '编辑之前' }),
     );
-    const reply = await streamChat(
-      story.id,
-      { prompt: '标记主要山川', revision: 0 },
-      () => {},
-      new AbortController().signal,
+    const view = { center: [110, 30], zoom: 7, pitch: 0 };
+    const edited = await api<Story>(
+      `/stories/${story.id}/actions`,
+      json('POST', {
+        revision: 0,
+        actions: [{ type: 'set_view', view }],
+      }),
     );
-    assert.equal(reply.messages.length, 2);
-    assert.equal(reply.messages[1].mode, 'demo');
-    assert.equal(reply.story.markers.length, 5);
-    const exported = await api<{ story: Story; messages: unknown[] }>(
-      `/stories/${story.id}/export`,
-    );
-    assert.equal(exported.messages.length, 2);
-    assert.ok(!('snapshots' in exported));
-    const imported = await api<Story>('/import', json('POST', exported));
-    assert.notEqual(imported.id, story.id);
-    assert.equal((await store.detail(imported.id)).messages.length, 2);
-    const restored = await api<StoryDetail>(
-      `/stories/${story.id}/snapshots/${snapshot.id}/restore`,
-      json('POST', { revision: 1 }),
-    );
-    assert.equal(restored.story.markers.length, 0);
-    assert.equal(restored.messages.length, 0);
-    assert.equal(restored.snapshots.length, 2);
-    assert.equal(restored.snapshots[0].name, '恢复前的自动备份');
+    assert.deepEqual(edited.view, view);
+    await api(`/stories/${story.id}`, json('PUT', { ...edited, subtitle: '在线整理后的故事' }));
+    await store.close();
+    const reopened = new BrowserStore(name);
+    try {
+      const { api: nextApi } = createBrowserApi(reopened);
+      const exported = await nextApi<{ story: Story; messages: Message[] }>(
+        `/stories/${story.id}/export`,
+      );
+      assert.equal(exported.story.subtitle, '在线整理后的故事');
+      assert.deepEqual(exported.messages, importedHistory);
+      assert.ok(!('snapshots' in exported));
+      const copy = await nextApi<Story>('/import', json('POST', exported));
+      assert.notEqual(copy.id, story.id);
+      assert.deepEqual(
+        (await reopened.detail(copy.id)).messages.map((m) => m.content),
+        history.map((m) => m.content),
+      );
+      const restored = await nextApi<StoryDetail>(
+        `/stories/${story.id}/snapshots/${snapshot.id}/restore`,
+        json('POST', { revision: 2 }),
+      );
+      assert.deepEqual(restored.story.view, original.view);
+      assert.deepEqual(restored.messages, importedHistory);
+      assert.equal(restored.snapshots.length, 2);
+      assert.equal(restored.snapshots[0].name, '恢复前的自动备份');
+    } finally {
+      await reopened.close();
+    }
   } finally {
     await store.close();
   }
@@ -90,162 +133,26 @@ test('two browser stores cannot overwrite the same revision; stale restore rolls
   }
 });
 
-test('browser credentials stay in memory, clear explicitly, and never follow an endpoint change', async () => {
+test('browser rejects model settings and chat without sending requests or changing stories', async (t) => {
   const { store, api } = fixture();
-  try {
-    const config = {
-      baseUrl: 'https://model.example/v1',
-      model: 'test-model',
-      apiKey: 'test-only-secret',
-    };
-    let result = await api<Settings>('/settings', json('PUT', config));
-    assert.equal(result.hasKey, true);
-    assert.ok(!JSON.stringify(await store.settings()).includes('test-only-secret'));
-    assert.ok(!JSON.stringify(result).includes('test-only-secret'));
-    const fresh = createBrowserApi(store);
-    assert.equal((await fresh.api<Settings>('/settings')).hasKey, false);
-    result = await api<Settings>(
-      '/settings',
-      json('PUT', { ...config, apiKey: undefined, clearKey: true }),
-    );
-    assert.equal(result.hasKey, false);
-    await api('/settings', json('PUT', config));
-    result = await api<Settings>(
-      '/settings',
-      json('PUT', { ...config, baseUrl: 'https://other.example/v1', apiKey: undefined }),
-    );
-    assert.equal(result.hasKey, false);
-    await assert.rejects(
-      api('/settings', json('PUT', { ...config, baseUrl: 'http://model.example/v1' })),
-      /HTTPS/,
-    );
-    await assert.rejects(api('/settings', json('PUT', { ...config, connection: 'codex' })));
-  } finally {
-    await store.close();
-  }
-});
-
-test('browser live API applies tools, downgrades generated evidence and commits with the final answer', async (t) => {
-  const { store, api, streamChat } = fixture();
-  const requests: { url: string; body: { messages: unknown[] } }[] = [];
-  t.mock.method(globalThis, 'fetch', async (url: string, init: RequestInit) => {
-    requests.push({ url, body: JSON.parse(String(init.body)) });
-    return Response.json({
-      choices: [
-        {
-          message:
-            requests.length === 1
-              ? {
-                  role: 'assistant',
-                  content: null,
-                  tool_calls: [
-                    {
-                      id: 'call-1',
-                      type: 'function',
-                      function: {
-                        name: 'apply_story_actions',
-                        arguments: JSON.stringify({
-                          actions: [
-                            {
-                              type: 'add_marker',
-                              marker: {
-                                id: 'model-marker',
-                                label: '黄州',
-                                coordinates: [114.87, 30.45],
-                                description: '模型生成',
-                                kind: 'place',
-                                confidence: 'reference',
-                                source: { title: '虚构出处', url: 'https://example.com' },
-                              },
-                            },
-                          ],
-                        }),
-                      },
-                    },
-                  ],
-                }
-              : { role: 'assistant', content: '已标记，位置待核验。' },
-        },
-      ],
-    });
+  const network = t.mock.method(globalThis, 'fetch', async () => {
+    throw new Error('unexpected request');
   });
   try {
-    await api(
-      '/settings',
-      json('PUT', {
-        baseUrl: 'https://model.example/v1',
-        model: 'test',
-        apiKey: 'test-only-secret',
-      }),
-    );
     const story = (await store.list())[0];
-    const result = await streamChat(
-      story.id,
-      { prompt: '标记黄州', revision: 0 },
-      () => {},
-      new AbortController().signal,
-    );
-    assert.equal(requests.length, 2);
-    assert.equal(requests[0].url, 'https://model.example/v1/chat/completions');
-    assert.ok(requests[1].body.messages.some((m) => (m as { role: string }).role === 'tool'));
-    assert.equal(result.messages[1].mode, 'live');
-    assert.equal(result.story.markers[0].confidence, 'unverified');
-    assert.equal(result.story.markers[0].source, undefined);
-    assert.equal(result.story.revision, 1);
+    const before = await store.detail(story.id);
+    for (const [path, options] of [
+      ['/settings', undefined],
+      ['/settings', json('PUT', { baseUrl: 'https://model.example/v1', model: 'test' })],
+      ['/agents/codex/status', undefined],
+      [`/stories/${story.id}/chat`, json('POST', { prompt: '标记山川', revision: 0 })],
+      [`/stories/${story.id}/chat/cancel`, json('POST', {})],
+    ] as const) {
+      await assert.rejects(api(path, options), { message: desktopOnlyMessage });
+    }
+    assert.equal(network.mock.callCount(), 0);
+    assert.deepEqual(await store.detail(story.id), before);
   } finally {
     await store.close();
-  }
-});
-
-test('browser cancellation and provider failure discard staged changes and messages', async (t) => {
-  for (const cancel of [false, true]) {
-    const { store, api, streamChat } = fixture();
-    const controller = new AbortController();
-    let count = 0;
-    const mock = t.mock.method(globalThis, 'fetch', async () => {
-      count++;
-      if (count === 2) {
-        if (cancel) controller.abort();
-        return new Response('', { status: 503 });
-      }
-      return Response.json({
-        choices: [
-          {
-            message: {
-              role: 'assistant',
-              tool_calls: [
-                {
-                  id: 'staged',
-                  type: 'function',
-                  function: {
-                    name: 'apply_story_actions',
-                    arguments: JSON.stringify({
-                      actions: [
-                        { type: 'set_view', view: { center: [100, 30], zoom: 8, pitch: 0 } },
-                      ],
-                    }),
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      });
-    });
-    try {
-      await api('/settings', json('PUT', { baseUrl: 'https://model.example/v1', model: 'test' }));
-      const story = (await store.list())[0];
-      await assert.rejects(
-        streamChat(story.id, { prompt: '移到这里', revision: 0 }, () => {}, controller.signal),
-        cancel ? /已停止/ : /503/,
-      );
-      const detail = await store.detail(story.id);
-      assert.deepEqual(detail.story.view, story.view);
-      assert.equal(detail.story.revision, 0);
-      assert.equal(detail.messages.length, 0);
-    } finally {
-      mock.mock.restore();
-      await store.close();
-    }
   }
 });

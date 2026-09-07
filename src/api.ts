@@ -28,8 +28,7 @@ export async function streamChat(
   onEvent: (event: import('../shared/schema').ChatProgress) => void,
   signal: AbortSignal,
 ): Promise<import('../shared/schema').StoryDetail> {
-  if (browserMode)
-    return (await import('./browser/api')).browserApi().streamChat(id, body, onEvent, signal);
+  if (browserMode) throw new Error('AI 探索请使用山河桌面版。');
   const response = await fetch(`/api/stories/${encodeURIComponent(id)}/chat`, {
     method: 'POST',
     signal,
