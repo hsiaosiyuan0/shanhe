@@ -8,16 +8,20 @@ import type { FeatureCollection } from 'geojson';
 import type { Story, StoryEvent } from '../shared/schema';
 import { smoothRoute, routeThroughAnchor } from './map/routeGeometry';
 import { elevationStops } from './map/elevation';
+import { journeyFeatures, evidenceLabels } from './map/journeyGeometry';
 
 export type MapHandle = {
   fit: () => void;
+  focusRoute: (routeId: string, legIndex?: number) => void;
   zoom: (delta: number) => void;
   getView: () => Story['view'] | undefined;
 };
 type Props = {
   story: Story;
   selected: StoryEvent | undefined;
+  activeRouteId?: string | null;
   onSelect: (id: string) => void;
+  onSelectRoute: (id: string) => void;
   onPoint: (point: {
     coordinates: [number, number];
     elevation: number | null;
@@ -82,6 +86,7 @@ function style(): StyleSpecification {
       },
       routes: { type: 'geojson', data: empty },
       progress: { type: 'geojson', data: empty },
+      journeys: { type: 'geojson', data: empty },
     },
     layers: [
       { id: 'ocean', type: 'background', paint: { 'background-color': '#dce5df' } },
@@ -185,19 +190,38 @@ function style(): StyleSpecification {
         layout: { 'line-join': 'round', 'line-cap': 'round' },
         paint: { 'line-color': '#9d664a', 'line-width': 2.6, 'line-opacity': 0.92 },
       },
+      {
+        id: 'journey-corridors',
+        type: 'line',
+        source: 'journeys',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': ['get', 'color'], 'line-width': 14, 'line-opacity': 0.15 },
+      },
+      {
+        id: 'journey-lines',
+        type: 'line',
+        source: 'journeys',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': ['get', 'color'],
+          'line-width': 2.6,
+          'line-opacity': 0.9,
+          'line-dasharray': [3, 2.5],
+        },
+      },
     ],
   };
 }
 
 const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
-  { story, selected, onSelect, onPoint },
+  { story, selected, activeRouteId, onSelect, onSelectRoute, onPoint },
   ref,
 ) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markers = useRef<maplibregl.Marker[]>([]);
-  const callbacks = useRef({ onSelect, onPoint });
-  callbacks.current = { onSelect, onPoint };
+  const callbacks = useRef({ onSelect, onSelectRoute, onPoint });
+  callbacks.current = { onSelect, onSelectRoute, onPoint };
   const [ready, setReady] = useState(false);
   const [offline, setOffline] = useState(false);
   const [fatal, setFatal] = useState(false);
@@ -208,6 +232,26 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   const currentStory = useRef(story);
   currentStory.current = story;
   const motion = () => (window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 900);
+  const focusRoute = (routeId: string, legIndex?: number) => {
+    const route = currentStory.current.routes.find((r) => r.id === routeId);
+    if (!route || !map.current) return;
+    const leg = legIndex === undefined ? undefined : route.journey?.legs[legIndex];
+    const coordinates = leg ? route.coordinates.slice(leg.from, leg.to + 1) : route.coordinates;
+    const bounds = new maplibregl.LngLatBounds();
+    coordinates.forEach((p) => bounds.extend(p));
+    const width = container.current?.clientWidth || 800;
+    const height = container.current?.clientHeight || 600;
+    map.current.fitBounds(bounds, {
+      padding: {
+        top: 85,
+        bottom: width > 680 ? 90 : Math.round(height * 0.45) + 65,
+        left: width > 680 ? 350 : 45,
+        right: 65,
+      },
+      maxZoom: 7,
+      duration: motion(),
+    });
+  };
   const fit = () => {
     const m = map.current;
     if (!m) return;
@@ -224,6 +268,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   };
   useImperativeHandle(ref, () => ({
     fit,
+    focusRoute,
     zoom: (delta) =>
       map.current?.easeTo({ zoom: (map.current?.getZoom() || 4) + delta, duration: 300 }),
     getView: () => {
@@ -253,6 +298,10 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       return;
     }
     map.current = m;
+    const updateLabelDetail = () =>
+      container.current?.classList.toggle('journey-detail', m.getZoom() >= 6.5);
+    updateLabelDetail();
+    m.on('zoom', updateLabelDetail);
     m.on('style.load', () => setReady(true));
     m.on('error', (event) => {
       const sourceId = (event as unknown as { sourceId?: string }).sourceId;
@@ -268,6 +317,12 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       }
     });
     m.on('click', (event) => {
+      const routeId = m.queryRenderedFeatures(event.point, { layers: ['journey-corridors'] })[0]
+        ?.properties?.routeId;
+      if (routeId) {
+        callbacks.current.onSelectRoute(String(routeId));
+        return;
+      }
       let elevation: number | null = null;
       try {
         const result = m.queryTerrainElevation(event.lngLat);
@@ -321,7 +376,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     const previous = lastNavigation.current;
     if (!previous || previous.view !== key)
       map.current.flyTo({ ...story.view, duration: motion() });
-    else if (selected && previous.selectedId !== selected.id)
+    else if (selected && previous.selectedId !== selected.id && !activeRouteId)
       map.current.easeTo({ center: selected.coordinates, offset: [50, -10], duration: motion() });
     lastNavigation.current = { view: key, selectedId: selected?.id };
   }, [
@@ -333,12 +388,22 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     selected?.id,
   ]);
   useEffect(() => {
+    if (ready && activeRouteId) focusRoute(activeRouteId);
+  }, [ready, activeRouteId]);
+  useEffect(() => {
     const m = map.current;
     if (!m || !ready) return;
-    const curves = story.routes.map((route) => ({
+    const connections = story.routes.filter(
+      (r) => !r.journey && (story.kind === 'travel' || story.layers.connections) && !activeRouteId,
+    );
+    const curves = connections.map((route) => ({
       ...route,
       curve: smoothRoute(route.coordinates),
     }));
+    // A journey belongs to its own dated reading view, not every year in a biography.
+    (m.getSource('journeys') as GeoJSONSource).setData(
+      activeRouteId ? journeyFeatures(story, activeRouteId) : empty,
+    );
     (m.getSource('routes') as GeoJSONSource).setData({
       type: 'FeatureCollection',
       features: curves.map((r) => ({
@@ -371,7 +436,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
             ]
           : [],
     });
-    for (const id of ['routes', 'route-shadow', 'progress'])
+    for (const id of ['routes', 'route-shadow', 'progress', 'journey-corridors', 'journey-lines'])
       m.setLayoutProperty(id, 'visibility', story.layers.routes ? 'visible' : 'none');
     m.setLayoutProperty('rivers', 'visibility', story.layers.rivers ? 'visible' : 'none');
     for (const id of ['elevation', 'hillshade'])
@@ -409,6 +474,30 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       }
     };
     const groups = new Map<string, StoryEvent[]>();
+    const activeRoute = story.routes.find((r) => r.id === activeRouteId);
+    if (activeRoute?.journey && story.layers.routes)
+      activeRoute.journey.stops.forEach((stop) => {
+        const el = document.createElement('button');
+        el.className = 'journey-stop ' + stop.evidence;
+        const label = document.createElement('span');
+        label.textContent = stop.label.split(' · ')[0];
+        el.append(label);
+        el.setAttribute('aria-label', `${stop.label}，${evidenceLabels[stop.evidence]}，查看依据`);
+        el.onclick = (event) => {
+          event.stopPropagation();
+          const content = document.createElement('div');
+          const title = document.createElement('strong');
+          title.textContent = stop.label;
+          const note = document.createElement('p');
+          note.textContent = `${evidenceLabels[stop.evidence]} · ${stop.note}`;
+          content.append(title, note);
+          new maplibregl.Popup({ offset: 12, maxWidth: '260px' })
+            .setLngLat(activeRoute.coordinates[stop.at])
+            .setDOMContent(content)
+            .addTo(m);
+        };
+        add(el, activeRoute.coordinates[stop.at], 'bottom');
+      });
     if (story.layers.admin)
       regions.forEach((region) => {
         const el = document.createElement('span');
@@ -421,6 +510,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       groups.set(key, [...(groups.get(key) || []), e]);
     });
     groups.forEach((events) => {
+      if (activeRoute) return;
       const event = events.find((e) => e.id === selected?.id) || events[0];
       const index = story.events.findIndex((e) => e.id === event.id);
       const el = document.createElement('button');
@@ -492,7 +582,17 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       };
       add(el, marker.coordinates, 'bottom');
     });
-  }, [ready, story.events, story.markers, story.routes, story.layers, selected, regions]);
+  }, [
+    ready,
+    story.events,
+    story.markers,
+    story.routes,
+    story.layers,
+    selected,
+    regions,
+    activeRouteId,
+    story.kind,
+  ]);
   return (
     <>
       <div className="map-canvas" ref={container} aria-label="交互式故事地图" />

@@ -4,6 +4,7 @@ import { dirname } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { storySchema, type Story, type Message, type Snapshot } from '../shared/schema.js';
 import { seedStories } from './seeds.js';
+import { upgradeSuJourney } from './su-journey.js';
 
 export class HttpError extends Error {
   constructor(
@@ -31,6 +32,21 @@ export class Store {
         this.db.prepare('INSERT INTO metadata VALUES (?,?)').run('seeded', '1');
       });
     }
+    this.transaction(() => {
+      for (const story of this.list()) {
+        const migrationKey = `journey-upgrade-1056:${story.id}`;
+        if (this.db.prepare('SELECT value FROM metadata WHERE key=?').get(migrationKey)) continue;
+        if (story.routes.some((route) => route.id === 'su-journey-1056' && route.journey)) {
+          this.db.prepare('INSERT INTO metadata VALUES (?,?)').run(migrationKey, '1');
+          continue;
+        }
+        const next = upgradeSuJourney(story);
+        if (!next) continue;
+        this.snapshot(story.id, '赴京行程升级前的自动备份');
+        this.save(next, story.revision);
+        this.db.prepare('INSERT INTO metadata VALUES (?,?)').run(migrationKey, '1');
+      }
+    });
   }
   transaction<T>(fn: () => T): T {
     this.db.exec('BEGIN IMMEDIATE');

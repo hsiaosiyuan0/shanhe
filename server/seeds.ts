@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { Story, StoryEvent } from '../shared/schema.js';
+import { suDeparture, suFirstJourney } from './su-journey.js';
 const suSource = {
   title: '苏轼生平参考 · 维基百科（需交叉核验）',
   url: 'https://zh.wikipedia.org/wiki/苏轼',
@@ -165,6 +166,7 @@ export function createStory(title: string, kind: Story['kind'], template?: strin
       rivers: true,
       mountains: true,
       routes: true,
+      connections: false,
     },
     view: { center: [112.4, 30.7], zoom: 4.5, pitch: 0 },
     revision: 0,
@@ -178,15 +180,16 @@ export function createStory(title: string, kind: Story['kind'], template?: strin
       subtitle: '一蓑烟雨任平生',
       era: '北宋 · 1037—1101',
       description: '从眉山出发，越过山川，走过宦海。在地理的经纬中，重读东坡的一生。',
-      events: structuredClone(suEvents),
+      events: [...structuredClone(suEvents), suDeparture()].sort((a, b) => a.year - b.year),
       routes: [
         {
           id: 'su-route',
-          label: '东坡行迹 · 主要节点示意',
+          label: '人生节点关系 · 不代表行程',
           coordinates: suEvents.map((e) => e.coordinates),
           color: '#ad795a',
           approximate: true,
         },
+        suFirstJourney(),
       ],
     };
   }

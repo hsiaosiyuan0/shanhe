@@ -26,16 +26,82 @@ export const markerSchema = z.object({
   source: sourceSchema.optional(),
   confidence: z.enum(['reference', 'approximate', 'unverified']).default('unverified'),
 });
-export const routeSchema = z.object({
-  id: z.string().min(1).max(100),
-  label: z.string().min(1).max(100),
-  coordinates: z.array(coordinate).min(2).max(500),
-  color: z
-    .string()
-    .regex(/^#[0-9a-fA-F]{6}$/)
-    .default('#ad795a'),
-  approximate: z.literal(true).default(true),
+export const journeySchema = z.object({
+  startYear: z.number().int().min(-10000).max(10000),
+  endYear: z.number().int().min(-10000).max(10000),
+  fromEventId: z.string().max(100).optional(),
+  toEventId: z.string().max(100).optional(),
+  summary: z.string().max(3000),
+  status: z.enum(['reconstructed', 'unverified']),
+  sources: z.array(sourceSchema).max(10),
+  stops: z
+    .array(
+      z.object({
+        at: z.number().int().nonnegative(),
+        label: z.string().min(1).max(100),
+        evidence: z.enum(['referenced', 'inferred', 'unknown']),
+        note: z.string().max(1000),
+      }),
+    )
+    .min(2)
+    .max(500),
+  legs: z
+    .array(
+      z.object({
+        from: z.number().int().nonnegative(),
+        to: z.number().int().positive(),
+        label: z.string().min(1).max(100),
+        mode: z.enum(['land', 'water', 'unknown']),
+        evidence: z.enum(['referenced', 'inferred', 'unknown']),
+        note: z.string().max(2000),
+      }),
+    )
+    .min(1)
+    .max(50),
 });
+export const routeSchema = z
+  .object({
+    id: z.string().min(1).max(100),
+    label: z.string().min(1).max(100),
+    coordinates: z.array(coordinate).min(2).max(500),
+    color: z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/)
+      .default('#ad795a'),
+    approximate: z.literal(true).default(true),
+    journey: journeySchema
+      .optional()
+      .describe(
+        'A dated itinerary, with transport modes, cited waypoints and uncertain legs. Without this object the route is only a connection diagram, never an actual historical journey. Coordinate indices refer to this route coordinates array. Geometry remains approximate.',
+      ),
+  })
+  .superRefine((route, ctx) => {
+    const j = route.journey;
+    if (!j) return;
+    const last = route.coordinates.length - 1;
+    if (j.endYear < j.startYear)
+      ctx.addIssue({
+        code: 'custom',
+        message: '行程结束年份不能早于出发年份',
+        path: ['journey', 'endYear'],
+      });
+    if (j.stops.some((s, i) => s.at > last || (i > 0 && s.at <= j.stops[i - 1].at)))
+      ctx.addIssue({
+        code: 'custom',
+        message: '行程地点索引须按顺序排列且位于路线坐标范围内',
+        path: ['journey', 'stops'],
+      });
+    if (
+      j.legs[0]?.from !== 0 ||
+      j.legs.at(-1)?.to !== last ||
+      j.legs.some((l, i) => l.to <= l.from || l.to > last || (i > 0 && l.from !== j.legs[i - 1].to))
+    )
+      ctx.addIssue({
+        code: 'custom',
+        message: '行程分段须连续覆盖全部路线；未知路段请显式标为 unknown',
+        path: ['journey', 'legs'],
+      });
+  });
 export const layersSchema = z.object({
   elevation: z
     .boolean()
@@ -51,6 +117,12 @@ export const layersSchema = z.object({
   rivers: z.boolean(),
   mountains: z.boolean(),
   routes: z.boolean(),
+  connections: z
+    .boolean()
+    .default(false)
+    .describe(
+      'Show schematic links between life events. Off by default for history; links do not establish a traveled route.',
+    ),
 });
 export const viewSchema = z.object({
   center: coordinate,
@@ -84,6 +156,7 @@ export const actionsSchema = z.object({ actions: z.array(actionSchema).max(40) }
 export type Story = z.infer<typeof storySchema>;
 export type StoryEvent = z.infer<typeof eventSchema>;
 export type MapMarker = z.infer<typeof markerSchema>;
+export type MapRoute = z.infer<typeof routeSchema>;
 export type MapAction = z.infer<typeof actionSchema>;
 export type Layers = z.infer<typeof layersSchema>;
 export type Message = {

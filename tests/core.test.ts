@@ -9,6 +9,7 @@ import { createApp } from '../server/app.js';
 import { createStory } from '../server/seeds.js';
 import { applyActions, type Story, type StoryDetail } from '../shared/schema.js';
 import { makeMessage } from '../server/llm.js';
+import { suFirstJourney } from '../server/su-journey.js';
 
 async function listen(server: Server) {
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -244,6 +245,10 @@ test('real provider protocol: staged tool results are fed back and unverified so
                               source: { title: 'fabricated', url: 'https://example.com' },
                             },
                           },
+                          {
+                            type: 'add_route',
+                            route: { ...suFirstJourney(), id: 'model-journey' },
+                          },
                         ],
                       }),
                     },
@@ -275,6 +280,11 @@ test('real provider protocol: staged tool results are fed back and unverified so
     const marker = result.data.story.markers[0];
     assert.equal(marker.confidence, 'unverified');
     assert.equal(marker.source, undefined);
+    const journey = result.data.story.routes.find((r: any) => r.id === 'model-journey').journey;
+    assert.equal(journey.status, 'unverified');
+    assert.deepEqual(journey.sources, []);
+    assert.ok(journey.stops.every((s: any) => s.evidence === 'unknown'));
+    assert.ok(journey.legs.every((l: any) => l.evidence === 'unknown'));
     assert.equal(result.data.messages[1].mode, 'live');
   } finally {
     await close(mock);

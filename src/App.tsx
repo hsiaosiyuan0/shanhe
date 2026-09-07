@@ -54,6 +54,7 @@ import type {
 import { api, json } from './api';
 import MapCanvas, { type MapHandle } from './MapCanvas';
 import { elevationGradient, elevationStops } from './map/elevation';
+import JourneyPanel from './JourneyPanel';
 
 const kindLabels = { biography: '人物传记', history: '历史长卷', travel: '旅行手记' };
 const categoryLabels = {
@@ -69,7 +70,8 @@ const layerLabels: Record<keyof Layers, string> = {
   terrain: '三维地形',
   rivers: '主要河流',
   mountains: '山脉与地貌',
-  routes: '行迹路线',
+  routes: '行程与路线',
+  connections: '地点连线（非行程）',
 };
 const layerIcons = {
   elevation: Layers3,
@@ -78,6 +80,7 @@ const layerIcons = {
   rivers: Waves,
   mountains: MapPin,
   routes: Route,
+  connections: Route,
 };
 type Modal = 'new' | 'settings' | 'snapshots' | 'marker' | 'event' | 'about' | null;
 type Point = { coordinates: [number, number]; elevation: number | null; modernRegion?: string };
@@ -164,6 +167,7 @@ export default function App() {
   const [showLayers, setShowLayers] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [point, setPoint] = useState<Point | null>(null);
+  const [activeRouteId, setActiveRouteId] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<StoryEvent | undefined>();
   const mapRef = useRef<MapHandle>(null);
   const importRef = useRef<HTMLInputElement>(null);
@@ -174,6 +178,9 @@ export default function App() {
   const story = detail?.story;
   const selected = story?.events.find((e) => e.id === selectedId);
   const selectedIndex = story?.events.findIndex((e) => e.id === selectedId) ?? -1;
+  const journeys = story?.routes.filter((r) => r.journey) || [];
+  const activeRoute = journeys.find((r) => r.id === activeRouteId);
+  const journeyModes = [...new Set(activeRoute?.journey?.legs.map((leg) => leg.mode) || [])];
   const flash = (message: string) => {
     setToast(message);
   };
@@ -199,8 +206,13 @@ export default function App() {
       const result = await api<StoryDetail>('/stories/' + id);
       if (ticket !== requestId.current) return;
       setDetail(result);
+      const journey = result.story.routes.find((r) => r.journey?.status === 'reconstructed');
+      setActiveRouteId(journey?.id || null);
       setSelectedId(
-        result.story.events.find((e) => e.id === 'su-1080')?.id || result.story.events[0]?.id || '',
+        journey?.journey?.fromEventId ||
+          result.story.events.find((e) => e.id === 'su-1080')?.id ||
+          result.story.events[0]?.id ||
+          '',
       );
       localStorage.setItem('shanhe-last-story', id);
     } catch (e) {
@@ -279,6 +291,25 @@ export default function App() {
   const selectEvent = (id: string) => {
     setSelectedId(id);
     setPoint(null);
+    setActiveRouteId(
+      story?.routes.find((r) => r.journey?.fromEventId === id || r.journey?.toEventId === id)?.id ||
+        null,
+    );
+  };
+  useEffect(() => {
+    setActiveRouteId((current) => {
+      const matches = story?.routes.filter(
+        (r) => r.journey?.fromEventId === selectedId || r.journey?.toEventId === selectedId,
+      );
+      return matches?.find((r) => r.id === current)?.id || matches?.[0]?.id || null;
+    });
+  }, [story?.id, selectedId]);
+  const selectRoute = (id: string) => {
+    setPlaying(false);
+    setPoint(null);
+    setActiveRouteId(id);
+    const from = story?.routes.find((r) => r.id === id)?.journey?.fromEventId;
+    if (from && story?.events.some((e) => e.id === from)) setSelectedId(from);
   };
   async function mutate(work: () => Promise<void>) {
     if (busy) return;
@@ -333,6 +364,16 @@ export default function App() {
       );
       if (activeId.current === id) {
         updateDetail(next);
+        const addedJourney = next.story.routes.find(
+          (route) => route.journey && !story.routes.some((existing) => existing.id === route.id),
+        );
+        if (addedJourney) {
+          setPlaying(false);
+          setPoint(null);
+          setActiveRouteId(addedJourney.id);
+          const from = addedJourney.journey?.fromEventId;
+          if (from && next.story.events.some((event) => event.id === from)) setSelectedId(from);
+        }
         flash('对话与地图修改已保存');
       } else setStories((list) => list.map((s) => (s.id === id ? next.story : s)));
     } catch (e) {
@@ -679,7 +720,9 @@ export default function App() {
                 key={story.id}
                 story={story}
                 selected={selected}
+                activeRouteId={activeRouteId}
                 onSelect={selectEvent}
+                onSelectRoute={selectRoute}
                 onPoint={setPoint}
               />
               <div className="map-top">
@@ -696,6 +739,20 @@ export default function App() {
                   现代地理参考
                 </div>
                 <div className="map-tools">
+                  <button
+                    aria-label="查看行程依据"
+                    title={
+                      journeys.length
+                        ? '查看经过地点、交通方式与资料依据'
+                        : '尚未整理独立行程，地点关系不代表实际旅途'
+                    }
+                    onClick={() => selectRoute(journeys[0].id)}
+                    disabled={!journeys.length}
+                    className={activeRoute ? 'active' : ''}
+                  >
+                    <Route size={15} />
+                    <span>行程</span>
+                  </button>
                   <button
                     aria-label="现代行政区对照"
                     title="叠加现代省界与省名，点击地图查看所属行政区"
@@ -777,7 +834,19 @@ export default function App() {
                 <span>N</span>
                 <div>↑</div>
               </div>
-              {selected && !point && (
+              {activeRoute && !point && (
+                <JourneyPanel
+                  route={activeRoute}
+                  routes={journeys}
+                  onChange={selectRoute}
+                  onFocus={(leg) => mapRef.current?.focusRoute(activeRoute.id, leg)}
+                  onClose={() => {
+                    setActiveRouteId(null);
+                    mapRef.current?.fit();
+                  }}
+                />
+              )}
+              {selected && !point && !activeRoute && (
                 <article className="event-detail" key={selected.id}>
                   <div className="event-detail-top">
                     <span className={'category-dot ' + selected.category} />
@@ -862,7 +931,12 @@ export default function App() {
                   <Minus size={18} />
                 </IconButton>
                 <span />
-                <IconButton label="查看完整路线" onClick={() => mapRef.current?.fit()}>
+                <IconButton
+                  label="查看完整路线"
+                  onClick={() =>
+                    activeRoute ? mapRef.current?.focusRoute(activeRoute.id) : mapRef.current?.fit()
+                  }
+                >
                   <Expand size={17} />
                 </IconButton>
                 <IconButton
@@ -888,14 +962,27 @@ export default function App() {
                 </IconButton>
               </div>
               <div className="map-legend">
-                {story.layers.routes && (
+                {story.layers.routes &&
+                  journeyModes.map((mode) => (
+                    <span className="legend-journey-item" key={mode}>
+                      <i className={`legend-${mode}`} />
+                      {{ land: '陆路走廊', water: '水路走廊', unknown: '待考路段' }[mode]}
+                    </span>
+                  ))}
+                {story.layers.routes &&
+                  !activeRoute &&
+                  (story.kind === 'travel' || story.layers.connections) && (
+                    <>
+                      <span className="legend-route" />
+                      {story.kind === 'travel' ? '旅行规划示意' : '地点连线 · 非行程'}
+                    </>
+                  )}
+                {!activeRoute && (
                   <>
-                    <span className="legend-route" />
-                    曲线行迹示意
+                    <span className="legend-pin" />
+                    事件地点
                   </>
                 )}
-                <span className="legend-pin" />
-                事件地点
               </div>
               {story.layers.elevation && (
                 <div
