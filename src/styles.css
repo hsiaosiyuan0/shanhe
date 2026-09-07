@@ -114,6 +114,15 @@ button svg {
 .app.chat-hidden {
   grid-template-columns: 64px 234px minmax(400px, 1fr) 0;
 }
+/* The native macOS title bar overlays the panel backgrounds, not their controls. */
+:root[data-desktop='macos'] .app {
+  grid-template-rows: calc(64px + var(--window-titlebar-height, 0px)) minmax(0, 1fr);
+}
+:root[data-desktop='macos'] .rail,
+:root[data-desktop='macos'] .library,
+:root[data-desktop='macos'] .topbar {
+  padding-top: var(--window-titlebar-height, 0px);
+}
 .desktop-entry {
   display: inline-flex;
   align-items: center;

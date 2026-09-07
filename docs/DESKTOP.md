@@ -6,6 +6,8 @@
 
 **支持 macOS 13.5+，提供 Apple Silicon 和 Intel 两种安装包。** 已经安装山河的用户可以直接打开 App，无需额外连接在线版。
 
+窗口标题栏与工作台背景融合，不再重复显示应用名称。保留 macOS 原生红黄绿按钮和顶部拖动区域；全屏时自动收起按钮预留空间。浏览器版的布局不受影响。
+
 ## 下载安装包
 
 正式打标签的版本会发布在 [GitHub Releases](https://github.com/hsiaosiyuan0/shanhe/releases)。如果还没有发行版，可以从 [Build macOS app](https://github.com/hsiaosiyuan0/shanhe/actions/workflows/macos.yml) 中选择最近一次成功的 `main` 构建，在 **Artifacts** 下载测试包（需要登录 GitHub）。

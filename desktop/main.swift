@@ -14,14 +14,30 @@ final class AtlasApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavig
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
         createMenu()
-        window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1440, height: 900), styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered, defer: false)
+        window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1440, height: 900), styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView], backing: .buffered, defer: false)
         window.title = "山河 · Story Atlas"
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.titlebarSeparatorStyle = .none
+        window.appearance = NSAppearance(named: .aqua)
         window.minSize = NSSize(width: 900, height: 650)
         window.center()
         window.delegate = self
-        window.backgroundColor = NSColor(calibratedRed: 0.97, green: 0.97, blue: 0.94, alpha: 1)
+        window.backgroundColor = NSColor(srgbRed: 252.0 / 255, green: 251.0 / 255, blue: 247.0 / 255, alpha: 1)
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .default()
+        configuration.userContentController.addUserScript(WKUserScript(
+            source: """
+            const applyWindowChrome = () => {
+                document.documentElement.dataset.desktop = 'macos';
+                document.documentElement.style.setProperty('--window-titlebar-height', '\(titlebarHeight)px');
+            };
+            if (document.documentElement) applyWindowChrome();
+            else document.addEventListener('DOMContentLoaded', applyWindowChrome, { once: true });
+            """,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: true
+        ))
         webView = WKWebView(frame: window.contentView!.bounds, configuration: configuration)
         webView.autoresizingMask = [.width, .height]
         webView.navigationDelegate = self
@@ -37,6 +53,23 @@ final class AtlasApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavig
         NSApp.activate(ignoringOtherApps: true)
         startBackend()
     }
+
+    // Keep the native traffic lights and drag area, while the web panels paint beneath them.
+    // AppKit changes the reserved height when entering/leaving full screen.
+    var titlebarHeight: CGFloat {
+        guard let window = window, let content = window.contentView else { return 0 }
+        if window.styleMask.contains(.fullScreen) { return 0 }
+        return max(0, content.bounds.height - window.contentLayoutRect.height)
+    }
+
+    func updateWindowChrome() {
+        guard let webView = webView else { return }
+        webView.evaluateJavaScript("document.documentElement.style.setProperty('--window-titlebar-height', '\(titlebarHeight)px')", completionHandler: nil)
+    }
+
+    func windowDidResize(_ notification: Notification) { updateWindowChrome() }
+    func windowDidEnterFullScreen(_ notification: Notification) { updateWindowChrome() }
+    func windowDidExitFullScreen(_ notification: Notification) { updateWindowChrome() }
 
     func createMenu() {
         let menu = NSMenu()
@@ -110,7 +143,10 @@ final class AtlasApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavig
     }
 
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) { startupLabel.removeFromSuperview() }
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { startupLabel.removeFromSuperview() }
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        startupLabel.removeFromSuperview()
+        updateWindowChrome()
+    }
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { fail("页面加载失败：\(error.localizedDescription)") }
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         guard let url = navigationAction.request.url else { decisionHandler(.cancel); return }
