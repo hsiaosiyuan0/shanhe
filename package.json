@@ -20,7 +20,9 @@
     "icons": "node scripts/build-icons.mjs",
     "build:pages": "tsc --noEmit && vite build --mode pages",
     "dev:pages": "vite --mode pages --host 127.0.0.1 --port 5179",
-    "preview:pages": "vite preview --mode pages --host 127.0.0.1 --port 4173"
+    "preview:pages": "vite preview --mode pages --host 127.0.0.1 --port 4173",
+    "desktop:dist": "npm run desktop:pack && node scripts/package-macos.mjs && node scripts/verify-macos.mjs",
+    "desktop:verify": "node scripts/verify-macos.mjs"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.11",

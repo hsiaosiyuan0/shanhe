@@ -31,7 +31,7 @@ export default function DesktopGuide({
             <span>01</span>
             <div>
               <strong>安装山河桌面版</strong>
-              <p>当前支持 macOS，安装指引提供源码构建步骤。</p>
+              <p>获取适合 Apple Silicon 或 Intel Mac 的安装包。</p>
             </div>
           </li>
           <li>
@@ -57,7 +57,7 @@ export default function DesktopGuide({
             rel="noreferrer"
           >
             <Monitor size={17} aria-hidden="true" />
-            查看 macOS 安装步骤
+            获取 macOS 安装包
             <ArrowUpRight size={16} aria-hidden="true" />
           </a>
           <Button className="desktop-guide-export" onClick={onExport} disabled={!canExport}>

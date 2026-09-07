@@ -4,9 +4,22 @@
 
 桌面版把地图、时间线和探索助手放在同一个窗口里。连接本机 Codex 或模型 API 后，可以通过对话添加事件、标记地点、绘制路线，故事和探索记录保存在你的电脑。
 
-**目前支持 macOS，通过源码构建安装；暂未提供可直接下载的桌面发行包。** 已经安装山河的用户可以直接打开 App，无需额外连接在线版。
+**支持 macOS 13.5+，提供 Apple Silicon 和 Intel 两种安装包。** 已经安装山河的用户可以直接打开 App，无需额外连接在线版。
 
-## 安装 macOS App
+## 下载安装包
+
+正式打标签的版本会发布在 [GitHub Releases](https://github.com/hsiaosiyuan0/shanhe/releases)。如果还没有发行版，可以从 [Build macOS app](https://github.com/hsiaosiyuan0/shanhe/actions/workflows/macos.yml) 中选择最近一次成功的 `main` 构建，在 **Artifacts** 下载测试包（需要登录 GitHub）。
+
+| 你的 Mac                | Actions 产物  | 里面的安装包                             |
+| ----------------------- | ------------- | ---------------------------------------- |
+| Apple Silicon（M 系列） | `macos-arm64` | `shanhe-<版本>-macos-arm64.dmg` / `.zip` |
+| Intel                   | `macos-x64`   | `shanhe-<版本>-macos-x64.dmg` / `.zip`   |
+
+打开 DMG，把「山河」拖到 Applications；ZIP 解压后的「山河.app」也可以直接拖入「应用程序」。Actions 下载的外层 ZIP 需要先解压，里面包含 DMG、App ZIP 和校验文件。安装后直接打开，无需安装 Node.js 或启动开发服务。
+
+当前包使用 ad-hoc 签名，**未经 Apple Developer ID 签名和公证**。首次打开可能被 macOS 拦截；确认来源是本仓库后，可按系统「隐私与安全性」中的提示允许打开。新的 App 可以替换旧版本，故事库独立保存在本机。
+
+## 从源码构建
 
 构建需要 **macOS、Node.js 24+ 和 Xcode Command Line Tools**。如果尚未安装命令行工具，可先运行 `xcode-select --install`，按系统提示完成安装。
 
@@ -23,7 +36,7 @@ npm run desktop
 
 App 生成在 `release/mac-<架构>/山河.app`，Apple Silicon 对应 `release/mac-arm64/山河.app`。可以把它拖到「应用程序」文件夹，以后直接双击打开。App 内置 Node 运行时，并自动启动和关闭本地后端，无需另开终端运行服务。
 
-当前产物是未签名、未公证的本地开发构建。仅打包、不自动打开时可使用 `npm run desktop:pack`。[更多运行配置](SETUP.md)
+仅构建 App、不自动打开时使用 `npm run desktop:pack`；生成 DMG、ZIP 并检查独立运行时使用 `npm run desktop:dist`。[更多运行配置](SETUP.md)
 
 ## 带上在线版里的故事
 

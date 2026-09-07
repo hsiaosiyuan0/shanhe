@@ -115,7 +115,9 @@ npm run dev
 <details>
 <summary><strong>作为 macOS App 使用</strong></summary>
 
-构建需要 macOS、Node.js 24+ 和 Xcode Command Line Tools。
+在[桌面安装指引](docs/DESKTOP.md)下载 Apple Silicon / Intel 对应的 DMG 或 ZIP，拖入「应用程序」即可使用。正式版本从 Releases 获取，每次 main 更新也会在 Actions 提供测试包。
+
+自行构建需要 macOS、Node.js 24+ 和 Xcode Command Line Tools。
 
 ```sh
 npm run desktop
@@ -123,7 +125,7 @@ npm run desktop
 
 命令会构建并打开独立的「山河」窗口，桌面外壳自动管理本地后端。Apple Silicon 产物位于 `release/mac-arm64/山河.app`，内置 Node 运行时。
 
-当前是未签名、未公证的本地开发构建。Windows / Linux 可以使用带本地后端的 Web 版，暂无对应桌面包。[其他运行与打包方式](docs/SETUP.md#运行)
+支持 macOS 13.5+，当前包采用 ad-hoc 签名，尚未进行 Apple 公证。Windows / Linux 可以使用带本地后端的 Web 版，暂无对应桌面包。[其他运行与打包方式](docs/SETUP.md#运行)
 
 </details>
 
@@ -136,6 +138,7 @@ npm run desktop
 | 文档                                     | 内容                                                     |
 | :--------------------------------------- | :------------------------------------------------------- |
 | [在线版与部署](docs/PAGES.md)            | 浏览器保存、故事迁移、版本差异与 GitHub Actions          |
+| [桌面自动构建](docs/MACOS_CI.md)         | 双架构产物、版本标签与 GitHub Releases 发布              |
 | [桌面版安装](docs/DESKTOP.md)            | macOS 安装、迁移在线故事与连接探索助手                   |
 | [安装与配置](docs/SETUP.md)              | Web / macOS 运行、模型连接、环境变量、工程结构与开发命令 |
 | [产品与工程设计](docs/ARCHITECTURE.md)   | Story 数据模型、工具能力、组件层、持久化与接口           |

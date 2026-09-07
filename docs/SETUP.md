@@ -6,6 +6,8 @@
 
 ## 运行
 
+直接安装 macOS App 可从 [桌面版安装指引](DESKTOP.md) 获取自动构建的 DMG / ZIP，无需配置开发环境。
+
 需要 **Node.js 24+**。不需要配置数据库，不需要 API Key 就能先体验演示指令。
 
 ```sh
@@ -27,7 +29,7 @@ npm run desktop
 npm run desktop:pack
 ```
 
-产物在 `release/`。macOS Apple Silicon 为 `release/mac-arm64/山河.app`。当前是本地开发构建，未进行开发者证书签名或公证。macOS 原生外壳使用系统 WebKit；Windows/Linux 可使用带本地后端的 Web 版，暂无桌面打包。
+产物在 `release/`。macOS Apple Silicon 为 `release/mac-arm64/山河.app`。当前采用 ad-hoc 签名，未进行 Apple Developer ID 签名或公证；最低系统版本为 macOS 13.5。macOS 原生外壳使用系统 WebKit；Windows/Linux 可使用带本地后端的 Web 版，暂无桌面打包。
 
 本地 Web 生产运行：
 
