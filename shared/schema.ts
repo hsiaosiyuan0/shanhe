@@ -113,7 +113,7 @@ export const layersSchema = z.object({
     .boolean()
     .default(false)
     .describe(
-      'Overlay modern province boundaries and labels. Currently mainland China; never historical borders.',
+      'Overlay modern province, city and county/district boundaries and place names. Zoom 5+ for cities, 8+ for counties, 11+ for town/local names. City/county data loads online for the viewport. Never historical boundaries or exact reverse geocoding.',
     ),
   terrain: z.boolean(),
   rivers: z.boolean(),

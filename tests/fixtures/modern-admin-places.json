@@ -1,0 +1,116 @@
+{
+  "source": "https://tiles.openfreemap.org/planet/20260830_080001_pt/{z}/{x}/{y}.pbf",
+  "zoom": 10,
+  "tiles": [
+    [853, 421],
+    [807, 422],
+    [837, 420]
+  ],
+  "license": "ODbL 1.0, OpenStreetMap contributors / OpenFreeMap / OpenMapTiles",
+  "features": [
+    {
+      "properties": {
+        "name": "杭州市",
+        "name:zh": "杭州市",
+        "class": "city",
+        "capital": 4,
+        "rank": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.20519256591797, 30.248984087355694]
+      }
+    },
+    {
+      "properties": {
+        "name": "西湖区",
+        "name:zh": "西湖区",
+        "class": "city",
+        "capital": 6,
+        "rank": 12
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.1256275177002, 30.261661955271734]
+      }
+    },
+    {
+      "properties": {
+        "name": "拱墅区",
+        "name:zh": "拱墅区",
+        "class": "city",
+        "capital": 6,
+        "rank": 11
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.13669967651367, 30.321322323201585]
+      }
+    },
+    {
+      "properties": {
+        "name": "临平区",
+        "name:zh": "临平区",
+        "class": "city",
+        "capital": 6,
+        "rank": 11
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.29462814331055, 30.421736427260797]
+      }
+    },
+    {
+      "properties": {
+        "name": "眉山市",
+        "name:zh": "眉山市",
+        "class": "city",
+        "capital": 5,
+        "rank": 11
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [103.84577751159668, 30.079046950392154]
+      }
+    },
+    {
+      "properties": {
+        "name": "东坡区",
+        "name:zh": "东坡区",
+        "class": "city",
+        "capital": 6,
+        "rank": 12
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [103.83110046386719, 30.04502439947548]
+      }
+    },
+    {
+      "properties": {
+        "name": "武汉市",
+        "name:zh": "武汉市",
+        "class": "city",
+        "capital": 4,
+        "rank": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [114.29214477539062, 30.57888856503763]
+      }
+    },
+    {
+      "properties": {
+        "name": "武昌区",
+        "name:zh": "武昌区",
+        "class": "city",
+        "capital": 6,
+        "rank": 12
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [114.31102752685547, 30.55671777895064]
+      }
+    }
+  ]
+}

@@ -17,6 +17,16 @@ import { Button } from './ui';
 import { declutterLabels } from './map/declutterLabels';
 import { customRiverFeatures, customRiverLabels, customRiverLayers } from './map/customRivers';
 import { riverLines } from '../shared/rivers';
+import { ModernAdminController, type AdminDetailStatus } from './map/ModernAdminController';
+import {
+  adminDetailMinZoom,
+  adminScaleLabel,
+  modernPlaceName,
+  modernPlaceKind,
+  placeLayerIds,
+  provinceLabels,
+  provinceLabelFeatures,
+} from './map/modernAdmin';
 import {
   findMajorRiver,
   majorRivers,
@@ -85,6 +95,7 @@ function style(): StyleSpecification {
         data: assetUrl('data/admin.geojson'),
         attribution: 'Modern provinces: Natural Earth',
       },
+      'province-labels': { type: 'geojson', data: empty },
       relief: {
         type: 'raster',
         tiles: [
@@ -183,6 +194,7 @@ function style(): StyleSpecification {
           'line-dasharray': [5, 3],
         },
       },
+      provinceLabels,
       ...majorRiverLayers(),
       ...customRiverLayers(),
       {
@@ -242,6 +254,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   const map = useRef<maplibregl.Map | null>(null);
   const markers = useRef<maplibregl.Marker[]>([]);
   const popups = useRef<MapPopupController | null>(null);
+  const adminDetail = useRef<ModernAdminController | null>(null);
   const callbacks = useRef({ onSelect, onSelectRoute, onPoint });
   callbacks.current = { onSelect, onSelectRoute, onPoint };
   const [ready, setReady] = useState(false);
@@ -249,6 +262,9 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   const [fatal, setFatal] = useState(false);
   const [regions, setRegions] = useState<{ name: string; center: [number, number] }[]>([]);
   const [adminError, setAdminError] = useState(false);
+  const [detailStatus, setDetailStatus] = useState<AdminDetailStatus>('idle');
+  const [adminScale, setAdminScale] = useState(adminScaleLabel(story.view.zoom));
+  const [showAdminDetail, setShowAdminDetail] = useState(story.view.zoom >= adminDetailMinZoom);
   const failedSources = useRef(new Set<string>());
   const lastNavigation = useRef<{ view: string; selectedId?: string } | null>(null);
   const currentStory = useRef(story);
@@ -365,6 +381,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     }
     map.current = m;
     popups.current = new MapPopupController(m);
+    adminDetail.current = new ModernAdminController(m, setDetailStatus);
     const updateLabelVisibility = () => declutterLabels(m.getContainer());
     m.on('moveend', updateLabelVisibility);
     const onPopupKeyDown = (event: KeyboardEvent) => {
@@ -375,8 +392,11 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     };
     m.getContainer().addEventListener('keydown', onPopupKeyDown);
     m.addControl(new CollapsedAttributionControl({ compact: true }), 'bottom-right');
-    const updateLabelDetail = () =>
+    const updateLabelDetail = () => {
       container.current?.classList.toggle('journey-detail', m.getZoom() >= 6.5);
+      setAdminScale(adminScaleLabel(m.getZoom()));
+      setShowAdminDetail(m.getZoom() >= adminDetailMinZoom);
+    };
     updateLabelDetail();
     m.on('zoom', updateLabelDetail);
     m.on('style.load', () => setReady(true));
@@ -445,6 +465,24 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
         callbacks.current.onSelectRoute(String(routeId));
         return;
       }
+      const placeLayers = placeLayerIds.filter((id) => m.getLayer(id));
+      const place =
+        placeLayers.length && currentStory.current.layers.admin
+          ? m.queryRenderedFeatures(event.point, { layers: placeLayers })[0]
+          : undefined;
+      const placeName = place && modernPlaceName(place.properties);
+      if (placeName && place.geometry.type === 'Point') {
+        const coordinates = place.geometry.coordinates.slice(0, 2) as [number, number];
+        popups.current?.toggle(
+          `modern-place:${place.id ?? coordinates.join(',')}:${placeName}`,
+          null,
+          coordinates,
+          placeName,
+          `现代${modernPlaceKind(place.properties)}。这是地名参考位置，不代表整个行政区的范围。\n\n来源：OpenStreetMap / OpenFreeMap。市县边界与地名不随故事年份变化。`,
+          'center',
+        );
+        return;
+      }
       let elevation: number | null = null;
       try {
         const result = m.queryTerrainElevation(event.lngLat);
@@ -462,6 +500,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     });
     let hoveredRiver: string | undefined;
     let hoveredCustom: string | undefined;
+    let hoveredPlace: string | undefined;
     m.on('mousemove', (event) => {
       if (!m.isStyleLoaded()) return;
       const feature = m.queryRenderedFeatures(event.point, {
@@ -471,16 +510,24 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       const customId = m.queryRenderedFeatures(event.point, {
         layers: ['custom-river-hit', 'custom-river-label'],
       })[0]?.properties?.id as string | undefined;
-      if (river?.id === hoveredRiver && customId === hoveredCustom) return;
+      const placeLayers = placeLayerIds.filter((id) => m.getLayer(id));
+      const place = placeLayers.length
+        ? m.queryRenderedFeatures(event.point, { layers: placeLayers })[0]
+        : undefined;
+      const placeName = place && modernPlaceName(place.properties);
+      if (river?.id === hoveredRiver && customId === hoveredCustom && placeName === hoveredPlace)
+        return;
       hoveredRiver = river?.id;
       hoveredCustom = customId;
-      m.getCanvas().style.cursor = river || customId ? 'pointer' : '';
+      hoveredPlace = placeName;
+      m.getCanvas().style.cursor = river || customId || placeName ? 'pointer' : '';
       m.setFilter('custom-river-hover', ['==', ['get', 'id'], customId || '']);
       m.setFilter('major-river-hover', riverFilter(river ? [river] : []));
     });
     m.on('mouseout', () => {
       hoveredRiver = undefined;
       hoveredCustom = undefined;
+      hoveredPlace = undefined;
       if (m.getLayer('custom-river-hover'))
         m.setFilter('custom-river-hover', ['==', ['get', 'id'], '']);
       m.getCanvas().style.cursor = '';
@@ -495,6 +542,8 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       m.getContainer().removeEventListener('keydown', onPopupKeyDown);
       popups.current?.close();
       popups.current = null;
+      adminDetail.current?.dispose();
+      adminDetail.current = null;
       markers.current.forEach((v) => v.remove());
       markers.current = [];
       m.remove();
@@ -522,6 +571,25 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       });
     return () => controller.abort();
   }, []);
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !ready) return;
+    adminDetail.current?.setEnabled(story.layers.admin);
+    (m.getSource('province-labels') as GeoJSONSource).setData(provinceLabelFeatures(regions));
+    m.setLayoutProperty('province-labels', 'visibility', story.layers.admin ? 'visible' : 'none');
+    // Keep the local province context if detailed online data fails to load.
+    const detailed = detailStatus === 'ready';
+    m.setPaintProperty(
+      'province-labels',
+      'text-opacity',
+      detailed ? ['interpolate', ['linear'], ['zoom'], 5.5, 1, 7, 0] : 0.9,
+    );
+    m.setPaintProperty(
+      'admin-boundaries',
+      'line-opacity',
+      detailed ? ['interpolate', ['linear'], ['zoom'], 6, 0.65, 6.5, 0] : 0.65,
+    );
+  }, [ready, story.layers.admin, regions, detailStatus]);
   useEffect(() => {
     if (!ready || !map.current) return;
     const key = JSON.stringify(story.view);
@@ -661,13 +729,6 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
         };
         add(el, activeRoute.coordinates[stop.at], 'bottom');
       });
-    if (story.layers.admin)
-      regions.forEach((region) => {
-        const el = document.createElement('span');
-        el.className = 'admin-label';
-        el.textContent = region.name;
-        add(el, region.center);
-      });
     story.events.forEach((e) => {
       const key = e.coordinates.join(',');
       groups.set(key, [...(groups.get(key) || []), e]);
@@ -752,7 +813,6 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     story.routes,
     story.layers,
     selected,
-    regions,
     activeRouteId,
     story.kind,
   ]);
@@ -785,10 +845,28 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
           ))}
         </div>
       )}
-      {offline && <div className="map-network">在线地形暂不可用 · 本地地理底图仍可浏览</div>}
-      {adminError && story.layers.admin && (
-        <div className="map-network">行政区数据加载失败，请刷新重试</div>
+      {(offline ||
+        (story.layers.admin && (adminError || (showAdminDetail && detailStatus === 'error')))) && (
+        <div className="map-network" role="status">
+          {offline && <p>在线地形暂不可用 · 本地地理底图仍可浏览</p>}
+          {adminError && story.layers.admin && <p>省级数据加载失败，请刷新重试</p>}
+          {story.layers.admin && showAdminDetail && detailStatus === 'error' && (
+            <p>
+              部分市县数据暂不可用 · 保留省级对照{' '}
+              <Button onClick={() => adminDetail.current?.retry()}>重试市县数据</Button>
+            </p>
+          )}
+        </div>
       )}
+      {story.layers.admin &&
+        !offline &&
+        !adminError &&
+        !(showAdminDetail && detailStatus === 'error') && (
+          <div className="admin-caption" aria-label={`现代行政区对照：${adminScale}`}>
+            <span />
+            {showAdminDetail && detailStatus === 'loading' ? '市县数据加载中…' : adminScale}
+          </div>
+        )}
       {fatal && (
         <div className="map-fallback">
           <strong>当前浏览器未启用 WebGL</strong>

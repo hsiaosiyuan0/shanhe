@@ -3863,3 +3863,15 @@ button {
   min-height: 32px;
   font-weight: 600;
 }
+.map-network p {
+  line-height: 1.7;
+}
+.map-network button {
+  text-decoration: underline;
+  font-weight: 600;
+  margin-left: 5px;
+  min-height: 28px;
+}
+.map-network {
+  max-width: calc(100% - 40px);
+}

@@ -57,7 +57,7 @@ export async function respondWithCodex(
   await codexVersion(path);
   const binding = createHash('sha256')
     .update(
-      JSON.stringify([path, settings.agentModel, settings.connectionId, 'story-tools-v2-rivers']),
+      JSON.stringify([path, settings.agentModel, settings.connectionId, 'story-tools-v3-admin']),
     )
     .digest('hex');
   const previous = store.agentSession(story.id);

@@ -8,6 +8,14 @@
 
 行政区提取可复现：下载 Natural Earth 源 GeoJSON 后执行 `node scripts/extract-admin.mjs <源文件路径>`。所有地理数据使用 WGS84，与故事坐标一致。省名为现代名称，不随故事年份改变。
 
+## 在线市县与地名
+
+市县数据没有打包到此目录，而由 [OpenFreeMap](https://openfreemap.org/quick_start/) 的 `https://tiles.openfreemap.org/planet` TileJSON 提供，随当前视野加载。源数据为 [OpenStreetMap（ODbL）](https://www.openstreetmap.org/copyright)，使用 [OpenMapTiles schema](https://openmaptiles.org/schema/)。地图来源控件保留 OpenFreeMap、OpenMapTiles 和 OpenStreetMap 署名。
+
+`boundary` 图层使用 `admin_level` 4 / 5 / 6 区分省、市、区县；`place` 图层优先使用 `name:zh-Hans`、`name:zh`，再回退 `name`。按 [OSM 中国区划约定](https://wiki.openstreetmap.org/wiki/China/Boundaries)，市县层级不能只看 `class=city`：区县政府所在地也可能采用该类型，因此用 `capital=6` 分出区县标签。地方数据可能存在缺漏，地图不承诺完整或权威的区划覆盖。
+
+缩放 5 / 8 / 11 级分别启用城市、区县、乡镇地名；市界从 6 级显示。详细参考采用现代数据，不随故事年代变化，不替代历史行政区研究。`tests/fixtures/modern-admin-places.json` 保存了来源快照中杭州、眉山、武汉的少量真实地名记录，用于校验中文标签和市县分级。
+
 下载日期：2026-09-07。数据仅适用于概览，不代表历史海岸线、历史河道或精确测绘资料。
 
 长江着色使用源数据中的 Tuotuo、Tongtian、Jinsha、Chang Jiang、Yangtze 河段，保留沱沱河、通天河、金沙江等分段名称；分段关系参考[中科院地理科学与资源研究所《长江》](https://www.igsnrr.cas.cn/cbkx/kpyd/zgdl/cnszy/202009/t20200910_5692425.html)。黄河着色覆盖所有 Huang 要素。显示沿用原河道几何，不跨数据缺口补直线，也不将支流并入干流。

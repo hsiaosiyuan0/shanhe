@@ -798,7 +798,7 @@ export default function App() {
                   </Button>
                   <Button
                     aria-label="现代行政区对照"
-                    title="叠加现代省界与省名，点击地图查看所属行政区"
+                    title="叠加现代省、市、区县边界与地名；放大显示更多层级"
                     aria-pressed={story.layers.admin}
                     className={story.layers.admin ? 'active admin-toggle' : 'admin-toggle'}
                     onClick={() => toggleLayer('admin')}
@@ -869,7 +869,9 @@ export default function App() {
                       </label>
                     );
                   })}
-                  <p>海拔颜色与三维视角可独立切换。省界为现代参考，未加载历史疆界。</p>
+                  <p>
+                    今地对照随缩放显示省、市、区县与乡镇地名。市县数据按视野联网加载，均为现代参考。
+                  </p>
                   <Button
                     className="river-manager-entry"
                     onClick={() => {
@@ -1059,12 +1061,6 @@ export default function App() {
                       <span key={height}>{height >= 1000 ? `${height / 1000}k` : height}</span>
                     ))}
                   </div>
-                </div>
-              )}
-              {story.layers.admin && (
-                <div className="admin-caption">
-                  <span />
-                  现代省界 · 中国大陆
                 </div>
               )}
             </section>
