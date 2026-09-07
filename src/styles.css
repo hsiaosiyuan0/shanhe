@@ -1090,7 +1090,7 @@ button svg {
   transform: rotate(-8deg);
 }
 .annotation-pin {
-  --annotation-color: #485f3d;
+  --annotation-color: #314e35;
   --annotation-halo: #fff9e9;
   display: grid;
   place-items: center;
@@ -1111,9 +1111,11 @@ button svg {
   inset: -5px -9px;
   z-index: -1;
   pointer-events: none;
-  background: radial-gradient(ellipse, #fff9e9b8 5%, #fff9e95c 40%, #fff9e900 72%);
-  opacity: 0;
-  transition: opacity 180ms ease;
+  background: radial-gradient(ellipse, #fffceff5 10%, #fff9e9e0 35%, #fff9e98c 55%, #fff9e900 75%);
+  opacity: 0.8;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
 }
 .annotation-ink {
   display: flex;
@@ -1126,11 +1128,11 @@ button svg {
   height: 23px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.35;
+  stroke-width: 1.6;
   stroke-linecap: round;
   stroke-linejoin: round;
   filter: drop-shadow(0 0 2px var(--annotation-halo));
-  opacity: 0.85;
+  opacity: 1;
   transition: opacity 180ms ease;
 }
 .annotation-label {
@@ -1139,8 +1141,8 @@ button svg {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: var(--serif);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   line-height: 1.6;
   letter-spacing: 3px;
   text-shadow:
@@ -1151,7 +1153,7 @@ button svg {
   text-underline-offset: 5px;
 }
 .annotation-pin.river {
-  --annotation-color: #326c79;
+  --annotation-color: #205b6c;
   --annotation-halo: #edf5e9;
 }
 .annotation-pin.river .annotation-ink {
@@ -1166,7 +1168,7 @@ button svg {
 .annotation-pin.river .annotation-symbol {
   width: 48px;
   height: 10px;
-  stroke-width: 1.1;
+  stroke-width: 1.5;
 }
 .annotation-pin.note {
   --annotation-color: #85603d;
@@ -1184,6 +1186,7 @@ button svg {
 .annotation-pin:focus-visible::before,
 .annotation-pin[aria-expanded='true']::before {
   opacity: 1;
+  transform: scale(1.08);
 }
 .annotation-pin:hover .annotation-symbol,
 .annotation-pin[aria-expanded='true'] .annotation-symbol {
@@ -1218,6 +1221,38 @@ button svg {
   margin-top: 8px;
   font-size: 11px;
   line-height: 1.8;
+  white-space: pre-line;
+}
+.river-key {
+  position: absolute;
+  top: 57px;
+  right: var(--map-edge);
+  z-index: 12;
+  display: flex;
+  gap: 4px;
+  padding: 2px 4px;
+  border-radius: 6px;
+  background: #fffdf1df;
+  box-shadow: 0 2px 10px #3449350a;
+}
+.river-key button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #4f635a;
+}
+.river-key button:hover,
+.river-key button[aria-expanded='true'] {
+  background: #e5ebdc;
+}
+.river-key button > span {
+  width: 20px;
+  height: 3px;
+  border-radius: 2px;
 }
 .maplibregl-popup-close-button {
   padding: 3px 8px;

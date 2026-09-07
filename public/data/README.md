@@ -9,3 +9,5 @@
 行政区提取可复现：下载 Natural Earth 源 GeoJSON 后执行 `node scripts/extract-admin.mjs <源文件路径>`。所有地理数据使用 WGS84，与故事坐标一致。省名为现代名称，不随故事年份改变。
 
 下载日期：2026-09-07。数据仅适用于概览，不代表历史海岸线、历史河道或精确测绘资料。
+
+长江着色使用源数据中的 Tuotuo、Tongtian、Jinsha、Chang Jiang、Yangtze 河段，保留沱沱河、通天河、金沙江等分段名称；分段关系参考[中科院地理科学与资源研究所《长江》](https://www.igsnrr.cas.cn/cbkx/kpyd/zgdl/cnszy/202009/t20200910_5692425.html)。黄河着色覆盖所有 Huang 要素。显示沿用原河道几何，不跨数据缺口补直线，也不将支流并入干流。

@@ -13,6 +13,14 @@ import { CollapsedAttributionControl } from './map/CollapsedAttributionControl';
 import { MapPopupController } from './map/MapPopupController';
 import { annotationElement } from './map/annotationElement';
 import { declutterLabels } from './map/declutterLabels';
+import {
+  findMajorRiver,
+  majorRivers,
+  majorRiverLayers,
+  riverFilter,
+  riverSegmentName,
+  type MajorRiver,
+} from './map/majorRivers';
 
 export type MapHandle = {
   fit: () => void;
@@ -41,8 +49,6 @@ const mountains: [string, [number, number]][] = [
   ['大 别 山', [115.5, 31.2]],
 ];
 const riverLabels: [string, [number, number]][] = [
-  ['长 江', [112.7, 29.8]],
-  ['黄 河', [110.8, 36.6]],
   ['东 海', [124, 29.4]],
   ['南 海', [114.8, 20.7]],
 ];
@@ -168,6 +174,7 @@ function style(): StyleSpecification {
           'line-dasharray': [5, 3],
         },
       },
+      ...majorRiverLayers(),
       {
         id: 'route-shadow',
         type: 'line',
@@ -237,6 +244,33 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   const currentStory = useRef(story);
   currentStory.current = story;
   const motion = () => (window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 900);
+  const openRiver = (
+    river: MajorRiver,
+    coordinates: [number, number],
+    trigger: HTMLButtonElement | null = null,
+    sectionName = river.label,
+  ) => {
+    const riverNotes = currentStory.current.markers.filter(
+      (marker) => marker.kind === 'river' && findMajorRiver(marker.label)?.id === river.id,
+    );
+    const note =
+      riverNotes.find((marker) => marker.label.replaceAll(/\s/g, '') === sectionName) ??
+      riverNotes[0];
+    const description = [
+      '沿现代河道显示的地理参考，不代表故事年代的历史河道。',
+      note?.description ? `已保存的故事笔记：${note.description}` : null,
+    ]
+      .filter(Boolean)
+      .join('\n\n');
+    popups.current?.toggle(
+      `river:${river.id}`,
+      trigger,
+      coordinates,
+      sectionName === river.label ? river.label : `${river.label} · ${sectionName}`,
+      description,
+      'center',
+    );
+  };
   const focusRoute = (routeId: string, legIndex?: number) => {
     const route = currentStory.current.routes.find((r) => r.id === routeId);
     if (!route || !map.current) return;
@@ -339,10 +373,23 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       }
     });
     m.on('click', (event) => {
-      // The first background click dismisses a note; it does not open another card.
-      if (popups.current?.close()) return;
       const routeId = m.queryRenderedFeatures(event.point, { layers: ['journey-corridors'] })[0]
         ?.properties?.routeId;
+      const riverFeature = m.queryRenderedFeatures(event.point, {
+        layers: ['major-river-hit', 'major-river-label'],
+      })[0];
+      const river = findMajorRiver(String(riverFeature?.properties?.name ?? ''));
+      if (river && !routeId) {
+        openRiver(
+          river,
+          [event.lngLat.lng, event.lngLat.lat],
+          null,
+          riverSegmentName(String(riverFeature.properties.name)),
+        );
+        return;
+      }
+      // The first background click dismisses a note; it does not open another card.
+      if (popups.current?.close()) return;
       if (routeId) {
         callbacks.current.onSelectRoute(String(routeId));
         return;
@@ -361,6 +408,23 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
           ? m.queryRenderedFeatures(event.point, { layers: ['admin-fill'] })[0]?.properties?.name
           : undefined,
       });
+    });
+    let hoveredRiver: string | undefined;
+    m.on('mousemove', (event) => {
+      if (!m.isStyleLoaded()) return;
+      const feature = m.queryRenderedFeatures(event.point, {
+        layers: ['major-river-hit', 'major-river-label'],
+      })[0];
+      const river = findMajorRiver(String(feature?.properties?.name ?? ''));
+      if (river?.id === hoveredRiver) return;
+      hoveredRiver = river?.id;
+      m.getCanvas().style.cursor = river ? 'pointer' : '';
+      m.setFilter('major-river-hover', riverFilter(river ? [river] : []));
+    });
+    m.on('mouseout', () => {
+      hoveredRiver = undefined;
+      m.getCanvas().style.cursor = '';
+      if (m.getLayer('major-river-hover')) m.setFilter('major-river-hover', riverFilter([]));
     });
     m.addControl(new maplibregl.ScaleControl({ maxWidth: 90, unit: 'metric' }), 'bottom-left');
     const observer = new ResizeObserver(() => m.resize());
@@ -466,7 +530,8 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     });
     for (const id of ['routes', 'route-shadow', 'progress', 'journey-corridors', 'journey-lines'])
       m.setLayoutProperty(id, 'visibility', story.layers.routes ? 'visible' : 'none');
-    m.setLayoutProperty('rivers', 'visibility', story.layers.rivers ? 'visible' : 'none');
+    for (const id of ['rivers', ...majorRiverLayers().map((layer) => layer.id)])
+      m.setLayoutProperty(id, 'visibility', story.layers.rivers ? 'visible' : 'none');
     for (const id of ['elevation', 'hillshade'])
       m.setLayoutProperty(id, 'visibility', story.layers.elevation ? 'visible' : 'none');
     for (const id of ['admin-fill', 'admin-boundaries'])
@@ -585,6 +650,8 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
           add(el, coordinates);
         });
     story.markers.forEach((marker) => {
+      // Recognized river notes belong to their channel, not a separate floating point.
+      if (marker.kind === 'river' && findMajorRiver(marker.label)) return;
       if (
         (marker.kind === 'mountain' && !story.layers.mountains) ||
         (marker.kind === 'river' && !story.layers.rivers)
@@ -622,6 +689,32 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   return (
     <>
       <div className="map-canvas" ref={container} aria-label="交互式故事地图" />
+      {story.layers.rivers && (
+        <div className="river-key" aria-label="主要河流，现代河道参考">
+          {majorRivers.map((river) => (
+            <button
+              key={river.id}
+              type="button"
+              aria-label={`${river.label}，查看河道说明`}
+              aria-haspopup="dialog"
+              aria-expanded={false}
+              onClick={(event) => {
+                const m = map.current;
+                if (!m) return;
+                m.easeTo({
+                  center: river.center,
+                  zoom: Math.max(5, m.getZoom()),
+                  duration: motion(),
+                });
+                openRiver(river, river.center, event.currentTarget);
+              }}
+            >
+              <span style={{ backgroundColor: river.color }} aria-hidden="true" />
+              {river.label}
+            </button>
+          ))}
+        </div>
+      )}
       {offline && <div className="map-network">在线地形暂不可用 · 本地地理底图仍可浏览</div>}
       {adminError && story.layers.admin && (
         <div className="map-network">行政区数据加载失败，请刷新重试</div>
