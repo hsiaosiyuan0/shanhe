@@ -10,6 +10,8 @@ import { respond, makeMessage, config, publicConfig, toolDefinition } from './ll
 import { probeCodex } from './agents/codex.js';
 import { resolveCodex, codexVersion } from './agents/discovery.js';
 import type { ChatProgress } from '../shared/schema.js';
+import { toolDefinitions } from '../shared/story-tools.js';
+import { riverCatalog } from '../shared/river-catalog.js';
 
 const activeChats = new Set<AbortController>();
 export function stopChats() {
@@ -45,6 +47,8 @@ export function createApp(store: Store, dist = resolve('dist')) {
   app.use(express.json({ limit: '3mb' }));
   app.get('/api/health', (_req, res) => res.json({ ok: true, storage: 'sqlite' }));
   app.get('/api/capabilities', (_req, res) => res.json(toolDefinition));
+  app.get('/api/tools', (_req, res) => res.json({ tools: toolDefinitions }));
+  app.get('/api/river-catalog', (_req, res) => res.json(riverCatalog));
   app.get('/api/settings', (_req, res) => res.json(publicConfig(store)));
   app.post('/api/agents/discover', async (_req, res) => {
     try {

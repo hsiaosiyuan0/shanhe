@@ -156,3 +156,42 @@ test('browser rejects model settings and chat without sending requests or changi
     await store.close();
   }
 });
+
+test('custom river geometry survives IndexedDB reopening, exports and snapshot restore', async () => {
+  const { name, store, api } = fixture();
+  const original = (await store.list())[0];
+  const added = await api<Story>(
+    `/stories/${original.id}/actions`,
+    json('POST', {
+      revision: original.revision,
+      actions: [{ type: 'add_catalog_river', catalogId: 'han', id: 'browser-han' }],
+    }),
+  );
+  const snapshot = await api<Snapshot>(
+    `/stories/${original.id}/snapshots`,
+    json('POST', { name: 'river' }),
+  );
+  await store.close();
+  const reopened = new BrowserStore(name);
+  try {
+    const { api: call } = createBrowserApi(reopened);
+    assert.deepEqual((await reopened.detail(original.id)).story.riverChannels, added.riverChannels);
+    const exported = await call<any>(`/stories/${original.id}/export`);
+    const imported = await call<Story>('/import', json('POST', exported));
+    assert.deepEqual(imported.riverChannels, added.riverChannels);
+    const changed = await call<Story>(
+      `/stories/${original.id}/actions`,
+      json('POST', {
+        revision: added.revision,
+        actions: [{ type: 'update_river', id: 'browser-han', patch: { visible: false } }],
+      }),
+    );
+    const restored = await call<StoryDetail>(
+      `/stories/${original.id}/snapshots/${snapshot.id}/restore`,
+      json('POST', { revision: changed.revision }),
+    );
+    assert.deepEqual(restored.story.riverChannels, added.riverChannels);
+  } finally {
+    await reopened.close();
+  }
+});

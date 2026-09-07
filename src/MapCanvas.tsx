@@ -15,6 +15,8 @@ import { MapPopupController } from './map/MapPopupController';
 import { annotationElement } from './map/annotationElement';
 import { Button } from './ui';
 import { declutterLabels } from './map/declutterLabels';
+import { customRiverFeatures, customRiverLabels, customRiverLayers } from './map/customRivers';
+import { riverLines } from '../shared/rivers';
 import {
   findMajorRiver,
   majorRivers,
@@ -28,6 +30,7 @@ import {
 export type MapHandle = {
   fit: () => void;
   focusRoute: (routeId: string, legIndex?: number) => void;
+  focusRiver: (riverId: string) => void;
   zoom: (delta: number) => void;
   getView: () => Story['view'] | undefined;
 };
@@ -98,6 +101,8 @@ function style(): StyleSpecification {
           '<a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>',
       },
       'river-labels': { type: 'geojson', data: riverLabelAnchors() },
+      'custom-rivers': { type: 'geojson', data: empty },
+      'custom-river-labels': { type: 'geojson', data: empty },
       routes: { type: 'geojson', data: empty },
       progress: { type: 'geojson', data: empty },
       journeys: { type: 'geojson', data: empty },
@@ -179,6 +184,7 @@ function style(): StyleSpecification {
         },
       },
       ...majorRiverLayers(),
+      ...customRiverLayers(),
       {
         id: 'route-shadow',
         type: 'line',
@@ -315,6 +321,16 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   useImperativeHandle(ref, () => ({
     fit,
     focusRoute,
+    focusRiver: (id) => {
+      const river = currentStory.current.riverChannels.find((r) => r.id === id);
+      if (!river || !map.current) return;
+      popups.current?.close();
+      const bounds = new maplibregl.LngLatBounds();
+      riverLines(river.geometry)
+        .flat()
+        .forEach((p) => bounds.extend(p));
+      map.current.fitBounds(bounds, { padding: 85, maxZoom: 9, duration: motion() });
+    },
     zoom: (delta) =>
       map.current?.easeTo({ zoom: (map.current?.getZoom() || 4) + delta, duration: 300 }),
     getView: () => {
@@ -378,6 +394,36 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       }
     });
     m.on('click', (event) => {
+      const customId = m.queryRenderedFeatures(event.point, {
+        layers: ['custom-river-hit', 'custom-river-label'],
+      })[0]?.properties?.id;
+      const custom = currentStory.current.riverChannels.find((r) => r.id === customId);
+      if (custom) {
+        const period =
+          custom.period === 'modern'
+            ? '现代地理参考，不代表故事年代的河道'
+            : custom.period === 'historical'
+              ? `历史河道 · ${custom.periodLabel || '具体年代未填写'}`
+              : `年代待定 · ${custom.periodLabel || '请核对数据时期'}`;
+        popups.current?.toggle(
+          `custom-river:${custom.id}`,
+          null,
+          [event.lngLat.lng, event.lngLat.lat],
+          custom.label,
+          [
+            period,
+            custom.confidence === 'approximate' ? '区域尺度概略参考' : '数据待核验',
+            custom.description,
+            custom.source
+              ? `来源：${custom.source.title}\n${custom.source.url}`
+              : '来源未填写；可在「图层 → 河道数据」补充',
+          ]
+            .filter(Boolean)
+            .join('\n\n'),
+          'center',
+        );
+        return;
+      }
       const routeId = m.queryRenderedFeatures(event.point, { layers: ['journey-corridors'] })[0]
         ?.properties?.routeId;
       const riverFeature = m.queryRenderedFeatures(event.point, {
@@ -415,19 +461,28 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       });
     });
     let hoveredRiver: string | undefined;
+    let hoveredCustom: string | undefined;
     m.on('mousemove', (event) => {
       if (!m.isStyleLoaded()) return;
       const feature = m.queryRenderedFeatures(event.point, {
         layers: ['major-river-hit', 'major-river-label', 'major-river-anchor-label'],
       })[0];
       const river = findMajorRiver(String(feature?.properties?.name ?? ''));
-      if (river?.id === hoveredRiver) return;
+      const customId = m.queryRenderedFeatures(event.point, {
+        layers: ['custom-river-hit', 'custom-river-label'],
+      })[0]?.properties?.id as string | undefined;
+      if (river?.id === hoveredRiver && customId === hoveredCustom) return;
       hoveredRiver = river?.id;
-      m.getCanvas().style.cursor = river ? 'pointer' : '';
+      hoveredCustom = customId;
+      m.getCanvas().style.cursor = river || customId ? 'pointer' : '';
+      m.setFilter('custom-river-hover', ['==', ['get', 'id'], customId || '']);
       m.setFilter('major-river-hover', riverFilter(river ? [river] : []));
     });
     m.on('mouseout', () => {
       hoveredRiver = undefined;
+      hoveredCustom = undefined;
+      if (m.getLayer('custom-river-hover'))
+        m.setFilter('custom-river-hover', ['==', ['get', 'id'], '']);
       m.getCanvas().style.cursor = '';
       if (m.getLayer('major-river-hover')) m.setFilter('major-river-hover', riverFilter([]));
     });
@@ -535,7 +590,17 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     });
     for (const id of ['routes', 'route-shadow', 'progress', 'journey-corridors', 'journey-lines'])
       m.setLayoutProperty(id, 'visibility', story.layers.routes ? 'visible' : 'none');
-    for (const id of ['rivers', ...majorRiverLayers().map((layer) => layer.id)])
+    (m.getSource('custom-rivers') as GeoJSONSource).setData(
+      customRiverFeatures(story.riverChannels),
+    );
+    (m.getSource('custom-river-labels') as GeoJSONSource).setData(
+      customRiverLabels(story.riverChannels),
+    );
+    for (const id of [
+      'rivers',
+      ...majorRiverLayers().map((layer) => layer.id),
+      ...customRiverLayers().map((layer) => layer.id),
+    ])
       m.setLayoutProperty(id, 'visibility', story.layers.rivers ? 'visible' : 'none');
     for (const id of ['elevation', 'hillshade'])
       m.setLayoutProperty(id, 'visibility', story.layers.elevation ? 'visible' : 'none');

@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { riverChannelSchema, riverPatchSchema, riverLines } from './rivers.js';
+import { catalogRiver } from './river-catalog.js';
 
 export const coordinate = z.tuple([z.number().min(-180).max(180), z.number().min(-85).max(85)]);
 export const sourceSchema = z.object({
@@ -139,6 +141,16 @@ export const storySchema = z.object({
   events: z.array(eventSchema).max(500),
   markers: z.array(markerSchema).max(500),
   routes: z.array(routeSchema).max(100),
+  riverChannels: z
+    .array(riverChannelSchema)
+    .max(50)
+    .default([])
+    .superRefine((rivers, ctx) => {
+      if (new Set(rivers.map((r) => r.id)).size !== rivers.length)
+        ctx.addIssue({ code: 'custom', message: '河道 ID 不能重复' });
+      if (rivers.reduce((n, r) => n + riverLines(r.geometry).flat().length, 0) > 24000)
+        ctx.addIssue({ code: 'custom', message: '每个故事的自定义河道合计最多 24,000 个坐标点' });
+    }),
   layers: layersSchema,
   view: viewSchema,
   revision: z.number().int().nonnegative(),
@@ -149,6 +161,18 @@ export const actionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('add_event'), event: eventSchema }),
   z.object({ type: z.literal('add_marker'), marker: markerSchema }),
   z.object({ type: z.literal('add_route'), route: routeSchema }),
+  z.object({ type: z.literal('add_river'), river: riverChannelSchema }),
+  z.object({
+    type: z.literal('add_catalog_river'),
+    catalogId: z.string().max(100),
+    id: z.string().min(1).max(100),
+  }),
+  z.object({
+    type: z.literal('update_river'),
+    id: z.string().min(1).max(100),
+    patch: riverPatchSchema,
+  }),
+  z.object({ type: z.literal('remove_river'), id: z.string().min(1).max(100) }),
   z.object({ type: z.literal('set_view'), view: viewSchema }),
   z.object({ type: z.literal('set_layers'), layers: layersSchema }),
 ]);
@@ -196,7 +220,7 @@ export type AgentSession = { threadId: string; binding: string; revision: number
 
 export function applyActions(original: Story, input: unknown): Story {
   const { actions } = actionsSchema.parse(input);
-  const story = structuredClone(original);
+  const story = storySchema.parse(structuredClone(original));
   for (const action of actions) {
     if (action.type === 'add_event') {
       if (story.events.some((e) => e.id === action.event.id)) throw new Error('事件 ID 已存在');
@@ -208,6 +232,22 @@ export function applyActions(original: Story, input: unknown): Story {
     } else if (action.type === 'add_route') {
       if (story.routes.some((r) => r.id === action.route.id)) throw new Error('路线 ID 已存在');
       story.routes.push(action.route);
+    } else if (action.type === 'add_river' || action.type === 'add_catalog_river') {
+      const river =
+        action.type === 'add_river' ? action.river : catalogRiver(action.catalogId, action.id);
+      if (story.riverChannels.some((r) => r.id === river.id)) throw new Error('河道 ID 已存在');
+      story.riverChannels.push(river);
+    } else if (action.type === 'update_river' || action.type === 'remove_river') {
+      const index = story.riverChannels.findIndex((r) => r.id === action.id);
+      if (index < 0) throw new Error('河道不存在');
+      if (action.type === 'remove_river') story.riverChannels.splice(index, 1);
+      else {
+        const next = { ...story.riverChannels[index], ...action.patch };
+        story.riverChannels[index] = riverChannelSchema.parse({
+          ...next,
+          source: next.source ?? undefined,
+        });
+      }
     } else if (action.type === 'set_layers') story.layers = action.layers;
     else if (action.type === 'set_view') story.view = action.view;
   }

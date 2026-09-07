@@ -56,7 +56,7 @@ macOS 从 Finder 启动时通常缺少终端 PATH。Multica 既恢复 shell PATH
 | `server/app.ts` | JSON / SSE 对话、取消、SQLite 锁与原子提交 |
 | `src/AgentConnection.tsx` | 连接卡片、模型选择、路径设置与检测反馈 |
 
-Codex 通过 stdio app-server 连接。新会话注册 `get_story_context` 和 `apply_story_actions`，回调交给山河后端处理；续接时 Codex 恢复工具定义。官方接口说明：[App Server](https://learn.chatgpt.com/docs/app-server)。动态工具属于实验接口，当前针对 CLI 0.153 的函数工具结构实现，并设置最低版本检查。
+Codex 通过 stdio app-server 连接。新会话注册 `get_story_context`、`search_rivers`、`get_river_data` 和 `apply_story_actions`，回调交给山河后端处理；续接时 Codex 恢复工具定义。官方接口说明：[App Server](https://learn.chatgpt.com/docs/app-server)。动态工具属于实验接口，当前针对 CLI 0.153 的函数工具结构实现，并设置最低版本检查。
 
 Codex 不接受 draft-7 的坐标 tuple `items: [schema, schema]`，因此工具描述将它投影为两个数值的数组；实际执行仍使用完整 Zod Schema 校验经纬度范围、路线分段、ID 与动作数量。原 API 的工具 Schema 不受影响。
 
@@ -67,7 +67,7 @@ Codex 不接受 draft-7 的坐标 tuple `items: [schema, schema]`，因此工具
 - `agent_sessions` 保存 story_id 到 Codex thread ID、连接指纹和成功 revision 的关联。
 - 发送新一轮前清除旧关联，只有成功提交才写回，避免续接包含失败操作的 agent 历史。
 - 任意故事保存先使旧关联失效；成功聊天在同一事务中恢复新的关联。因此手动编辑和恢复快照后，下轮会以当前故事及近期已保存消息创建新会话。
-- 修改 agent 路径、模型或连接方式会更新连接标识，后续不再复用旧绑定。
+- 修改 agent 路径、模型、连接方式或故事工具协议版本会更新连接标识，后续不再复用旧绑定。
 - `chat_locks` 用 SQLite 原子占用锁约束同一故事并发，每 10 秒续期，45 秒过期；崩溃后无需手动清锁。
 - 每轮最多 40 个地图动作、30 次故事工具调用、5 分钟运行时间。API 模式保留原来的 90 秒和最多 5 轮请求限制。
 
@@ -96,3 +96,5 @@ Codex 自己保存会话历史，SQLite 保存故事及已提交消息。临时�
 ### 验证
 
 自动测试使用临时 SQLite 与受控测试 CLI，覆盖登录缺失、流式协议、地图动作保存、非法坐标、来源降级、会话恢复、取消、进程退出、权限拒绝和并发修改，不消耗用户模型额度。真实联调另在临时故事中完成了两轮对话，确认同一 Codex thread 能续接并实际调用地图工具。
+
+河道查询、目录导入、编辑、删除已接入共享故事工具；定义和数据限制见 [河道数据](RIVER_DATA.md)。自动测试通过受控 CLI 与模型 API 分别验证河道查询、原始几何读取、暂存提交及异常回滚。

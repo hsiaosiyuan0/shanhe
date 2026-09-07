@@ -61,6 +61,7 @@ import DesktopGuide from './DesktopGuide';
 import MapCanvas, { type MapHandle } from './MapCanvas';
 import { elevationGradient, elevationStops } from './map/elevation';
 import JourneyPanel from './JourneyPanel';
+import RiverManager from './RiverManager';
 import {
   ActionMenu,
   Button,
@@ -100,7 +101,8 @@ const layerIcons = {
   routes: Route,
   connections: Route,
 };
-type Modal = 'new' | 'settings' | 'snapshots' | 'marker' | 'event' | 'about' | 'desktop' | null;
+type Modal =
+  'new' | 'settings' | 'snapshots' | 'marker' | 'event' | 'about' | 'desktop' | 'rivers' | null;
 type Point = { coordinates: [number, number]; elevation: number | null; modernRegion?: string };
 function IconButton({
   label,
@@ -868,6 +870,22 @@ export default function App() {
                     );
                   })}
                   <p>海拔颜色与三维视角可独立切换。省界为现代参考，未加载历史疆界。</p>
+                  <Button
+                    className="river-manager-entry"
+                    onClick={() => {
+                      setShowLayers(false);
+                      setModal('rivers');
+                    }}
+                  >
+                    <Waves size={16} />
+                    河道数据
+                    <span>
+                      {story.riverChannels.length
+                        ? `${story.riverChannels.length} 条`
+                        : '导入与管理'}
+                    </span>
+                    <ChevronRight size={14} />
+                  </Button>
                 </div>
               )}
               <div className="map-compass" aria-hidden="true">
@@ -1438,6 +1456,21 @@ export default function App() {
         </div>
       )}
 
+      {modal === 'rivers' && story && (
+        <RiverManager
+          key={story.id}
+          story={story}
+          disabled={disableEdit}
+          onApply={apply}
+          onLocate={(id) => {
+            setModal(null);
+            setActiveRouteId(null);
+            setPoint(null);
+            requestAnimationFrame(() => mapRef.current?.focusRiver(id));
+          }}
+          onClose={() => setModal(null)}
+        />
+      )}
       {modal === 'new' && (
         <NewStoryDialog
           onClose={() => setModal(null)}

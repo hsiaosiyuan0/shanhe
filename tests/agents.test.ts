@@ -50,6 +50,27 @@ async function fixture() {
   };
 }
 
+test('Codex can search/read channel geometry and stage catalog imports; crashes roll back rivers', async () => {
+  const f = await fixture();
+  try {
+    const before = f.store.get(f.id);
+    const reply = await f.chat('RIVER');
+    assert.equal(reply.status, 200);
+    await reply.json();
+    const saved = f.store.get(f.id);
+    assert.equal(saved.riverChannels.length, before.riverChannels.length + 1);
+    assert.equal(saved.riverChannels.at(-1)?.label, '汉江');
+    assert.ok(saved.riverChannels.at(-1)?.source);
+    const failed = await f.chat('RIVER CRASH');
+    assert.equal(failed.status, 502);
+    await failed.text();
+    assert.deepEqual(f.store.get(f.id), saved);
+    assert.equal(f.store.messages(f.id).length, 2);
+  } finally {
+    await f.close();
+  }
+});
+
 test('local probe reads models and login state without exposing account or config secrets', async () => {
   const f = await fixture();
   try {

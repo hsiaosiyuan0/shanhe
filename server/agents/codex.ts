@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import type { AgentProbe, AgentSession, ChatProgress, Story } from '../../shared/schema.js';
 import { HttpError, type Store } from '../db.js';
-import { agentInstructions, agentToolSchema, StoryTools, toolDefinition } from '../story-tools.js';
+import { agentInstructions, agentToolSchema, StoryTools, toolDefinitions } from '../story-tools.js';
 import { resolveCodex, codexVersion } from './discovery.js';
 import { CodexRpc } from './rpc.js';
 
@@ -56,7 +56,9 @@ export async function respondWithCodex(
   const path = await resolveCodex(settings.agentPath);
   await codexVersion(path);
   const binding = createHash('sha256')
-    .update(JSON.stringify([path, settings.agentModel, settings.connectionId, 'story-tools-v1']))
+    .update(
+      JSON.stringify([path, settings.agentModel, settings.connectionId, 'story-tools-v2-rivers']),
+    )
     .digest('hex');
   const previous = store.agentSession(story.id);
   // A failed/cancelled turn must never resume an agent's uncommitted changes.
@@ -148,18 +150,16 @@ export async function respondWithCodex(
       throw error;
     }
     try {
-      let result: unknown;
+      const result = tools.call(p.tool, p.arguments);
       if (p.tool === 'get_story_context') {
-        result = { story: tools.story, stagedActions: tools.actions.length };
         emit({ type: 'tool', text: '读取当前故事与地图' });
       } else if (p.tool === 'apply_story_actions') {
-        result = tools.apply(p.arguments);
         emit({
           type: 'tool',
           text: `已暂存 ${tools.actions.length} 项地图修改，回答完成后保存`,
           count: tools.actions.length,
         });
-      } else throw new Error('未知故事工具');
+      } else emit({ type: 'tool', text: '读取河道数据' });
       return { success: true, contentItems: [{ type: 'inputText', text: JSON.stringify(result) }] };
     } catch (e) {
       const message = e instanceof Error ? e.message : '参数无效';
@@ -223,21 +223,12 @@ export async function respondWithCodex(
         {
           ...common,
           environments: [],
-          dynamicTools: [
-            {
-              type: 'function',
-              name: 'get_story_context',
-              description:
-                'Read the current story, timeline, markers, routes, layers and staged changes. Call at the beginning of every turn.',
-              inputSchema: { type: 'object', properties: {}, additionalProperties: false },
-            },
-            {
-              type: 'function',
-              name: toolDefinition.function.name,
-              description: toolDefinition.function.description,
-              inputSchema: agentToolSchema(toolDefinition.function.parameters),
-            },
-          ],
+          dynamicTools: toolDefinitions.map(({ function: definition }) => ({
+            type: 'function',
+            name: definition.name,
+            description: definition.description,
+            inputSchema: agentToolSchema(definition.parameters),
+          })),
         },
         60000,
       );

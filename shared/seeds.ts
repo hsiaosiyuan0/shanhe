@@ -158,6 +158,7 @@ export function createStory(title: string, kind: Story['kind'], template?: strin
     events: [],
     markers: [],
     routes: [],
+    riverChannels: [],
     layers: {
       elevation: true,
       admin: false,

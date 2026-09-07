@@ -38,6 +38,13 @@ lines.on('line', (line) => {
     });
   if (p.method === 'thread/start' || p.method === 'thread/resume') {
     if (
+      p.method === 'thread/start' &&
+      !['search_rivers', 'get_river_data'].every((name) =>
+        p.params.dynamicTools.some((t) => t.name === name),
+      )
+    )
+      return send({ id: p.id, error: { code: -1, message: 'River tools missing' } });
+    if (
       p.params.sandbox !== 'read-only' ||
       p.params.config['mcp_servers.private.enabled'] !== false ||
       p.params.config['features.shell_tool'] !== false
@@ -59,6 +66,18 @@ lines.on('line', (line) => {
   }
   if (p.id === 'context-call') {
     story = JSON.parse(p.result.contentItems[0].text).story;
+    if (prompt.includes('RIVER'))
+      return send({
+        id: 'river-search',
+        method: 'item/tool/call',
+        params: {
+          threadId,
+          turnId,
+          callId: 'river-search',
+          tool: 'search_rivers',
+          arguments: { query: '汉江' },
+        },
+      });
     if (prompt.includes('DENY'))
       return send({
         id: 'approval',
@@ -97,6 +116,38 @@ lines.on('line', (line) => {
   if (p.id === 'approval') {
     if (p.result?.decision !== 'decline') process.exit(2);
     return finish('权限已拒绝');
+  }
+  if (p.id === 'river-search') {
+    const entry = JSON.parse(p.result.contentItems[0].text)[0];
+    if (entry?.id !== 'han') return process.exit(2);
+    return send({
+      id: 'river-read',
+      method: 'item/tool/call',
+      params: {
+        threadId,
+        turnId,
+        callId: 'river-read',
+        tool: 'get_river_data',
+        arguments: { id: entry.id, scope: 'catalog' },
+      },
+    });
+  }
+  if (p.id === 'river-read') {
+    const entry = JSON.parse(p.result.contentItems[0].text);
+    if (entry.geometry.type !== 'MultiLineString') return process.exit(2);
+    return send({
+      id: 'apply-call',
+      method: 'item/tool/call',
+      params: {
+        threadId,
+        turnId,
+        callId: 'apply',
+        tool: 'apply_story_actions',
+        arguments: {
+          actions: [{ type: 'add_catalog_river', catalogId: entry.id, id: randomUUID() }],
+        },
+      },
+    });
   }
   if (p.id === 'apply-call') {
     if (prompt.includes('PAUSE')) return;
