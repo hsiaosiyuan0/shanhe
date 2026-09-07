@@ -1,3 +1,4 @@
+import { assetUrl } from './runtime';
 import { useEffect, useRef, useState, useImperativeHandle, forwardRef } from 'react';
 import maplibregl, {
   type GeoJSONSource,
@@ -65,7 +66,7 @@ function style(): StyleSpecification {
   return {
     version: 8,
     sources: {
-      land: { type: 'geojson', data: '/data/land.geojson' },
+      land: { type: 'geojson', data: assetUrl('data/land.geojson') },
       dem: {
         type: 'raster-dem',
         tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
@@ -77,7 +78,7 @@ function style(): StyleSpecification {
       },
       admin: {
         type: 'geojson',
-        data: '/data/admin.geojson',
+        data: assetUrl('data/admin.geojson'),
         attribution: 'Modern provinces: Natural Earth',
       },
       relief: {
@@ -91,7 +92,7 @@ function style(): StyleSpecification {
       },
       rivers: {
         type: 'geojson',
-        data: '/data/rivers.geojson',
+        data: assetUrl('data/rivers.geojson'),
         attribution:
           '<a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>',
       },
@@ -445,7 +446,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   }, []);
   useEffect(() => {
     const controller = new AbortController();
-    fetch('/data/admin.geojson', { signal: controller.signal })
+    fetch(assetUrl('data/admin.geojson'), { signal: controller.signal })
       .then((response) => {
         if (!response.ok) throw new Error('Administrative data unavailable');
         return response.json();

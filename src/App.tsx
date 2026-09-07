@@ -1,3 +1,4 @@
+import { browserMode, assetUrl } from './runtime';
 import { useState, useEffect, useRef, useCallback, type FormEvent, type ReactNode } from 'react';
 import {
   Mountain,
@@ -463,8 +464,8 @@ export default function App() {
       className={'app ' + (!showChat ? 'chat-hidden ' : '') + (showLibrary ? 'library-open' : '')}
     >
       <nav className="rail" aria-label="主导航">
-        <a className="brand-symbol" href="/" aria-label="山河首页">
-          <img src="/icon.svg" width="38" height="38" alt="" />
+        <a className="brand-symbol" href={assetUrl('')} aria-label="山河首页">
+          <img src={assetUrl('icon.svg')} width="38" height="38" alt="" />
         </a>
         <div className="rail-nav">
           <IconButton
@@ -495,7 +496,7 @@ export default function App() {
           <IconButton label="模型设置" onClick={() => setModal('settings')}>
             <Settings2 size={21} />
           </IconButton>
-          <div className="avatar" title="本地工作空间">
+          <div className="avatar" title={browserMode ? '浏览器工作空间' : '本地工作空间'}>
             山
           </div>
         </div>
@@ -606,8 +607,8 @@ export default function App() {
         <div className="library-footer">
           <span className="online-dot" />
           <div>
-            <strong>本地工作空间</strong>
-            <small>故事保存在这台设备</small>
+            <strong>{browserMode ? '浏览器工作空间' : '本地工作空间'}</strong>
+            <small>{browserMode ? '仅保存在当前浏览器' : '故事保存在这台设备'}</small>
           </div>
           <IconButton label="工作空间信息" onClick={() => setModal('about')}>
             <SlidersHorizontal size={16} />
@@ -632,7 +633,7 @@ export default function App() {
         <div className="topbar-actions">
           <span className="save-status">
             <span className="online-dot" />
-            {disableEdit ? '正在处理…' : '已保存到本地'}
+            {disableEdit ? '正在处理…' : browserMode ? '已保存到浏览器' : '已保存到本地'}
           </span>
           <Button
             aria-label="保存快照"
@@ -1205,8 +1206,8 @@ export default function App() {
               {settings?.connection === 'codex'
                 ? `本地 Codex · ${settings.agentModel || '默认模型'}`
                 : settings?.mode === 'live'
-                  ? `已连接 · ${settings.model}`
-                  : '本地演示 · 连接模型后可自由探索'}
+                  ? `${browserMode ? '模型 API' : '已连接'} · ${settings.model}`
+                  : '演示模式 · 连接模型后可自由探索'}
             </div>
           </div>
           {!detail?.messages.length && (
@@ -1381,7 +1382,7 @@ export default function App() {
           </form>
           <p className="chat-disclaimer">
             {settings?.mode === 'live'
-              ? '模型生成内容需核验 · 修改自动保存在本地'
+              ? `模型生成内容需核验 · 修改自动保存在${browserMode ? '浏览器' : '本地'}`
               : '演示指令可直接体验 · 不是实时模型回答'}
           </p>
         </div>
@@ -1536,14 +1537,16 @@ export default function App() {
       {modal === 'about' && (
         <Dialog title="山河 · Story Atlas" onClose={() => setModal(null)}>
           <div className="about-mark">
-            <img src="/icon.svg" width="56" height="56" alt="山河" />
+            <img src={assetUrl('icon.svg')} width="56" height="56" alt="山河" />
             <p>在地图上，读懂每一个故事。</p>
           </div>
           <div className="about-details">
             <p>
-              <strong>属于你的本地故事库</strong>
+              <strong>{browserMode ? '属于你的浏览器故事库' : '属于你的本地故事库'}</strong>
               <br />
-              事件、路线、标记、对话与快照保存在本机 SQLite。导出的 JSON 可以在另一台设备重新导入。
+              {browserMode
+                ? '事件、路线、标记、对话与快照保存在当前浏览器的 IndexedDB，不会上传到 GitHub。清除网站数据会删除故事，请通过导出 JSON 备份或迁移到本地版。'
+                : '事件、路线、标记、对话与快照保存在本机 SQLite。导出的 JSON 可以在另一台设备重新导入。'}
             </p>
             <p>
               <strong>地图与资料</strong>
@@ -1554,13 +1557,16 @@ export default function App() {
             <p>
               <strong>像 App 一样使用</strong>
               <br />
-              运行生产版本后，可在支持安装的浏览器中将山河安装为应用。本地后端需要保持运行；地形瓦片及远程模型需要网络。
+              {browserMode
+                ? '可在支持安装的浏览器中将山河安装为应用。在线版无需启动本地后端；地形瓦片及远程模型需要网络。'
+                : '运行生产版本后，可在支持安装的浏览器中将山河安装为应用。本地后端需要保持运行；地形瓦片及远程模型需要网络。'}
             </p>
             <p>
               <strong>连接你自己的模型</strong>
               <br />
-              支持 Chat Completions
-              工具调用协议，也支持本地模型服务。只有发送对话时，当前故事和最近对话才会发送到你配置的服务。
+              {browserMode
+                ? '在线版通过浏览器直连支持 CORS 的 HTTPS 模型 API，密钥仅在当前页面内存中使用。需要本机 Codex 或 Ollama 时，请运行本地版。'
+                : '支持 Chat Completions 工具调用协议，也支持本地模型服务。只有发送对话时，当前故事和最近对话才会发送到你配置的服务。'}
             </p>
           </div>
           <span className="version-label">山河 0.1.0 · LOCAL FIRST</span>
@@ -1721,7 +1727,11 @@ function SettingsDialog({
   return (
     <Dialog
       title="连接你的探索助手"
-      description="选择探索助手，为故事添加事件、标记地点、绘制路线。可以使用本机 Codex，也可以连接模型 API。"
+      description={
+        browserMode
+          ? '连接模型，为故事添加事件、标记地点、绘制路线。在线版由浏览器直接请求你配置的模型 API。'
+          : '选择探索助手，为故事添加事件、标记地点、绘制路线。可以使用本机 Codex，也可以连接模型 API。'
+      }
       onClose={onClose}
     >
       <form
@@ -1752,17 +1762,30 @@ function SettingsDialog({
           onValueChange={(value) => setConnection(value as 'api' | 'codex')}
           disabled={busy}
         >
-          <RadioItem value="codex">
+          <RadioItem value="codex" disabled={browserMode}>
             <Monitor size={18} aria-hidden="true" />
             <strong>本地 Agent</strong>
-            <span>复用已登录的 Codex</span>
+            <span>{browserMode ? '请在本地版中连接' : '复用已登录的 Codex'}</span>
           </RadioItem>
           <RadioItem value="api">
             <Plug size={18} aria-hidden="true" />
             <strong>模型 API</strong>
-            <span>云端服务或 Ollama</span>
+            <span>{browserMode ? '支持浏览器跨域的服务' : '云端服务或 Ollama'}</span>
           </RadioItem>
         </RadioGroup>
+        {browserMode && (
+          <p className="field-hint">
+            本地 Codex 与 Ollama 需要运行
+            <a
+              href="https://github.com/hsiaosiyuan0/shanhe#quick-start"
+              target="_blank"
+              rel="noreferrer"
+            >
+              山河本地版
+            </a>
+            ，在线页面无法启动本机程序。
+          </p>
+        )}
         {connection === 'codex' ? (
           <AgentConnection
             path={agentPath}
@@ -1799,12 +1822,19 @@ function SettingsDialog({
                 autoComplete="new-password"
                 value={key}
                 onChange={(e) => setKey(e.target.value)}
-                placeholder={settings?.hasKey ? '已保存，留空则保留' : '本地模型可留空'}
+                placeholder={
+                  settings?.hasKey
+                    ? '已设置，留空则保留'
+                    : browserMode
+                      ? '仅用于当前页面，刷新后需重新填写'
+                      : '本地模型可留空'
+                }
               />
             </label>
             <p className="field-hint">
-              密钥仅保存在本机
-              SQLite，不会返回浏览器，也不包含在故事导出中。模型名称留空可切回演示模式。
+              {browserMode
+                ? '密钥仅在当前页面内存中使用，刷新或关闭后清除。服务须支持 HTTPS 和浏览器跨域请求（CORS）；只有发送对话时，故事与近期对话才会发送到此地址。模型名称留空可体验演示。'
+                : '密钥仅保存在本机 SQLite，不会返回浏览器，也不包含在故事导出中。模型名称留空可切回演示模式。'}
             </p>
             {settings?.hasKey && (
               <label className="check-label">
@@ -1812,7 +1842,7 @@ function SettingsDialog({
                   checked={clearKey}
                   onCheckedChange={(checked) => setClearKey(checked === true)}
                 />
-                清除已保存的密钥
+                {browserMode ? '清除本页使用的密钥' : '清除已保存的密钥'}
               </label>
             )}
           </>

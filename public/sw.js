@@ -1,6 +1,10 @@
-const CACHE = 'shanhe-shell-v1';
+const ROOT = new URL(self.registration.scope);
+const PREFIX = `shanhe-shell:${ROOT.pathname}:`;
+const CACHE = PREFIX + 'v2';
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(['/', '/icon.svg'])));
+  event.waitUntil(
+    caches.open(CACHE).then((cache) => cache.addAll([ROOT.href, new URL('icon.svg', ROOT).href])),
+  );
   self.skipWaiting();
 });
 self.addEventListener('activate', (event) => {
@@ -9,7 +13,7 @@ self.addEventListener('activate', (event) => {
       .keys()
       .then((keys) =>
         Promise.all(
-          keys.filter((k) => k.startsWith('shanhe-') && k !== CACHE).map((k) => caches.delete(k)),
+          keys.filter((k) => k.startsWith(PREFIX) && k !== CACHE).map((k) => caches.delete(k)),
         ),
       ),
   );
@@ -20,7 +24,8 @@ self.addEventListener('fetch', (event) => {
   if (
     event.request.method !== 'GET' ||
     url.origin !== self.location.origin ||
-    url.pathname.startsWith('/api')
+    !url.pathname.startsWith(ROOT.pathname) ||
+    url.pathname.startsWith(ROOT.pathname + 'api')
   )
     return;
   event.respondWith(
@@ -35,7 +40,7 @@ self.addEventListener('fetch', (event) => {
       .catch(
         async () =>
           (await caches.match(event.request)) ||
-          (event.request.mode === 'navigate' ? await caches.match('/') : undefined) ||
+          (event.request.mode === 'navigate' ? await caches.match(ROOT.href) : undefined) ||
           Response.error(),
       ),
   );

@@ -12,14 +12,8 @@ import {
 import { seedStories } from './seeds.js';
 import { upgradeSuJourney } from './su-journey.js';
 
-export class HttpError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-  ) {
-    super(message);
-  }
-}
+import { HttpError } from '../shared/errors.js';
+export { HttpError };
 export class Store {
   db: DatabaseSync;
   agentRoot: string;

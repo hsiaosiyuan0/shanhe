@@ -1,0 +1,112 @@
+import type { Story, MapAction } from './schema.js';
+
+export function demo(story: Story, prompt: string): { content: string; actions: MapAction[] } {
+  const actions: MapAction[] = [];
+  let content =
+    '当前是本地演示模式，还没有连接语言模型。你可以试试「标记主要山川」「显示旅途路线」或「开启三维地形」。在左下角的模型设置中连接支持工具调用的模型后，就能自由提问，并为任意故事生成事件与地图标记。';
+  const firstJourney = story.routes.find((r) => r.id === 'su-journey-1056' && r.journey);
+  if (/眉山|眉州|出蜀|赴京|汴京/.test(prompt) && firstJourney) {
+    actions.push(
+      { type: 'set_layers', layers: { ...story.layers, routes: true, connections: false } },
+      { type: 'set_view', view: { center: [108.7, 33], zoom: 5, pitch: 0 } },
+    );
+    content =
+      '1056 年首次赴京赶考，整体走陆路：从蜀中经剑门进入秦岭、关中，再东行至汴京；1057 年是登第年份。\n\n现在地图采用「金牛道—陈仓故道」的研究方案。秦岭支道有分歧，部分嘉陵江路段是否兼用舟行也未定，不能当作已查明的逐段道路。点击地图上方「行程」，可查看经过地区、待考段落和两份资料依据。\n\n1059 年再次赴京时，沿岷江、长江至江陵后转陆路北上，这是另一趟行程。';
+  } else if (/山川|山脉|河流|长江|黄河/.test(prompt)) {
+    const places: [string, [number, number], 'mountain' | 'river', string][] = [
+      ['秦岭', [107.8, 33.8], 'mountain', '中国中部重要山系。标记为山脉概略位置。'],
+      ['大巴山', [108.3, 32.2], 'mountain', '四川盆地东北缘山系。标记为概略位置。'],
+      ['庐山', [115.98, 29.57], 'mountain', '江西九江附近的山地。标记为现代地理参考。'],
+      ['长江', [113.3, 29.6], 'river', '长江中游概略位置。地图河道采用现代小比例尺数据。'],
+      ['黄河', [111.2, 35.9], 'river', '黄河中游概略位置，现代河道不能直接代表历史河道。'],
+    ];
+    for (const [label, coordinates, kind, description] of places)
+      if (!story.markers.some((m) => m.label === label))
+        actions.push({
+          type: 'add_marker',
+          marker: {
+            id: crypto.randomUUID(),
+            label,
+            coordinates,
+            kind,
+            description,
+            confidence: 'approximate',
+          },
+        });
+    actions.push({
+      type: 'set_layers',
+      layers: { ...story.layers, rivers: true, mountains: true },
+    });
+    content =
+      '已显示主要山川，并补充秦岭、大巴山、庐山、长江和黄河的概略标记。\n\n这些是现代地理参考；山脉标记代表大致位置，河流采用小比例尺数据。历史河道会发生变化，尤其不能把今天的黄河河道直接用于解释宋代事件。';
+  } else if (/今地|行政区|省界|现代.*对照/.test(prompt)) {
+    const enabled = !/关闭|隐藏|取消/.test(prompt);
+    actions.push({ type: 'set_layers', layers: { ...story.layers, admin: enabled } });
+    content = enabled
+      ? '已打开今地对照：叠加现代省界和省名，点击地图可查看「今属」行政区。当前覆盖中国大陆省级范围，可再次点击右上角「今地对照」关闭。'
+      : '已关闭现代行政区对照。';
+  } else if (/三维|3D/i.test(prompt)) {
+    const enabled = !/关闭|隐藏|取消/.test(prompt);
+    actions.push(
+      { type: 'set_layers', layers: { ...story.layers, terrain: enabled } },
+      { type: 'set_view', view: { ...story.view, pitch: enabled ? 50 : 0 } },
+    );
+    content = enabled
+      ? '已打开三维地形。放大地图可以观察山谷与地势；点击地图上的空白处，可以查看坐标和当前可用的高程估算。\n\n高程来自在线地形瓦片，是现代地表参考，并非历史地貌复原。'
+      : '已关闭三维视角，回到平面地图。';
+  } else if (/海拔|地形|分层|设色|高程/.test(prompt)) {
+    const enabled = !/关闭|隐藏|取消/.test(prompt);
+    actions.push({ type: 'set_layers', layers: { ...story.layers, elevation: enabled } });
+    content = enabled
+      ? '已打开海拔分层设色。绿色表示较低海拔，向黄色、棕色和灰白色逐渐升高，结合阴影可观察山脉、盆地与平原。地图图例给出对应高程。颜色来自现代高程数据，三维视角可以独立切换。'
+      : '已关闭海拔分层设色，回到山川底图。';
+  } else if (/路线|旅途|行迹/.test(prompt)) {
+    if (story.kind !== 'travel') {
+      const journeys = story.routes.filter((r) => r.journey);
+      actions.push({
+        type: 'set_layers',
+        layers: { ...story.layers, routes: true, connections: false },
+      });
+      content = journeys.length
+        ? `故事已整理 ${journeys.length} 段独立行程。点击地图上方「行程」查看路线、交通方式、经过地点和资料依据。人生事件之间可能有多次往返，不能直接连线当作实际旅途；其余行程仍待整理。`
+        : '这个故事尚未整理有时间、经过地点和资料依据的独立行程。人物出现在两个地点，并不能证明其走法；当前演示不会据此生成一条古代道路。连接模型后可先整理待核验行程，或在图层中显式打开「地点连线（非行程）」查看地点关系。';
+    } else if (story.events.length < 2)
+      content =
+        '这个故事还没有足够的地点。先添加至少两个带坐标的事件，就可以把它们按时间顺序连接成路线。';
+    else {
+      if (!story.routes.length)
+        actions.push({
+          type: 'add_route',
+          route: {
+            id: crypto.randomUUID(),
+            label: '按时间连接的行迹示意',
+            coordinates: [...story.events]
+              .sort((a, b) => a.year - b.year)
+              .map((e) => e.coordinates),
+            color: '#ad795a',
+            approximate: true,
+          },
+        });
+      actions.push({ type: 'set_layers', layers: { ...story.layers, routes: true } });
+      content = `已显示「${story.title}」的路线，按时间连接 ${story.events.length} 个主要节点。\n\n虚线表示节点之间的行迹示意，不代表经过考证的古代道路，也不能用作导航。点击时间线，可以逐段阅读这些地点背后的故事。`;
+    }
+  } else if (/黄州|赤壁|定风波/.test(prompt) && story.events.some((e) => e.id === 'su-1080')) {
+    actions.push({ type: 'set_view', view: { center: [114.873, 30.453], zoom: 8, pitch: 0 } });
+    if (!story.markers.some((m) => m.label === '东坡赤壁'))
+      actions.push({
+        type: 'add_marker',
+        marker: {
+          id: crypto.randomUUID(),
+          label: '东坡赤壁',
+          coordinates: [114.867, 30.453],
+          kind: 'place',
+          description:
+            '今湖北黄冈的东坡赤壁，苏轼黄州文学的重要地理背景。并非通常所说的三国赤壁古战场。坐标为概略定位。',
+          confidence: 'approximate',
+        },
+      });
+    content =
+      '黄州，是苏轼从困顿中重新安顿自己的地方。1080 年谪居黄州后，他躬耕东坡，自号「东坡居士」；1082 年写下《定风波》与前后《赤壁赋》。\n\n我已把地图移到黄州，并标记东坡赤壁。需要留意：文学中的黄州赤壁，与通常所说的三国赤壁古战场不是同一地点。';
+  }
+  return { content, actions };
+}

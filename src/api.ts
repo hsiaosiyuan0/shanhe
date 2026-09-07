@@ -1,4 +1,7 @@
+import { browserMode } from './runtime';
+
 export async function api<T>(path: string, options?: RequestInit): Promise<T> {
+  if (browserMode) return (await import('./browser/api')).browserApi().api<T>(path, options);
   const response = await fetch('/api' + path, {
     ...options,
     headers: { 'Content-Type': 'application/json', ...options?.headers },
@@ -25,6 +28,8 @@ export async function streamChat(
   onEvent: (event: import('../shared/schema').ChatProgress) => void,
   signal: AbortSignal,
 ): Promise<import('../shared/schema').StoryDetail> {
+  if (browserMode)
+    return (await import('./browser/api')).browserApi().streamChat(id, body, onEvent, signal);
   const response = await fetch(`/api/stories/${encodeURIComponent(id)}/chat`, {
     method: 'POST',
     signal,

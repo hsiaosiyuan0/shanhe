@@ -1,3 +1,4 @@
+import { assetUrl } from './runtime';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -11,5 +12,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 );
 if (import.meta.env.PROD && 'serviceWorker' in navigator)
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    navigator.serviceWorker
+      .register(assetUrl('sw.js'), { scope: import.meta.env.BASE_URL })
+      .catch(() => {});
   });

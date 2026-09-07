@@ -17,7 +17,10 @@
     "desktop": "npm run desktop:pack && node scripts/open-macos.mjs",
     "desktop:pack": "npm run icons && npm run build && node scripts/build-macos.mjs",
     "format": "prettier --write src server shared tests scripts *.json vite.config.ts index.html",
-    "icons": "node scripts/build-icons.mjs"
+    "icons": "node scripts/build-icons.mjs",
+    "build:pages": "tsc --noEmit && vite build --mode pages",
+    "dev:pages": "vite --mode pages --host 127.0.0.1 --port 5179",
+    "preview:pages": "vite preview --mode pages --host 127.0.0.1 --port 4173"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.11",
@@ -44,6 +47,7 @@
     "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "^5.1.0",
     "concurrently": "^9.2.1",
+    "fake-indexeddb": "^6.2.5",
     "prettier": "^3.9.6",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
