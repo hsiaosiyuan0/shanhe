@@ -1,0 +1,11 @@
+{
+  "name": "山河 · Story Atlas",
+  "short_name": "山河",
+  "description": "在地图上，读懂每一个故事",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f6f1",
+  "theme_color": "#294b40",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
