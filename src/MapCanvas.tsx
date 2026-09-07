@@ -9,6 +9,7 @@ import type { Story, StoryEvent } from '../shared/schema';
 import { smoothRoute, routeThroughAnchor } from './map/routeGeometry';
 import { elevationStops } from './map/elevation';
 import { journeyFeatures, evidenceLabels } from './map/journeyGeometry';
+import { CollapsedAttributionControl } from './map/CollapsedAttributionControl';
 
 export type MapHandle = {
   fit: () => void;
@@ -288,7 +289,8 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
         ...story.view,
         minZoom: 2,
         maxZoom: 14,
-        attributionControl: { compact: true },
+        attributionControl: false,
+        locale: { 'AttributionControl.ToggleAttribution': '地图来源与版权' },
         canvasContextAttributes: { antialias: true },
         dragRotate: true,
         maxPitch: 65,
@@ -298,6 +300,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       return;
     }
     map.current = m;
+    m.addControl(new CollapsedAttributionControl({ compact: true }), 'bottom-right');
     const updateLabelDetail = () =>
       container.current?.classList.toggle('journey-detail', m.getZoom() >= 6.5);
     updateLabelDetail();
