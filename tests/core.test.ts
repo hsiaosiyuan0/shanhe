@@ -10,6 +10,7 @@ import { createStory } from '../server/seeds.js';
 import { applyActions, type Story, type StoryDetail } from '../shared/schema.js';
 import { makeMessage } from '../server/llm.js';
 import { suFirstJourney } from '../server/su-journey.js';
+import { demo } from '../shared/demo.js';
 
 async function listen(server: Server) {
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -132,9 +133,9 @@ test('demo chat commits maps and messages together, persists on read, and export
     });
     assert.equal(result.status, 200);
     const d = result.data as StoryDetail;
-    assert.equal(d.story.markers.length, 5);
+    assert.equal(d.story.markers.length, 6);
     assert.equal(d.messages.length, 2);
-    assert.equal(d.messages[1].actions.length, 6);
+    assert.equal(d.messages[1].actions.length, 7);
     assert.equal(d.messages[1].mode, 'demo');
     const read = await f.request(`/stories/${story.id}`);
     assert.deepEqual(read.data, d);
@@ -144,7 +145,7 @@ test('demo chat commits maps and messages together, persists on read, and export
     assert.equal(imported.status, 201);
     assert.notEqual(imported.data.id, story.id);
     assert.equal(f.store.messages(imported.data.id).length, 2);
-    assert.equal(imported.data.markers.length, 5);
+    assert.equal(imported.data.markers.length, 6);
     const config = await f.request('/settings');
     assert.equal(config.data.hasKey, true);
     assert.equal(config.data.apiKey, undefined);
@@ -152,6 +153,21 @@ test('demo chat commits maps and messages together, persists on read, and export
     await f.cleanup();
   }
 });
+test('Huai geography prompts reveal the channel without adding city markers or changing other layers', () => {
+  const story = createStory('淮南与淮北', 'history');
+  story.layers.rivers = false;
+  for (const prompt of ['显示淮河', '淮南在哪里', '为什么叫淮北']) {
+    const result = demo(story, prompt);
+    const next = applyActions(story, { actions: result.actions });
+    assert.deepEqual(next.layers, { ...story.layers, rivers: true });
+    assert.deepEqual(next.markers, story.markers);
+    assert.ok(next.view.center[0] > 116 && next.view.center[0] < 118);
+    assert.ok(next.view.center[1] > 32 && next.view.center[1] < 34);
+    assert.match(result.content, /不等同于今天的淮南市、淮北市/);
+    assert.match(result.content, /现代/);
+  }
+});
+
 test('conversation toggles elevation and modern boundaries independently of 3D', async () => {
   const f = await fixture();
   try {

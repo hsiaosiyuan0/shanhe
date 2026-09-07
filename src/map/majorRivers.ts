@@ -1,6 +1,18 @@
 import type { ExpressionSpecification, FilterSpecification, LayerSpecification } from 'maplibre-gl';
+import type { FeatureCollection, Point } from 'geojson';
 
-export const majorRivers = [
+export type MajorRiver = {
+  id: string;
+  label: string;
+  names: string[];
+  aliases: string[];
+  color: string;
+  center: [number, number];
+  description?: string;
+  labelAtCenter?: boolean;
+};
+
+export const majorRivers: MajorRiver[] = [
   {
     id: 'yangtze',
     label: '长江',
@@ -17,17 +29,27 @@ export const majorRivers = [
     color: '#9a6d2a',
     center: [110.458715, 35.343166] as [number, number],
   },
+  {
+    id: 'huai',
+    label: '淮河',
+    names: ['Huai', 'Hudi'],
+    aliases: ['淮河', '淮水', '淮河干流', 'Huai River'],
+    color: '#786093',
+    center: [117.116222, 32.837755],
+    labelAtCenter: true,
+    description:
+      '地域称谓中的「淮南」「淮北」，以淮河的南北方位为参照，具体范围随语境与年代而变，不等同于今天的淮南市、淮北市。\n\n图上补入淮河干流及经洪泽湖向长江汇流的现代河段，湖区采用湖泊中心线；未完整收录入海分流。',
+  },
 ];
-export type MajorRiver = (typeof majorRivers)[number];
+
+const segmentNames: Record<string, string> = {
+  Tuotuo: '沱沱河',
+  Tongtian: '通天河',
+  Jinsha: '金沙江',
+};
 
 export function riverSegmentName(name: string): string {
-  const names: Record<string, string> = {
-    Tuotuo: '沱沱河',
-    Tongtian: '通天河',
-    Jinsha: '金沙江',
-    Huang: '黄河',
-  };
-  return names[name] ?? '长江';
+  return segmentNames[name] ?? findMajorRiver(name)?.label ?? name;
 }
 
 export function findMajorRiver(name: string): MajorRiver | undefined {
@@ -43,17 +65,41 @@ export function riverFilter(rivers = majorRivers): FilterSpecification {
   return ['in', ['get', 'name'], ['literal', rivers.flatMap((river) => river.names)]];
 }
 
+/** Keep short, meandering rivers readable with a name anchored on the actual channel. */
+export function riverLabelAnchors(): FeatureCollection<Point, { name: string }> {
+  return {
+    type: 'FeatureCollection',
+    features: majorRivers
+      .filter((river) => river.labelAtCenter)
+      .map((river) => ({
+        type: 'Feature',
+        properties: { name: river.names[0] },
+        geometry: { type: 'Point', coordinates: river.center },
+      })),
+  };
+}
+
 /** Follow the bundled river geometry without straightening or inventing connections. */
 export function majorRiverLayers(): LayerSpecification[] {
   const color: ExpressionSpecification = [
     'match',
     ['get', 'name'],
-    'Huang',
-    majorRivers[1].color,
+    majorRivers[0].names,
     majorRivers[0].color,
+    ...majorRivers.slice(1).flatMap((river) => [river.names, river.color]),
+    '#287e98',
+  ];
+  const [firstName, ...otherNames] = majorRivers.flatMap((river) => river.names);
+  const label: ExpressionSpecification = [
+    'match',
+    ['get', 'name'],
+    firstName,
+    riverSegmentName(firstName),
+    ...otherNames.flatMap((name) => [name, riverSegmentName(name)]),
+    ['get', 'name'],
   ];
   const common = { source: 'rivers', filter: riverFilter() };
-  return [
+  const layers: LayerSpecification[] = [
     {
       ...common,
       id: 'major-river-hover',
@@ -94,21 +140,10 @@ export function majorRiverLayers(): LayerSpecification[] {
       ...common,
       id: 'major-river-label',
       type: 'symbol',
+      filter: riverFilter(majorRivers.filter((river) => !river.labelAtCenter)),
       layout: {
         'symbol-placement': 'line-center',
-        'text-field': [
-          'match',
-          ['get', 'name'],
-          'Huang',
-          '黄河',
-          'Tuotuo',
-          '沱沱河',
-          'Tongtian',
-          '通天河',
-          'Jinsha',
-          '金沙江',
-          '长江',
-        ],
+        'text-field': label,
         'text-font': ['Songti SC', 'STSong'],
         'text-size': ['interpolate', ['linear'], ['zoom'], 3, 13, 6, 16, 10, 18],
         'text-letter-spacing': 0.3,
@@ -126,4 +161,19 @@ export function majorRiverLayers(): LayerSpecification[] {
       },
     },
   ];
+  const lineLabel = layers.at(-1)!;
+  if (lineLabel.type === 'symbol') {
+    layers.push({
+      ...lineLabel,
+      id: 'major-river-anchor-label',
+      source: 'river-labels',
+      filter: riverFilter(),
+      layout: {
+        ...lineLabel.layout,
+        'symbol-placement': 'point',
+        'text-offset': [0, -0.8],
+      },
+    });
+  }
+  return layers;
 }

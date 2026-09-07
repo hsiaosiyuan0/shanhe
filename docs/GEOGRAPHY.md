@@ -5,6 +5,7 @@
 Web/开发版数据库默认在 `data/shanhe.sqlite`，可通过 `DATA_DIR` 更改。桌面版数据库在 `~/Library/Application Support/山河/data/shanhe.sqlite`。两种运行方式的数据独立，使用导入/导出迁移。
 
 - 海岸线与河流：[Natural Earth](https://www.naturalearthdata.com/about/terms-of-use/)，公共领域。小比例尺数据内置在 `public/data/`，无网络时仍可显示。
+- 长江、黄河、淮河沿河道着色并显示名称；点击河道或图例可查看说明。淮河补用 1:10m 的干流、入江河段和湖泊中心线，保留数据缺口，未完整覆盖入海分流。源数据的 Huai / Hudi 名称归并依据与复现方法见[地理数据说明](../public/data/README.md#淮河补充数据)。
 - 在线晕渲地形：Esri / USGS World Shaded Relief。
 - 在线高程：Mapzen Terrarium，AWS Open Data。使用 MapLibre `color-relief` 与 `hillshade` 绘制海拔颜色和山体明暗；三维地形夸张系数为 1.3，高程查询来自地形数据。色彩表示绝对海拔，盆地与平原还需结合周围地势判断。
 - 现代省界：Natural Earth 1:10m，内置中国大陆省级范围；不是权威行政区划数据，也不随历史年份变化。详见 [地理数据说明](../public/data/README.md)。
@@ -14,3 +15,5 @@ Web/开发版数据库默认在 `data/shanhe.sqlite`，可通过 `DATA_DIR` 更�
 - 1056 年赴京图采用「金牛道—陈仓故道」研究方案，以现代概略地名坐标表达走廊，不是精确古道轨迹，也不是学界定论。秦岭支道与部分水陆转换仍有分歧；1059 年经三峡、江陵的水陆赴京是另一趟行程，尚未绘制。其余人生行程也未补全。详见 [行程资料与精度说明](ROUTE_EVIDENCE.md)。
 - 无 `journey` 信息的旧路线只表示地点关系或旅行规划，曲线不能提供走法的历史证据，不能用作导航。升级旧苏轼示例前会创建自动快照，不覆盖用户修改过的路线坐标。
 - 在线地形及远程 LLM 需要网络；界面字体使用本机字体，不依赖在线字体服务。当前不预下载地形瓦片。
+
+“淮南”“淮北”作为地域称谓，以淮河的南北方位为参照，具体范围需结合年代与语境理解。[教育部辞典的“淮南”释义](https://pedia.cloud.edu.tw/Entry/Detail/?search=%E6%B7%AE%E5%8D%97&title=%E6%B7%AE%E5%8D%97)概括为淮河以南、长江以北地区。这些地域称谓不等同于今天的同名城市，例如[淮南市环境资料](https://sthjj.huainan.gov.cn/public/content/1259415913)描述淮河横穿市域。地图没有据此绘制固定的“淮南/淮北”边界。

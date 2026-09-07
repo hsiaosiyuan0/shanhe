@@ -3242,6 +3242,13 @@ button {
     transition: none;
   }
 }
+@container (max-width: 460px) {
+  .river-key {
+    top: 151px;
+    left: var(--map-edge);
+    right: auto;
+  }
+}
 .journey-panel {
   position: absolute;
   left: var(--map-edge);

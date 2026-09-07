@@ -12,6 +12,13 @@ export function demo(story: Story, prompt: string): { content: string; actions: 
     );
     content =
       '1056 年首次赴京赶考，整体走陆路：从蜀中经剑门进入秦岭、关中，再东行至汴京；1057 年是登第年份。\n\n现在地图采用「金牛道—陈仓故道」的研究方案。秦岭支道有分歧，部分嘉陵江路段是否兼用舟行也未定，不能当作已查明的逐段道路。点击地图上方「行程」，可查看经过地区、待考段落和两份资料依据。\n\n1059 年再次赴京时，沿岷江、长江至江陵后转陆路北上，这是另一趟行程。';
+  } else if (/淮河|淮南|淮北/.test(prompt)) {
+    actions.push(
+      { type: 'set_layers', layers: { ...story.layers, rivers: true } },
+      { type: 'set_view', view: { center: [117.116222, 32.837755], zoom: 6, pitch: 0 } },
+    );
+    content =
+      '已定位到淮河。河道上会直接显示名称，也可以点击地图右上方「淮河」查看说明。\n\n地域称谓中的「淮南」「淮北」，以淮河的南北方位为参照，具体范围随语境与年代而变，不等同于今天的淮南市、淮北市。\n\n当前显示现代淮河干流及经洪泽湖向长江汇流的河段，湖区采用湖泊中心线，未完整收录入海分流。历史河道有过较大变化，不能把这张图直接当作古代河道。';
   } else if (/山川|山脉|河流|长江|黄河/.test(prompt)) {
     const places: [string, [number, number], 'mountain' | 'river', string][] = [
       ['秦岭', [107.8, 33.8], 'mountain', '中国中部重要山系。标记为山脉概略位置。'],
@@ -19,6 +26,12 @@ export function demo(story: Story, prompt: string): { content: string; actions: 
       ['庐山', [115.98, 29.57], 'mountain', '江西九江附近的山地。标记为现代地理参考。'],
       ['长江', [113.3, 29.6], 'river', '长江中游概略位置。地图河道采用现代小比例尺数据。'],
       ['黄河', [111.2, 35.9], 'river', '黄河中游概略位置，现代河道不能直接代表历史河道。'],
+      [
+        '淮河',
+        [117.116222, 32.837755],
+        'river',
+        '淮河中游的现代地理参考，可对照理解地域称谓中的淮南、淮北。',
+      ],
     ];
     for (const [label, coordinates, kind, description] of places)
       if (!story.markers.some((m) => m.label === label))
@@ -38,7 +51,7 @@ export function demo(story: Story, prompt: string): { content: string; actions: 
       layers: { ...story.layers, rivers: true, mountains: true },
     });
     content =
-      '已显示主要山川，并补充秦岭、大巴山、庐山、长江和黄河的概略标记。\n\n这些是现代地理参考；山脉标记代表大致位置，河流采用小比例尺数据。历史河道会发生变化，尤其不能把今天的黄河河道直接用于解释宋代事件。';
+      '已显示主要山川，并补充秦岭、大巴山、庐山、长江、黄河和淮河的概略标记。\n\n这些是现代地理参考；山脉标记代表大致位置，河流沿河道着色与标注。历史河道会发生变化，尤其不能把今天的黄河河道直接用于解释宋代事件。';
   } else if (/今地|行政区|省界|现代.*对照/.test(prompt)) {
     const enabled = !/关闭|隐藏|取消/.test(prompt);
     actions.push({ type: 'set_layers', layers: { ...story.layers, admin: enabled } });

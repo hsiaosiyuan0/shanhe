@@ -20,6 +20,7 @@ import {
   majorRivers,
   majorRiverLayers,
   riverFilter,
+  riverLabelAnchors,
   riverSegmentName,
   type MajorRiver,
 } from './map/majorRivers';
@@ -96,6 +97,7 @@ function style(): StyleSpecification {
         attribution:
           '<a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>',
       },
+      'river-labels': { type: 'geojson', data: riverLabelAnchors() },
       routes: { type: 'geojson', data: empty },
       progress: { type: 'geojson', data: empty },
       journeys: { type: 'geojson', data: empty },
@@ -259,6 +261,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       riverNotes.find((marker) => marker.label.replaceAll(/\s/g, '') === sectionName) ??
       riverNotes[0];
     const description = [
+      river.description,
       '沿现代河道显示的地理参考，不代表故事年代的历史河道。',
       note?.description ? `已保存的故事笔记：${note.description}` : null,
     ]
@@ -378,7 +381,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       const routeId = m.queryRenderedFeatures(event.point, { layers: ['journey-corridors'] })[0]
         ?.properties?.routeId;
       const riverFeature = m.queryRenderedFeatures(event.point, {
-        layers: ['major-river-hit', 'major-river-label'],
+        layers: ['major-river-hit', 'major-river-label', 'major-river-anchor-label'],
       })[0];
       const river = findMajorRiver(String(riverFeature?.properties?.name ?? ''));
       if (river && !routeId) {
@@ -415,7 +418,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     m.on('mousemove', (event) => {
       if (!m.isStyleLoaded()) return;
       const feature = m.queryRenderedFeatures(event.point, {
-        layers: ['major-river-hit', 'major-river-label'],
+        layers: ['major-river-hit', 'major-river-label', 'major-river-anchor-label'],
       })[0];
       const river = findMajorRiver(String(feature?.properties?.name ?? ''));
       if (river?.id === hoveredRiver) return;

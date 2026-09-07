@@ -36,6 +36,16 @@ export class MapPopupController {
     body.textContent = description;
     content.append(title, body);
 
+    // Leave room on either side of the map point for the automatic popup anchor.
+    // Long river descriptions and saved notes remain readable on short maps.
+    const sizeBody = () => {
+      body.style.maxHeight = `${Math.max(48, this.map.getContainer().clientHeight / 2 - 110)}px`;
+    };
+    body.style.overflowY = 'auto';
+    body.tabIndex = 0;
+    body.setAttribute('aria-label', '地点说明');
+    sizeBody();
+
     const popup = new Popup({
       maxWidth: '260px',
       offset: Math.max(18, (trigger?.offsetHeight ?? 0) / (anchor === 'center' ? 2 : 1) + 8),
@@ -47,6 +57,7 @@ export class MapPopupController {
     this.active = { key, popup, trigger };
     trigger?.setAttribute('aria-expanded', 'true');
     popup.on('close', () => {
+      this.map.off('resize', sizeBody);
       // The close button can remove the popup without going through close().
       if (this.active?.popup !== popup) return;
       this.active = null;
@@ -54,6 +65,7 @@ export class MapPopupController {
       const target = trigger ?? this.map.getCanvas();
       if (target.isConnected) target.focus({ preventScroll: true });
     });
+    this.map.on('resize', sizeBody);
     popup.addTo(this.map);
     const element = popup.getElement();
     element.setAttribute('role', 'dialog');
