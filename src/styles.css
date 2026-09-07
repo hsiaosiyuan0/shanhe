@@ -751,7 +751,8 @@ button svg {
 .map-canvas {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  /* Share the map section's stacking context so popups can sit above its cards. */
+  z-index: auto;
 }
 .map-canvas:after {
   content: '';
@@ -1103,6 +1104,9 @@ button svg {
   color: #9b7445;
   border-color: #cbbb92;
 }
+.maplibregl-popup {
+  z-index: 15;
+}
 .maplibregl-popup-content {
   border-radius: 7px;
   padding: 16px !important;
@@ -1120,6 +1124,11 @@ button svg {
 .maplibregl-popup-close-button {
   padding: 3px 8px;
   font-size: 20px;
+}
+.annotation-pin[aria-expanded='true'],
+.journey-stop[aria-expanded='true'] {
+  outline: 2px solid #687f52;
+  outline-offset: 2px;
 }
 .maplibregl-ctrl-attrib {
   background: #f8fae8c9 !important;

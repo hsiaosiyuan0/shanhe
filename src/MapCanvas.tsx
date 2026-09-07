@@ -10,6 +10,7 @@ import { smoothRoute, routeThroughAnchor } from './map/routeGeometry';
 import { elevationStops } from './map/elevation';
 import { journeyFeatures, evidenceLabels } from './map/journeyGeometry';
 import { CollapsedAttributionControl } from './map/CollapsedAttributionControl';
+import { MapPopupController } from './map/MapPopupController';
 
 export type MapHandle = {
   fit: () => void;
@@ -221,6 +222,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markers = useRef<maplibregl.Marker[]>([]);
+  const popups = useRef<MapPopupController | null>(null);
   const callbacks = useRef({ onSelect, onSelectRoute, onPoint });
   callbacks.current = { onSelect, onSelectRoute, onPoint };
   const [ready, setReady] = useState(false);
@@ -236,6 +238,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   const focusRoute = (routeId: string, legIndex?: number) => {
     const route = currentStory.current.routes.find((r) => r.id === routeId);
     if (!route || !map.current) return;
+    popups.current?.close();
     const leg = legIndex === undefined ? undefined : route.journey?.legs[legIndex];
     const coordinates = leg ? route.coordinates.slice(leg.from, leg.to + 1) : route.coordinates;
     const bounds = new maplibregl.LngLatBounds();
@@ -256,6 +259,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   const fit = () => {
     const m = map.current;
     if (!m) return;
+    popups.current?.close();
     const events = currentStory.current.events;
     if (events.length > 1) {
       const bounds = new maplibregl.LngLatBounds();
@@ -290,7 +294,10 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
         minZoom: 2,
         maxZoom: 14,
         attributionControl: false,
-        locale: { 'AttributionControl.ToggleAttribution': '地图来源与版权' },
+        locale: {
+          'AttributionControl.ToggleAttribution': '地图来源与版权',
+          'Popup.Close': '关闭地点信息',
+        },
         canvasContextAttributes: { antialias: true },
         dragRotate: true,
         maxPitch: 65,
@@ -300,6 +307,14 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       return;
     }
     map.current = m;
+    popups.current = new MapPopupController(m);
+    const onPopupKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && popups.current?.close(true)) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+    m.getContainer().addEventListener('keydown', onPopupKeyDown);
     m.addControl(new CollapsedAttributionControl({ compact: true }), 'bottom-right');
     const updateLabelDetail = () =>
       container.current?.classList.toggle('journey-detail', m.getZoom() >= 6.5);
@@ -320,6 +335,8 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       }
     });
     m.on('click', (event) => {
+      // The first background click dismisses a note; it does not open another card.
+      if (popups.current?.close()) return;
       const routeId = m.queryRenderedFeatures(event.point, { layers: ['journey-corridors'] })[0]
         ?.properties?.routeId;
       if (routeId) {
@@ -346,6 +363,9 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     observer.observe(container.current);
     return () => {
       observer.disconnect();
+      m.getContainer().removeEventListener('keydown', onPopupKeyDown);
+      popups.current?.close();
+      popups.current = null;
       markers.current.forEach((v) => v.remove());
       markers.current = [];
       m.remove();
@@ -460,6 +480,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
         });
       m.setTerrain({ source: 'terrain-dem', exaggeration: 1.3 });
     } else m.setTerrain(null);
+    popups.current?.close();
     markers.current.forEach((marker) => marker.remove());
     markers.current = [];
     const add = (
@@ -486,18 +507,17 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
         label.textContent = stop.label.split(' · ')[0];
         el.append(label);
         el.setAttribute('aria-label', `${stop.label}，${evidenceLabels[stop.evidence]}，查看依据`);
+        el.setAttribute('aria-haspopup', 'dialog');
+        el.setAttribute('aria-expanded', 'false');
         el.onclick = (event) => {
           event.stopPropagation();
-          const content = document.createElement('div');
-          const title = document.createElement('strong');
-          title.textContent = stop.label;
-          const note = document.createElement('p');
-          note.textContent = `${evidenceLabels[stop.evidence]} · ${stop.note}`;
-          content.append(title, note);
-          new maplibregl.Popup({ offset: 12, maxWidth: '260px' })
-            .setLngLat(activeRoute.coordinates[stop.at])
-            .setDOMContent(content)
-            .addTo(m);
+          popups.current?.toggle(
+            `journey:${activeRoute.id}:${stop.at}`,
+            el,
+            activeRoute.coordinates[stop.at],
+            stop.label,
+            `${evidenceLabels[stop.evidence]} · ${stop.note}`,
+          );
         };
         add(el, activeRoute.coordinates[stop.at], 'bottom');
       });
@@ -529,6 +549,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       el.append(dot, label);
       el.onclick = (e) => {
         e.stopPropagation();
+        popups.current?.close();
         callbacks.current.onSelect(event.id);
       };
       add(el, event.coordinates, 'left');
@@ -568,20 +589,18 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       el.className = 'annotation-pin ' + marker.kind;
       el.textContent =
         (marker.kind === 'mountain' ? '△ ' : marker.kind === 'river' ? '≈ ' : '+ ') + marker.label;
-      el.title = marker.description;
       el.setAttribute('aria-label', marker.label + '，查看地点笔记');
+      el.setAttribute('aria-haspopup', 'dialog');
+      el.setAttribute('aria-expanded', 'false');
       el.onclick = (e) => {
         e.stopPropagation();
-        const content = document.createElement('div');
-        const title = document.createElement('strong');
-        title.textContent = marker.label;
-        const body = document.createElement('p');
-        body.textContent = marker.description;
-        content.append(title, body);
-        new maplibregl.Popup({ maxWidth: '240px', offset: 18 })
-          .setLngLat(marker.coordinates)
-          .setDOMContent(content)
-          .addTo(m);
+        popups.current?.toggle(
+          `marker:${marker.id}`,
+          el,
+          marker.coordinates,
+          marker.label,
+          marker.description,
+        );
       };
       add(el, marker.coordinates, 'bottom');
     });
