@@ -735,6 +735,11 @@ button svg {
   color: #969d89;
 }
 .map-section {
+  --map-edge: 16px;
+  --map-footer-bottom: 12px;
+  --map-footer-height: 24px;
+  --map-controls-width: 38px;
+  --map-overlay-bottom: calc(var(--map-footer-bottom) + var(--map-footer-height) + 12px);
   flex: 1;
   min-height: 240px;
   position: relative;
@@ -843,10 +848,12 @@ button svg {
 }
 .map-controls {
   position: absolute;
-  right: 18px;
-  bottom: 64px;
+  right: var(--map-edge);
+  bottom: var(--map-overlay-bottom);
   display: flex;
   flex-direction: column;
+  align-items: center;
+  width: var(--map-controls-width);
   background: #fffdf5ef;
   border: 1px solid #f8fbef;
   border-radius: 7px;
@@ -860,6 +867,7 @@ button svg {
   color: #6a7a60;
 }
 .map-controls > span {
+  align-self: stretch;
   height: 1px;
   background: #e0e5d3;
   margin: 3px;
@@ -869,13 +877,15 @@ button svg {
   gap: 7px;
   align-items: center;
   position: absolute;
-  bottom: 18px;
-  left: 135px;
-  font-size: 8px;
+  bottom: var(--map-footer-bottom);
+  left: calc(var(--map-edge) + 90px + 10px);
+  height: var(--map-footer-height);
+  font-size: 9px;
+  line-height: 16px;
   color: #7d8d72;
   pointer-events: none;
   background: #f4f6e9d6;
-  padding: 3px 5px;
+  padding: 0 8px;
   border-radius: 3px;
 }
 .legend-route {
@@ -1118,26 +1128,56 @@ button svg {
   line-height: 16px !important;
 }
 .maplibregl-ctrl-attrib-button {
-  width: 17px !important;
-  height: 17px !important;
-  background-size: 14px !important;
+  width: var(--map-footer-height) !important;
+  height: var(--map-footer-height) !important;
+  background-size: 16px !important;
+  background-position: center;
+  background-repeat: no-repeat;
+  top: auto !important;
+  bottom: 0;
+}
+.maplibregl-ctrl-attrib.maplibregl-compact {
+  box-sizing: border-box;
+  width: var(--map-footer-height);
+  min-height: var(--map-footer-height);
+  margin: 0;
+  padding: 0;
+}
+.maplibregl-ctrl-attrib.maplibregl-compact-show {
+  width: auto;
+  max-width: calc(100cqw - var(--map-edge) * 2);
+  padding: 4px 30px 4px 8px;
 }
 .maplibregl-ctrl-bottom-left {
-  bottom: 11px !important;
-  left: 10px !important;
+  bottom: var(--map-footer-bottom) !important;
+  left: var(--map-edge) !important;
+}
+.maplibregl-ctrl-bottom-right {
+  bottom: var(--map-footer-bottom) !important;
+  right: calc(
+    var(--map-edge) + (var(--map-controls-width) - var(--map-footer-height)) / 2
+  ) !important;
+}
+.maplibregl-ctrl-bottom-left .maplibregl-ctrl,
+.maplibregl-ctrl-bottom-right .maplibregl-ctrl {
+  margin: 0;
 }
 .maplibregl-ctrl-scale {
+  display: flex;
+  align-items: center;
   background: #f4f6e9bb !important;
   border-color: #9ba78c !important;
+  border-top: 2px solid transparent !important;
   color: #7d8b6f !important;
-  font-size: 8px !important;
-  height: 17px !important;
-  line-height: 12px !important;
+  font-size: 9px !important;
+  height: var(--map-footer-height) !important;
+  line-height: 16px !important;
+  font-variant-numeric: tabular-nums;
 }
 .event-detail {
   position: absolute;
-  bottom: 52px;
-  left: 21px;
+  bottom: var(--map-overlay-bottom);
+  left: var(--map-edge);
   width: 292px;
   background: #fffdf5ed;
   border: 1px solid #fffef8;
@@ -1232,8 +1272,8 @@ button svg {
 }
 .point-card {
   position: absolute;
-  bottom: 55px;
-  left: 21px;
+  bottom: var(--map-overlay-bottom);
+  left: var(--map-edge);
   background: #fffdf6f7;
   border-radius: 8px;
   border: 1px solid #fffef7;
@@ -2145,8 +2185,6 @@ button svg {
   }
   .event-detail {
     width: 325px;
-    left: 28px;
-    bottom: 60px;
     padding: 16px 19px;
   }
   .event-description {
@@ -2241,8 +2279,6 @@ button svg {
   }
   .event-detail {
     width: 259px;
-    left: 16px;
-    bottom: 48px;
     padding: 10px 13px;
   }
   .event-detail-title h2 {
@@ -2311,8 +2347,7 @@ button svg {
     font-size: 9px;
   }
   .map-legend {
-    left: 115px;
-    font-size: 7px;
+    gap: 5px;
   }
 }
 @media (max-width: 1099px) {
@@ -2517,16 +2552,13 @@ button svg {
     right: 16px;
   }
   .map-controls {
-    right: 10px;
-    bottom: 49px;
+    right: var(--map-edge);
   }
   .map-controls .icon-button {
     width: 27px;
     height: 29px;
   }
   .event-detail {
-    left: 11px;
-    bottom: 43px;
     width: 220px;
     padding: 9px 11px;
     border-radius: 7px;
@@ -2564,8 +2596,6 @@ button svg {
   }
   .point-card {
     width: 220px;
-    left: 11px;
-    bottom: 43px;
     padding: 11px;
   }
   .point-card small {
@@ -2710,9 +2740,6 @@ button svg {
   }
   .timeline-track {
     padding-top: 9px;
-  }
-  .event-detail {
-    bottom: 43px;
   }
   .event-detail blockquote {
     padding-top: 8px;
@@ -2931,8 +2958,8 @@ button {
 }
 .elevation-legend {
   position: absolute;
-  bottom: 42px;
-  right: 66px;
+  bottom: var(--map-overlay-bottom);
+  right: calc(var(--map-edge) + var(--map-controls-width) + 10px);
   width: 230px;
   padding: 9px 11px 7px;
   z-index: 10;
@@ -3047,9 +3074,9 @@ button {
 }
 .journey-panel {
   position: absolute;
-  left: 21px;
+  left: var(--map-edge);
   top: 65px;
-  bottom: 52px;
+  bottom: var(--map-overlay-bottom);
   width: 310px;
   z-index: 11;
   background: #fffdf4f5;
@@ -3245,8 +3272,6 @@ button {
 @container (max-width: 680px) {
   .journey-panel {
     top: auto;
-    bottom: 42px;
-    left: 12px;
     width: min(300px, calc(100% - 75px));
     max-height: 45%;
   }
