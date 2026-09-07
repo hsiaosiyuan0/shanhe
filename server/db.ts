@@ -1,8 +1,14 @@
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync, chmodSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { storySchema, type Story, type Message, type Snapshot } from '../shared/schema.js';
+import {
+  storySchema,
+  type Story,
+  type Message,
+  type Snapshot,
+  type AgentSession,
+} from '../shared/schema.js';
 import { seedStories } from './seeds.js';
 import { upgradeSuJourney } from './su-journey.js';
 
@@ -16,7 +22,9 @@ export class HttpError extends Error {
 }
 export class Store {
   db: DatabaseSync;
+  agentRoot: string;
   constructor(path: string, seed = true) {
+    this.agentRoot = resolve(dirname(path), 'agent-workspaces');
     if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true, mode: 0o700 });
     this.db = new DatabaseSync(path);
     if (path !== ':memory:') chmodSync(path, 0o600);
@@ -25,7 +33,9 @@ export class Store {
       CREATE TABLE IF NOT EXISTS messages (id TEXT PRIMARY KEY, story_id TEXT NOT NULL REFERENCES stories(id) ON DELETE CASCADE, document TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS snapshots (id TEXT PRIMARY KEY, story_id TEXT NOT NULL REFERENCES stories(id) ON DELETE CASCADE, name TEXT NOT NULL, created_at TEXT NOT NULL, document TEXT NOT NULL, messages TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS settings (id INTEGER PRIMARY KEY CHECK(id=1), document TEXT NOT NULL);
-      CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL);`);
+      CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS agent_sessions (story_id TEXT PRIMARY KEY REFERENCES stories(id) ON DELETE CASCADE, document TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS chat_locks (story_id TEXT PRIMARY KEY REFERENCES stories(id) ON DELETE CASCADE, owner TEXT NOT NULL, expires_at INTEGER NOT NULL);`);
     if (seed && !this.db.prepare('SELECT value FROM metadata WHERE key=?').get('seeded')) {
       this.transaction(() => {
         seedStories().forEach((s) => this.insert(s));
@@ -87,6 +97,7 @@ export class Store {
       .prepare('UPDATE stories SET document=?, revision=? WHERE id=? AND revision=?')
       .run(JSON.stringify(next), next.revision, next.id, expected);
     if (!result.changes) throw new HttpError(409, '故事已在另一处更新，请刷新后重试。');
+    this.clearAgentSession(story.id);
     return next;
   }
   messages(id: string): Message[] {
@@ -144,7 +155,15 @@ export class Store {
     this.get(id);
     this.db.prepare('DELETE FROM stories WHERE id=?').run(id);
   }
-  settings(): { baseUrl?: string; model?: string; apiKey?: string } {
+  settings(): {
+    baseUrl?: string;
+    model?: string;
+    apiKey?: string;
+    connection?: 'api' | 'codex';
+    agentPath?: string;
+    agentModel?: string;
+    connectionId?: string;
+  } {
     const row = this.db.prepare('SELECT document FROM settings WHERE id=1').get() as
       { document: string } | undefined;
     return row ? JSON.parse(row.document) : {};
@@ -155,6 +174,39 @@ export class Store {
         'INSERT INTO settings VALUES (1,?) ON CONFLICT(id) DO UPDATE SET document=excluded.document',
       )
       .run(JSON.stringify(value));
+  }
+  agentSession(id: string): AgentSession | undefined {
+    const row = this.db.prepare('SELECT document FROM agent_sessions WHERE story_id=?').get(id) as
+      { document: string } | undefined;
+    return row ? JSON.parse(row.document) : undefined;
+  }
+  setAgentSession(id: string, session: AgentSession) {
+    this.db
+      .prepare(
+        'INSERT INTO agent_sessions VALUES (?,?) ON CONFLICT(story_id) DO UPDATE SET document=excluded.document',
+      )
+      .run(id, JSON.stringify(session));
+  }
+  clearAgentSession(id: string) {
+    this.db.prepare('DELETE FROM agent_sessions WHERE story_id=?').run(id);
+  }
+  acquireChat(id: string, owner: string) {
+    const now = Date.now();
+    const result = this.db
+      .prepare(
+        `INSERT INTO chat_locks VALUES (?,?,?) ON CONFLICT(story_id)
+      DO UPDATE SET owner=excluded.owner, expires_at=excluded.expires_at WHERE chat_locks.expires_at < ?`,
+      )
+      .run(id, owner, now + 45000, now);
+    if (!result.changes) throw new HttpError(409, '这个故事正在生成回答，请稍候。');
+  }
+  renewChat(id: string, owner: string) {
+    return !!this.db
+      .prepare('UPDATE chat_locks SET expires_at=? WHERE story_id=? AND owner=?')
+      .run(Date.now() + 45000, id, owner).changes;
+  }
+  releaseChat(id: string, owner: string) {
+    this.db.prepare('DELETE FROM chat_locks WHERE story_id=? AND owner=?').run(id, owner);
   }
   close() {
     this.db.close();

@@ -169,7 +169,30 @@ export type Message = {
 };
 export type Snapshot = { id: string; name: string; createdAt: string };
 export type StoryDetail = { story: Story; messages: Message[]; snapshots: Snapshot[] };
-export type Settings = { baseUrl: string; model: string; hasKey: boolean; mode: 'demo' | 'live' };
+export type Settings = {
+  baseUrl: string;
+  model: string;
+  hasKey: boolean;
+  mode: 'demo' | 'live';
+  connection: 'api' | 'codex';
+  agentPath: string;
+  agentModel: string;
+};
+export type AgentProbe = {
+  path: string;
+  version: string;
+  connected: boolean;
+  loginRequired: boolean;
+  auth: string;
+  models: { id: string; name: string; isDefault: boolean }[];
+};
+export type ChatProgress =
+  | { type: 'status'; text: string }
+  | { type: 'text'; text: string }
+  | { type: 'tool'; text: string; count?: number }
+  | { type: 'complete'; detail: StoryDetail }
+  | { type: 'error'; error: string };
+export type AgentSession = { threadId: string; binding: string; revision: number };
 
 export function applyActions(original: Story, input: unknown): Story {
   const { actions } = actionsSchema.parse(input);

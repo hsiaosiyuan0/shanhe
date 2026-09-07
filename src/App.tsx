@@ -41,6 +41,9 @@ import {
   Library,
   Menu,
   CircleHelp,
+  Square,
+  Monitor,
+  Plug,
 } from 'lucide-react';
 import type {
   Story,
@@ -51,7 +54,8 @@ import type {
   Layers,
   Message,
 } from '../shared/schema';
-import { api, json } from './api';
+import { api, json, streamChat } from './api';
+import AgentConnection from './AgentConnection';
 import MapCanvas, { type MapHandle } from './MapCanvas';
 import { elevationGradient, elevationStops } from './map/elevation';
 import JourneyPanel from './JourneyPanel';
@@ -160,6 +164,12 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [chatBusy, setChatBusy] = useState(false);
   const [pendingPrompt, setPendingPrompt] = useState('');
+  const [streamText, setStreamText] = useState('');
+  const [agentStatus, setAgentStatus] = useState('');
+  const [toolProgress, setToolProgress] = useState<string[]>([]);
+  const [stopping, setStopping] = useState(false);
+  const chatController = useRef<AbortController | null>(null);
+  useEffect(() => () => chatController.current?.abort(), []);
   const [chatInput, setChatInput] = useState('');
   const [playing, setPlaying] = useState(false);
   const [showChat, setShowChat] = useState(() => window.innerWidth >= 1100);
@@ -254,7 +264,7 @@ export default function App() {
         : 'smooth',
       block: 'end',
     });
-  }, [detail?.messages.length, chatBusy, showChat]);
+  }, [detail?.messages.length, chatBusy, showChat, streamText, agentStatus, toolProgress]);
   useEffect(() => {
     timelineRef.current
       ?.querySelector(`[data-event-id="${CSS.escape(selectedId)}"]`)
@@ -355,12 +365,28 @@ export default function App() {
     const id = story.id;
     setChatBusy(true);
     setPendingPrompt(text);
+    setStreamText('');
+    setAgentStatus('正在准备故事上下文…');
+    setToolProgress([]);
+    setStopping(false);
+    const controller = new AbortController();
+    chatController.current = controller;
     setChatInput('');
     setError('');
     try {
-      const next = await api<StoryDetail>(
-        `/stories/${id}/chat`,
-        json('POST', { prompt: text, revision: story.revision }),
+      const next = await streamChat(
+        id,
+        { prompt: text, revision: story.revision },
+        (event) => {
+          if (activeId.current !== id) return;
+          if (event.type === 'text') setStreamText(event.text);
+          if (event.type === 'status') setAgentStatus(event.text);
+          if (event.type === 'tool')
+            setToolProgress((list) =>
+              [...list.filter((t) => t !== event.text), event.text].slice(-4),
+            );
+        },
+        controller.signal,
       );
       if (activeId.current === id) {
         updateDetail(next);
@@ -377,10 +403,29 @@ export default function App() {
         flash('对话与地图修改已保存');
       } else setStories((list) => list.map((s) => (s.id === id ? next.story : s)));
     } catch (e) {
-      if (activeId.current === id) setChatInput(text);
-      setError((e as Error).message);
+      if (activeId.current === id) {
+        // Resolve a stop/disconnect racing the final commit against SQLite.
+        try {
+          const latest = await api<StoryDetail>(`/stories/${id}`);
+          updateDetail(latest);
+          if (latest.story.revision > story.revision && latest.messages.at(-2)?.content === text) {
+            flash('对话已完成并保存');
+          } else if (controller.signal.aborted || (e as Error).message.startsWith('已停止')) {
+            setChatInput(text);
+            flash('已停止，本轮未保存');
+          } else {
+            setChatInput(text);
+            setError((e as Error).message);
+          }
+        } catch {
+          setChatInput(text);
+          setError('连接中断，请刷新确认保存状态后再重试。');
+        }
+      }
     } finally {
+      chatController.current = null;
       setChatBusy(false);
+      setStopping(false);
       setPendingPrompt('');
     }
   };
@@ -1185,9 +1230,11 @@ export default function App() {
             <p>我会陪你沿着时间与地理，发现故事里的更多细节。你也可以让我在地图上添一笔。</p>
             <div className="mode-note">
               <span className="online-dot" />
-              {settings?.mode === 'live'
-                ? `已连接 · ${settings.model}`
-                : '本地演示 · 连接模型后可自由探索'}
+              {settings?.connection === 'codex'
+                ? `本地 Codex · ${settings.agentModel || '默认模型'}`
+                : settings?.mode === 'live'
+                  ? `已连接 · ${settings.model}`
+                  : '本地演示 · 连接模型后可自由探索'}
             </div>
           </div>
           {!detail?.messages.length && (
@@ -1241,11 +1288,33 @@ export default function App() {
               <div className="chat-message user">
                 <p>{pendingPrompt}</p>
               </div>
-              <div className="thinking">
+              {toolProgress.length > 0 && (
+                <div className="agent-tool-progress" aria-live="polite">
+                  {toolProgress.map((text, i) => (
+                    <div key={i}>
+                      <Check size={13} />
+                      <span>{text}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {streamText && (
+                <ChatMessage
+                  message={{
+                    id: 'stream',
+                    role: 'assistant',
+                    content: streamText,
+                    actions: [],
+                    mode: 'live',
+                    createdAt: '',
+                  }}
+                />
+              )}
+              <div className="thinking" role="status">
                 <span />
                 <span />
                 <span />
-                {settings?.mode === 'live' ? '正在阅读故事，探索地图…' : '正在应用演示指令…'}
+                {streamText ? '正在完成回答…' : agentStatus}
               </div>
             </>
           )}
@@ -1294,17 +1363,48 @@ export default function App() {
             <div className="composer-bottom">
               <button type="button" onClick={() => setModal('settings')}>
                 <span className="model-dot" />
-                {settings?.mode === 'live' ? settings.model : '演示模式'}
+                {settings?.connection === 'codex'
+                  ? `Codex · ${settings.agentModel || '默认模型'}`
+                  : settings?.mode === 'live'
+                    ? settings.model
+                    : '演示模式'}
                 <ChevronDown size={12} />
               </button>
-              <button
-                className="send-button"
-                type="submit"
-                aria-label="发送消息"
-                disabled={!chatInput.trim() || !story || disableEdit}
-              >
-                {chatBusy ? <LoaderCircle className="spin" size={17} /> : <ArrowUp size={18} />}
-              </button>
+              {chatBusy ? (
+                <button
+                  className="send-button stop-button"
+                  type="button"
+                  aria-label="停止生成"
+                  title="停止生成"
+                  disabled={stopping}
+                  onClick={async () => {
+                    const controller = chatController.current;
+                    setStopping(true);
+                    try {
+                      if (story) await api(`/stories/${story.id}/chat/cancel`, json('POST', {}));
+                    } catch {
+                      /* The interrupted stream reconciles against the saved story below. */
+                    } finally {
+                      controller?.abort();
+                    }
+                  }}
+                >
+                  {stopping ? (
+                    <LoaderCircle size={15} className="spin" />
+                  ) : (
+                    <Square size={15} fill="currentColor" />
+                  )}
+                </button>
+              ) : (
+                <button
+                  className="send-button"
+                  type="submit"
+                  aria-label="发送消息"
+                  disabled={!chatInput.trim() || !story || disableEdit}
+                >
+                  <ArrowUp size={18} />
+                </button>
+              )}
             </div>
           </form>
           <p className="chat-disclaimer">
@@ -1634,17 +1734,29 @@ function SettingsDialog({
   const [clearKey, setClearKey] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [connection, setConnection] = useState<'api' | 'codex'>(settings?.connection || 'api');
+  const [agentPath, setAgentPath] = useState(settings?.agentPath || '');
+  const [agentModel, setAgentModel] = useState(settings?.agentModel || '');
+  const [agentReady, setAgentReady] = useState(false);
   return (
     <Dialog title="连接你的探索助手" onClose={onClose}>
       <p className="dialog-intro">
-        连接支持工具调用的模型，它就能为故事添加事件、标记地点、绘制路线。也支持 Ollama 等本地服务。
+        选择探索助手，为故事添加事件、标记地点、绘制路线。可以使用本机 Codex，也可以连接模型 API。
       </p>
       <form
         onSubmit={async (e) => {
           e.preventDefault();
           setBusy(true);
           try {
-            await onSave({ baseUrl, model, apiKey: key || undefined, clearKey });
+            await onSave({
+              baseUrl,
+              model,
+              apiKey: key || undefined,
+              clearKey,
+              connection,
+              agentPath,
+              agentModel,
+            });
           } catch (e) {
             setError((e as Error).message);
           } finally {
@@ -1652,55 +1764,90 @@ function SettingsDialog({
           }
         }}
       >
-        <label className="field-label">
-          API 地址
-          <input
-            type="url"
-            required
-            value={baseUrl}
-            onChange={(e) => setBaseUrl(e.target.value)}
-            placeholder="https://api.example.com/v1"
+        <div className="connection-picker" role="group" aria-label="连接方式">
+          <button
+            type="button"
+            aria-pressed={connection === 'codex'}
+            onClick={() => setConnection('codex')}
+          >
+            <Monitor size={18} />
+            <strong>本地 Agent</strong>
+            <span>复用已登录的 Codex</span>
+          </button>
+          <button
+            type="button"
+            aria-pressed={connection === 'api'}
+            onClick={() => setConnection('api')}
+          >
+            <Plug size={18} />
+            <strong>模型 API</strong>
+            <span>云端服务或 Ollama</span>
+          </button>
+        </div>
+        {connection === 'codex' ? (
+          <AgentConnection
+            path={agentPath}
+            model={agentModel}
+            onPath={setAgentPath}
+            onModel={setAgentModel}
+            onReady={setAgentReady}
           />
-        </label>
-        <label className="field-label">
-          模型名称
-          <input
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            placeholder="填写服务商提供的模型 ID"
-            maxLength={200}
-          />
-        </label>
-        <label className="field-label">
-          API Key
-          <input
-            type="password"
-            autoComplete="new-password"
-            value={key}
-            onChange={(e) => setKey(e.target.value)}
-            placeholder={settings?.hasKey ? '已保存，留空则保留' : '本地模型可留空'}
-          />
-        </label>
-        <p className="field-hint">
-          密钥仅保存在本机
-          SQLite，不会返回浏览器，也不包含在故事导出中。模型名称留空可切回演示模式。
-        </p>
-        {settings?.hasKey && (
-          <label className="check-label">
-            <input
-              type="checkbox"
-              checked={clearKey}
-              onChange={(e) => setClearKey(e.target.checked)}
-            />
-            清除已保存的密钥
-          </label>
+        ) : (
+          <>
+            <label className="field-label">
+              API 地址
+              <input
+                type="url"
+                required
+                value={baseUrl}
+                onChange={(e) => setBaseUrl(e.target.value)}
+                placeholder="https://api.example.com/v1"
+              />
+            </label>
+            <label className="field-label">
+              模型名称
+              <input
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+                placeholder="填写服务商提供的模型 ID"
+                maxLength={200}
+              />
+            </label>
+            <label className="field-label">
+              API Key
+              <input
+                type="password"
+                autoComplete="new-password"
+                value={key}
+                onChange={(e) => setKey(e.target.value)}
+                placeholder={settings?.hasKey ? '已保存，留空则保留' : '本地模型可留空'}
+              />
+            </label>
+            <p className="field-hint">
+              密钥仅保存在本机
+              SQLite，不会返回浏览器，也不包含在故事导出中。模型名称留空可切回演示模式。
+            </p>
+            {settings?.hasKey && (
+              <label className="check-label">
+                <input
+                  type="checkbox"
+                  checked={clearKey}
+                  onChange={(e) => setClearKey(e.target.checked)}
+                />
+                清除已保存的密钥
+              </label>
+            )}
+          </>
         )}
         {error && (
           <p className="form-error" role="alert">
             {error}
           </p>
         )}
-        <button className="primary-button full-width" disabled={busy}>
+        <button
+          className="primary-button full-width"
+          disabled={busy || (connection === 'codex' && !agentReady)}
+        >
           {busy ? <LoaderCircle className="spin" size={17} /> : <Check size={17} />}保存配置
         </button>
       </form>

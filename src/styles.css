@@ -3431,3 +3431,142 @@ button {
     max-height: 45%;
   }
 }
+.connection-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 8px 0 22px;
+}
+.connection-picker button {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  align-items: center;
+  gap: 6px 8px;
+  padding: 16px;
+  text-align: left;
+  border: 1px solid #dfe4d3;
+  border-radius: 12px;
+  background: #fafaf4;
+  color: #586950;
+  cursor: pointer;
+}
+.connection-picker button span {
+  grid-column: 2;
+  font-size: 12px;
+  color: #77836b;
+}
+.connection-picker button[aria-pressed='true'] {
+  border-color: #6c8460;
+  background: #edf1e3;
+  box-shadow: 0 0 0 1px #6c8460;
+}
+.agent-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 17px;
+  background: #f2f3e9;
+  border: 1px solid #dfe4d3;
+  border-radius: 12px;
+}
+.agent-card-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  color: #45604d;
+  background: #e3e9d7;
+}
+.agent-card-name {
+  display: grid;
+  gap: 3px;
+  flex: 1;
+}
+.agent-card-name strong {
+  color: #344c3c;
+  font-size: 17px;
+}
+.agent-card-name span,
+.agent-badge {
+  font-size: 12px;
+  color: #78806d;
+}
+.agent-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.agent-badge.ready {
+  color: #416340;
+}
+.agent-status {
+  min-height: 44px;
+  padding: 12px 2px;
+  color: #64765b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.agent-advanced {
+  margin: 12px 0;
+  color: #687a5a;
+  font-size: 13px;
+}
+.agent-advanced summary {
+  cursor: pointer;
+  padding: 6px 0;
+}
+.agent-advanced input {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+}
+.agent-recheck {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid #d9dfcd;
+  border-radius: 8px;
+  background: #fafaf3;
+  color: #526c48;
+  cursor: pointer;
+}
+.agent-connection .form-error {
+  display: flex;
+  align-items: start;
+  gap: 5px;
+}
+.agent-connection .field-hint {
+  margin-top: 12px;
+}
+.agent-tool-progress {
+  margin: 12px 0 16px;
+  padding: 12px 14px;
+  border: 1px solid #dce3cd;
+  border-radius: 10px;
+  background: #f3f5e9;
+  color: #6b8057;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.agent-tool-progress > div {
+  display: flex;
+  align-items: start;
+  gap: 7px;
+  padding: 3px 0;
+}
+.agent-tool-progress svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.stop-button {
+  background: #8e7055 !important;
+}
+.composer-bottom > button:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: calc(100% - 52px);
+}

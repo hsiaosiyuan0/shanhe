@@ -1,26 +1,17 @@
 import { randomUUID } from 'node:crypto';
-import { z } from 'zod';
-import {
-  actionsSchema,
-  applyActions,
-  type MapAction,
-  type Story,
-  type Message,
-} from '../shared/schema.js';
+import { type MapAction, type Story, type Message } from '../shared/schema.js';
 import { HttpError, type Store } from './db.js';
 
-export const toolDefinition = {
-  type: 'function',
-  function: {
-    name: 'apply_story_actions',
-    description:
-      'Add historical events, place/mountain/river markers, schematic routes, or change map view/layers. Coordinates are WGS84 [longitude,latitude]. Mutations are validated and saved atomically with this conversation. Never invent verified sources or exact ancient boundaries.',
-    parameters: z.toJSONSchema(actionsSchema, { target: 'draft-7' }),
-  },
-};
+import { StoryTools, toolDefinition } from './story-tools.js';
+import { respondWithCodex, type AgentOptions } from './agents/codex.js';
+export { toolDefinition };
+
 export function config(store: Store) {
   const saved = store.settings();
   return {
+    connection: saved.connection ?? 'api',
+    agentPath: saved.agentPath ?? '',
+    agentModel: saved.agentModel ?? '',
     baseUrl: saved.baseUrl ?? process.env.LLM_BASE_URL ?? 'https://api.openai.com/v1',
     model: saved.model ?? process.env.LLM_MODEL ?? '',
     apiKey: saved.apiKey ?? process.env.LLM_API_KEY ?? '',
@@ -37,8 +28,11 @@ export function publicConfig(store: Store) {
   return {
     baseUrl: c.baseUrl,
     model: c.model,
+    connection: c.connection,
+    agentPath: c.agentPath,
+    agentModel: c.agentModel,
     hasKey: !!c.apiKey,
-    mode: configured(c) ? 'live' : 'demo',
+    mode: c.connection === 'codex' || configured(c) ? 'live' : 'demo',
   };
 }
 
@@ -157,8 +151,15 @@ export async function respond(
   store: Store,
   story: Story,
   prompt: string,
-): Promise<{ content: string; actions: MapAction[]; mode: 'demo' | 'live' }> {
+  options: AgentOptions = { signal: new AbortController().signal, emit: () => {} },
+): Promise<{
+  content: string;
+  actions: MapAction[];
+  mode: 'demo' | 'live';
+  session?: import('../shared/schema.js').AgentSession;
+}> {
   const c = config(store);
+  if (c.connection === 'codex') return respondWithCodex(store, story, prompt, options);
   if (!configured(c)) return { ...demo(story, prompt), mode: 'demo' };
   const history = store
     .messages(story.id)
@@ -172,9 +173,9 @@ export async function respond(
     ...history,
     { role: 'user', content: prompt },
   ];
-  let pending = story;
-  const actions: MapAction[] = [];
-  const deadline = AbortSignal.timeout(90000);
+  const staged = new StoryTools(story);
+  const actions = staged.actions;
+  const deadline = AbortSignal.any([options.signal, AbortSignal.timeout(90000)]);
   for (let round = 0; round < 5; round++) {
     let response: Response;
     try {
@@ -227,35 +228,16 @@ export async function respond(
     for (const call of message.tool_calls) {
       try {
         if (call.function.name !== 'apply_story_actions') throw new Error('未知工具');
-        const batch = actionsSchema.parse(JSON.parse(call.function.arguments));
-        if (actions.length + batch.actions.length > 40) throw new Error('每轮最多 40 项修改');
-        for (const a of batch.actions)
-          if (a.type === 'add_event') {
-            a.event.confidence = 'unverified';
-            delete a.event.source;
-          } else if (a.type === 'add_marker') {
-            a.marker.confidence = 'unverified';
-            delete a.marker.source;
-          } else if (a.type === 'add_route' && a.route.journey) {
-            a.route.journey.status = 'unverified';
-            a.route.journey.sources = [];
-            a.route.journey.stops.forEach((stop) => {
-              stop.evidence = 'unknown';
-            });
-            a.route.journey.legs.forEach((leg) => {
-              leg.evidence = 'unknown';
-            });
-          }
-        pending = applyActions(pending, batch);
-        actions.push(...batch.actions);
+        const receipt = staged.apply(JSON.parse(call.function.arguments));
+        options.emit({
+          type: 'tool',
+          text: `已暂存 ${staged.actions.length} 项地图修改`,
+          count: staged.actions.length,
+        });
         messages.push({
           role: 'tool',
           tool_call_id: call.id,
-          content: JSON.stringify({
-            ok: true,
-            staged: batch.actions.length,
-            note: 'Will commit atomically after your final answer.',
-          }),
+          content: JSON.stringify(receipt),
         });
       } catch (e) {
         messages.push({
