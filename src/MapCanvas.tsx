@@ -256,7 +256,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     m.on('style.load', () => setReady(true));
     m.on('error', (event) => {
       const sourceId = (event as unknown as { sourceId?: string }).sourceId;
-      if (sourceId === 'relief' || sourceId === 'dem') {
+      if (sourceId === 'relief' || sourceId === 'dem' || sourceId === 'terrain-dem') {
         failedSources.current.add(sourceId);
         setOffline(true);
       }
@@ -379,7 +379,18 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     for (const id of ['admin-fill', 'admin-boundaries'])
       m.setLayoutProperty(id, 'visibility', story.layers.admin ? 'visible' : 'none');
     if (story.layers.terrain) {
-      m.setTerrain({ source: 'dem', exaggeration: 1.3 });
+      // Terrain and painted DEM layers use different tile resolutions in MapLibre.
+      // Separate sources prevent the 3D mesh from reducing color/hillshade quality.
+      if (!m.getSource('terrain-dem'))
+        m.addSource('terrain-dem', {
+          type: 'raster-dem',
+          tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          encoding: 'terrarium',
+          maxzoom: 14,
+          attribution: 'Elevation: Mapzen / AWS',
+        });
+      m.setTerrain({ source: 'terrain-dem', exaggeration: 1.3 });
     } else m.setTerrain(null);
     markers.current.forEach((marker) => marker.remove());
     markers.current = [];
