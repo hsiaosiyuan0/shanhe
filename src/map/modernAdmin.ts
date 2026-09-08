@@ -11,12 +11,14 @@ export const adminSourceIds = [
   'admin-references',
   'admin-labels',
 ] as const;
-export const cityBoundaryMinZoom = 7;
-export const countyBoundaryMinZoom = 8;
-export const adminLevelAtZoom = (zoom: number): AdminLevel => (zoom < 7 ? 4 : zoom < 8 ? 5 : 6);
+export const cityBoundaryMinZoom = 6;
+export const countyBoundaryMinZoom = 9;
+export type AdminLevelMode = 'auto' | AdminLevel;
+export const adminLevelAtZoom = (zoom: number): AdminLevel =>
+  zoom < cityBoundaryMinZoom ? 4 : zoom < countyBoundaryMinZoom ? 5 : 6;
+export const resolveAdminLevel = (mode: AdminLevelMode, zoom: number): AdminLevel =>
+  mode === 'auto' ? adminLevelAtZoom(zoom) : mode;
 export const adminLevelName = (level: AdminLevel) => ({ 4: '省级', 5: '市级', 6: '区县' })[level];
-export const adminScaleLabel = (zoom: number) =>
-  `${adminLevelName(adminLevelAtZoom(zoom))}范围 · 天地图 2025.09`;
 export const placeLayerIds = ['admin-labels', 'modern-town-label'];
 export const townSourceId = 'modern-town-detail';
 export const townSource: VectorSourceSpecification = {

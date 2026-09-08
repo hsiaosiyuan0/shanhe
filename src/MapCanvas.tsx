@@ -20,13 +20,12 @@ import { riverLines } from '../shared/rivers';
 import { ModernAdminController, type AdminState } from './map/ModernAdminController';
 import { AdminPackageLoader } from './map/adminPackage';
 import {
-  adminScaleLabel,
+  adminLevelAtZoom,
+  type AdminLevelMode,
   adminLevelName,
   modernPlaceName,
   modernPlaceKind,
   placeLayerIds,
-  cityBoundaryMinZoom,
-  countyBoundaryMinZoom,
 } from './map/modernAdmin';
 import {
   findMajorRiver,
@@ -236,9 +235,12 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   const [ready, setReady] = useState(false);
   const [offline, setOffline] = useState(false);
   const [fatal, setFatal] = useState(false);
-  const [adminState, setAdminState] = useState<AdminState>({ status: 'idle', level: 4 });
-  const [adminZoom, setAdminZoom] = useState(Math.floor(story.view.zoom));
-  const [adminScale, setAdminScale] = useState(adminScaleLabel(story.view.zoom));
+  const [adminState, setAdminState] = useState<AdminState>({
+    status: 'idle',
+    level: adminLevelAtZoom(story.view.zoom),
+  });
+  const [adminMode, setAdminMode] = useState<AdminLevelMode>('auto');
+  const adminScale = `${adminLevelName(adminState.level)}范围 · ${adminMode === 'auto' ? '随缩放' : '固定层级'} · 天地图 2025.09`;
   const failedSources = useRef(new Set<string>());
   const lastNavigation = useRef<{ view: string; selectedId?: string } | null>(null);
   const currentStory = useRef(story);
@@ -372,8 +374,6 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     m.addControl(new CollapsedAttributionControl({ compact: true }), 'bottom-right');
     const updateLabelDetail = () => {
       container.current?.classList.toggle('journey-detail', m.getZoom() >= 6.5);
-      setAdminScale(adminScaleLabel(m.getZoom()));
-      setAdminZoom(Math.floor(m.getZoom()));
     };
     updateLabelDetail();
     m.on('zoom', updateLabelDetail);
@@ -553,8 +553,9 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   }, []);
   useEffect(() => {
     if (!map.current || !ready) return;
+    adminDetail.current?.setLevelMode(adminMode);
     adminDetail.current?.setEnabled(story.layers.admin);
-  }, [ready, story.layers.admin]);
+  }, [ready, story.layers.admin, adminMode]);
   useEffect(() => {
     if (!ready || !map.current) return;
     const key = JSON.stringify(story.view);
@@ -828,34 +829,31 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
           >
             <Button
               className="admin-boundary-key"
-              aria-label="查看省界"
-              aria-pressed={adminZoom < cityBoundaryMinZoom}
-              onClick={() => map.current?.easeTo({ zoom: 5.5, duration: motion() })}
+              aria-label="行政区随缩放切换"
+              aria-pressed={adminMode === 'auto'}
+              title="按地图缩放自动显示省、市或区县"
+              onClick={() => setAdminMode('auto')}
             >
-              省界
+              随缩放
             </Button>
-            <Button
-              className="admin-boundary-key"
-              aria-label="查看市界"
-              aria-pressed={adminZoom >= cityBoundaryMinZoom && adminZoom < countyBoundaryMinZoom}
-              title="切换到市级视角，移入区域高亮完整市界"
-              onClick={() =>
-                map.current?.easeTo({ zoom: cityBoundaryMinZoom + 0.5, duration: motion() })
-              }
-            >
-              市界
-            </Button>
-            <Button
-              className="admin-boundary-key"
-              aria-label="查看区县界"
-              aria-pressed={adminZoom >= countyBoundaryMinZoom}
-              title="切换到区县视角，移入区域高亮完整区县界"
-              onClick={() =>
-                map.current?.easeTo({ zoom: countyBoundaryMinZoom + 1, duration: motion() })
-              }
-            >
-              区县界
-            </Button>
+            {(
+              [
+                [4, '省界'],
+                [5, '市界'],
+                [6, '区县界'],
+              ] as const
+            ).map(([level, label]) => (
+              <Button
+                key={level}
+                className="admin-boundary-key"
+                aria-label={`查看${label}`}
+                aria-pressed={adminMode === level}
+                title={`固定显示${label}，缩放不会切换层级`}
+                onClick={() => setAdminMode(level)}
+              >
+                {label}
+              </Button>
+            ))}
             <a
               className="admin-source"
               href="https://cloudcenter.tianditu.gov.cn/administrativeDivision/"
@@ -874,7 +872,10 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
                   <small>{adminLevelName(adminState.level)}范围</small>
                 </>
               ) : adminState.status === 'ready' ? (
-                <small>移入区域，查看完整轮廓</small>
+                <small>
+                  {adminLevelName(adminState.level)} ·{' '}
+                  {adminMode === 'auto' ? '随缩放' : '固定层级'} · 移入查看轮廓
+                </small>
               ) : null}
             </span>
           </div>

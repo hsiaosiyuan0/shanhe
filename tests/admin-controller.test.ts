@@ -145,3 +145,66 @@ test('late old-tier requests cannot paint over the active tier; failures can be 
   assert.equal(g.layers.get('admin-border-line').layout.visibility, 'visible');
   g.controller.dispose();
 });
+
+test('explicit city selection survives zooming, panning and layer toggles until the user restores automatic mode', async () => {
+  const loads: AdminLevel[] = [];
+  const f = fixture(async (level) => {
+    loads.push(level);
+    return data[level];
+  });
+  f.zoom(9.5);
+  f.controller.setEnabled(true);
+  await settle();
+  f.move([118.79, 32.06]);
+  assert.equal(f.reports.at(-1)?.area?.properties.name, '玄武区');
+  f.controller.setLevelMode(5);
+  await settle();
+  for (const zoom of [10.5, 12, 7, 4.5]) {
+    f.zoom(zoom);
+    f.move([118.79, 32.06]);
+    assert.equal(f.reports.at(-1)?.area?.properties.name, '南京市');
+    assert.equal(f.sources.get('admin-areas').data, data[5].areas);
+    assert.equal(f.sources.get('admin-labels').data, data[5].labels);
+  }
+  assert.deepEqual(
+    loads,
+    [6, 5],
+    'zooming a locked city layer must not load county or province data',
+  );
+  f.controller.setEnabled(false);
+  f.zoom(9.5);
+  f.controller.setEnabled(true);
+  await settle();
+  assert.equal(f.reports.at(-1)?.level, 5);
+  f.controller.setLevelMode('auto');
+  await settle();
+  f.move([118.79, 32.06]);
+  assert.equal(f.reports.at(-1)?.area?.properties.name, '玄武区');
+  f.controller.dispose();
+});
+
+test('retry and late responses respect the manually selected administrative level', async () => {
+  let resolveCounty!: (value: AdminPackage) => void;
+  let failCity = true;
+  const f = fixture(async (level) => {
+    if (level === 6)
+      return new Promise((resolve) => {
+        resolveCounty = resolve;
+      });
+    if (level === 5 && failCity) throw new Error('unavailable');
+    return data[level];
+  });
+  f.zoom(9.5);
+  f.controller.setEnabled(true);
+  f.controller.setLevelMode(5);
+  await settle();
+  assert.equal(f.reports.at(-1)?.status, 'error');
+  failCity = false;
+  f.controller.retry();
+  await settle();
+  resolveCounty(data[6]);
+  await settle();
+  assert.equal(f.reports.at(-1)?.status, 'ready');
+  assert.equal(f.sources.get('admin-areas').data, data[5].areas);
+  f.controller.dispose();
+});

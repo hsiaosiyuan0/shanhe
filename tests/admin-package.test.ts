@@ -158,7 +158,7 @@ test('local static loader verifies bytes, caches tiers, honors abort and recover
 });
 
 test('one zoom tier uses uniform border strokes; hover shares the polygon source and map style validates', () => {
-  assert.deepEqual([3, 6.99, 7, 7.99, 8, 12].map(adminLevelAtZoom), [4, 4, 5, 5, 6, 6]);
+  assert.deepEqual([3, 5.99, 6, 7.5, 8.99, 9, 12].map(adminLevelAtZoom), [4, 4, 5, 5, 5, 6, 6]);
   const layers = modernAdminLayers();
   assert.deepEqual(
     validateStyleMin({

@@ -7,7 +7,8 @@ import {
   type AdminPackage,
 } from './adminPackage';
 import {
-  adminLevelAtZoom,
+  resolveAdminLevel,
+  type AdminLevelMode,
   adminSourceIds,
   modernAdminLayers,
   townLayer,
@@ -27,6 +28,7 @@ type Point = [number, number];
 /** A single active tier, with mesh boundaries and hover from one local dataset. */
 export class ModernAdminController {
   private enabled = false;
+  private levelMode: AdminLevelMode = 'auto';
   private disposed = false;
   private data?: AdminPackage;
   private request?: AbortController;
@@ -69,13 +71,14 @@ export class ModernAdminController {
   }
   private update = () => {
     if (this.disposed) return;
-    const level = adminLevelAtZoom(this.map.getZoom());
-    if (this.enabled && this.map.getZoom() >= 11 && !this.map.getSource(townSourceId)) {
+    const level = resolveAdminLevel(this.levelMode, this.map.getZoom());
+    const showTowns = this.enabled && level === 6 && this.map.getZoom() >= 11;
+    if (showTowns && !this.map.getSource(townSourceId)) {
       this.map.addSource(townSourceId, townSource);
       this.map.addLayer(townLayer, 'major-river-hover');
     }
     if (this.map.getLayer(townLayer.id))
-      this.map.setLayoutProperty(townLayer.id, 'visibility', this.enabled ? 'visible' : 'none');
+      this.map.setLayoutProperty(townLayer.id, 'visibility', showTowns ? 'visible' : 'none');
     if (!this.enabled) return;
     if (this.state.level === level && this.state.status !== 'idle') return;
     this.load(level);
@@ -146,12 +149,16 @@ export class ModernAdminController {
       this.clearHover();
       this.visibility(false);
       this.data = undefined;
-      this.report({ status: 'idle', level: adminLevelAtZoom(this.map.getZoom()) });
+      this.report({ status: 'idle', level: resolveAdminLevel(this.levelMode, this.map.getZoom()) });
     }
     this.update();
   }
+  setLevelMode(mode: AdminLevelMode) {
+    this.levelMode = mode;
+    this.update();
+  }
   retry() {
-    if (this.enabled) this.load(adminLevelAtZoom(this.map.getZoom()));
+    if (this.enabled) this.load(resolveAdminLevel(this.levelMode, this.map.getZoom()));
   }
   dispose() {
     this.disposed = true;
