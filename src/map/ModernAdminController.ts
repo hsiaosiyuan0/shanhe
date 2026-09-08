@@ -92,7 +92,11 @@ export class ModernAdminController {
     const request = new AbortController();
     this.request = request;
     this.report({ status: 'loading', level });
-    const timeout = setTimeout(() => request.abort(new Error('行政区数据包加载超时')), 30_000);
+    // A first download from Pages can take over 30 seconds on a slow connection.
+    const timeout = setTimeout(
+      () => request.abort(new Error('行政区数据包加载超时，请检查网络后重试')),
+      90_000,
+    );
     try {
       const data = await this.loader.load(level, request.signal);
       if (this.disposed || this.request !== request) return;

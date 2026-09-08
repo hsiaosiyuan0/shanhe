@@ -208,3 +208,36 @@ test('retry and late responses respect the manually selected administrative leve
   assert.equal(f.sources.get('admin-areas').data, data[5].areas);
   f.controller.dispose();
 });
+
+test('slow first downloads remain loading past 30 seconds; genuine timeouts show a retryable explanation', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  let finish!: () => void;
+  const f = fixture(
+    (level, signal) =>
+      new Promise((resolve, reject) => {
+        finish = () => resolve(data[level]);
+        signal.addEventListener(
+          'abort',
+          () => reject(new DOMException('The user aborted a request.', 'AbortError')),
+          { once: true },
+        );
+      }),
+  );
+  f.controller.setEnabled(true);
+  t.mock.timers.tick(45_000);
+  await settle();
+  assert.equal(f.reports.at(-1)?.status, 'loading');
+  finish();
+  await settle();
+  assert.equal(f.reports.at(-1)?.status, 'ready');
+  f.controller.retry();
+  t.mock.timers.tick(90_000);
+  await settle();
+  assert.equal(f.reports.at(-1)?.status, 'error');
+  assert.match(f.reports.at(-1)?.message ?? '', /加载超时.*重试/);
+  f.controller.retry();
+  finish();
+  await settle();
+  assert.equal(f.reports.at(-1)?.status, 'ready');
+  f.controller.dispose();
+});

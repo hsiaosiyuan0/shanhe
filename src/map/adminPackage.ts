@@ -120,6 +120,7 @@ export class AdminPackageLoader {
       const response = await this.request(this.baseUrl + 'manifest.json', {
         signal,
         cache: 'no-cache',
+        priority: 'high',
       });
       if (!response.ok) throw new Error('行政区数据目录加载失败');
       const manifest = (await response.json()) as AdminManifest;
@@ -142,6 +143,7 @@ export class AdminPackageLoader {
     const response = await this.request(this.baseUrl + (compressed ? entry.gzipFile : entry.file), {
       signal,
       cache: 'no-cache',
+      priority: 'high',
     });
     if (!response.ok) throw new Error('行政区数据包加载失败');
     const downloaded = await response.arrayBuffer();
