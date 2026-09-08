@@ -1,4 +1,4 @@
-import type { GeoJSONSource, Map } from 'maplibre-gl';
+import type { GeoJSONSource, Map, MapMouseEvent } from 'maplibre-gl';
 import { AdminAreaLoader, type AdminArea } from './adminAreas';
 import { cityBoundaryMinZoom, countyBoundaryMinZoom } from './modernAdmin';
 
@@ -32,7 +32,15 @@ export class AdminAreaController {
   ) {
     map.on('movestart', this.onMoveStart);
     map.on('moveend', this.update);
+    // Area hit testing uses cached polygons, independently of raster/tile readiness.
+    // isStyleLoaded() can stay false while any unrelated source is downloading.
+    map.on('mousemove', this.onMouseMove);
+    map.on('mouseout', this.onMouseOut);
   }
+  private onMouseMove = (event: MapMouseEvent) => {
+    this.hover(this.map.isMoving() ? null : [event.lngLat.lng, event.lngLat.lat]);
+  };
+  private onMouseOut = () => this.hover(null);
   private onMoveStart = () => {
     this.hover(null);
   };
@@ -71,7 +79,7 @@ export class AdminAreaController {
           id: 'admin-hover-fill',
           type: 'fill',
           source: adminHoverSourceId,
-          paint: { 'fill-color': '#795478', 'fill-opacity': 0.075 },
+          paint: { 'fill-color': '#795478', 'fill-opacity': 0.13 },
         },
         before,
       );
@@ -81,7 +89,7 @@ export class AdminAreaController {
           type: 'line',
           source: adminHoverSourceId,
           layout: { 'line-join': 'round' },
-          paint: { 'line-color': '#fffcf3', 'line-width': 5, 'line-opacity': 0.9 },
+          paint: { 'line-color': '#fffcf3', 'line-width': 6, 'line-opacity': 0.95 },
         },
         before,
       );
@@ -91,7 +99,7 @@ export class AdminAreaController {
           type: 'line',
           source: adminHoverSourceId,
           layout: { 'line-join': 'round' },
-          paint: { 'line-color': '#68456b', 'line-width': 2.8 },
+          paint: { 'line-color': '#68456b', 'line-width': 3.5 },
         },
         before,
       );
@@ -192,5 +200,7 @@ export class AdminAreaController {
     clearTimeout(this.timer);
     this.map.off('movestart', this.onMoveStart);
     this.map.off('moveend', this.update);
+    this.map.off('mousemove', this.onMouseMove);
+    this.map.off('mouseout', this.onMouseOut);
   }
 }

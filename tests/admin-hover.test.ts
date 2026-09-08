@@ -124,20 +124,23 @@ test('loader caches polygons by identity and checks the geometry instead of a ro
 });
 
 function mapFixture() {
-  const handlers = new globalThis.Map<string, Set<() => void>>();
+  const handlers = new globalThis.Map<string, Set<(event?: any) => void>>();
   const sources = new Set<string>();
   const layers = new Set<string>();
   const painted: any[] = [];
   let zoom = 7;
+  let moving = false;
   const map = {
-    on(name: string, fn: () => void) {
+    on(name: string, fn: (event?: any) => void) {
       if (!handlers.has(name)) handlers.set(name, new Set());
       handlers.get(name)!.add(fn);
     },
-    off(name: string, fn: () => void) {
+    off(name: string, fn: (event?: any) => void) {
       handlers.get(name)?.delete(fn);
     },
     getZoom: () => zoom,
+    isMoving: () => moving,
+    isStyleLoaded: () => false,
     getCenter: () => ({ lng: 118.79, lat: 32.06 }),
     getSource: (id: string) =>
       sources.has(id) ? { setData: (data: any) => painted.push(data) } : undefined,
@@ -149,12 +152,48 @@ function mapFixture() {
     map,
     painted,
     handlers,
+    emit: (name: string, point?: [number, number]) => {
+      if (name === 'movestart') moving = true;
+      if (name === 'moveend') moving = false;
+      handlers
+        .get(name)
+        ?.forEach((fn) => fn(point && { lngLat: { lng: point[0], lat: point[1] } }));
+    },
     setZoom: (z: number) => {
       zoom = z;
       handlers.get('moveend')?.forEach((fn) => fn());
     },
   };
 }
+
+test('map mousemove events highlight while unrelated map sources are still loading', () => {
+  const { map, painted, emit, setZoom, handlers } = mapFixture();
+  const controller = new AdminAreaController(map, () => {}, {
+    find: (point, level) =>
+      realAreas.find((a) => a.properties.level === level && areaContains(a, point)),
+    load: async () => {},
+  });
+  controller.setEnabled(true);
+  assert.equal(map.isStyleLoaded(), false, 'simulate pending relief/terrain tiles');
+  emit('mousemove', [118.9, 31.8]);
+  assert.deepEqual(painted.at(-1).features, [realAreas[0]], 'no click needed');
+  emit('mouseout');
+  assert.deepEqual(painted.at(-1).features, []);
+  setZoom(9);
+  emit('mousemove', [118.79, 32.06]);
+  assert.deepEqual(painted.at(-1).features, [realAreas[1]]);
+  emit('movestart');
+  emit('mousemove', [118.79, 32.06]);
+  assert.deepEqual(painted.at(-1).features, [], 'dragging must not paint a region');
+  emit('moveend');
+  emit('mousemove', [118.79, 32.06]);
+  assert.deepEqual(painted.at(-1).features, [realAreas[1]]);
+  controller.setEnabled(false);
+  emit('mousemove', [118.79, 32.06]);
+  assert.deepEqual(painted.at(-1).features, []);
+  controller.dispose();
+  assert.ok([...handlers.values()].every((h) => h.size === 0));
+});
 
 test('hover highlights an entire area, switches tiers, clears on leave and avoids cached-area requests', async () => {
   const { map, painted, handlers, setZoom } = mapFixture();

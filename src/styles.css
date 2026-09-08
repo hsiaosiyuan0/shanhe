@@ -3175,10 +3175,24 @@ button {
   margin-top: 4px;
   font-variant-numeric: tabular-nums;
 }
-.admin-caption {
+.map-admin-feedback {
   position: absolute;
   top: 61px;
   left: 21px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: calc(100% - 42px);
+  pointer-events: none;
+}
+.map-admin-feedback .map-network {
+  position: static;
+  max-width: 100%;
+  pointer-events: auto;
+}
+.admin-caption {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -3190,7 +3204,7 @@ button {
   z-index: 10;
   pointer-events: none;
   flex-wrap: wrap;
-  max-width: calc(100% - 42px);
+  max-width: 100%;
 }
 .admin-hover-info {
   display: inline-flex;
@@ -3216,6 +3230,22 @@ button {
 }
 .admin-boundary-key[data-active='false'] {
   opacity: 0.4;
+}
+button.admin-boundary-key {
+  pointer-events: auto;
+  padding: 4px 7px;
+  min-height: 30px;
+  border-radius: 4px;
+  border: 1px solid #c9bbca;
+  color: #68456b;
+  font-size: 11px;
+  background: #fffdf6;
+  cursor: pointer;
+}
+button.admin-boundary-key:hover,
+button.admin-boundary-key[aria-pressed='true'] {
+  background: #ece2ed;
+  border-color: #927394;
 }
 .admin-boundary-key i {
   width: 18px;
@@ -3251,7 +3281,7 @@ button {
     right: auto;
     width: 195px;
   }
-  .admin-caption {
+  .map-admin-feedback {
     top: 126px;
     left: 15px;
   }
@@ -3277,9 +3307,11 @@ button {
   .elevation-ticks {
     font-size: 8px;
   }
-  .admin-caption {
+  .map-admin-feedback {
     top: 111px;
     left: 10px;
+  }
+  .admin-caption {
     font-size: 9px;
   }
 }

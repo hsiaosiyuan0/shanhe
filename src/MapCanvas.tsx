@@ -505,7 +505,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
         coordinates: [Number(event.lngLat.lng.toFixed(5)), Number(event.lngLat.lat.toFixed(5))],
         elevation,
         modernRegion: currentStory.current.layers.admin
-          ? adminAreas.current?.hover([event.lngLat.lng, event.lngLat.lat])?.properties.name ||
+          ? adminAreas.current?.at([event.lngLat.lng, event.lngLat.lat])?.properties.name ||
             m.queryRenderedFeatures(event.point, { layers: ['admin-fill'] })[0]?.properties?.name
           : undefined,
       });
@@ -527,9 +527,6 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
         ? m.queryRenderedFeatures(event.point, { layers: placeLayers })[0]
         : undefined;
       const placeName = place && modernPlaceName(place.properties);
-      adminAreas.current?.hover(
-        river || customId || m.isMoving() ? null : [event.lngLat.lng, event.lngLat.lat],
-      );
       if (river?.id === hoveredRiver && customId === hoveredCustom && placeName === hoveredPlace)
         return;
       hoveredRiver = river?.id;
@@ -540,7 +537,6 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       m.setFilter('major-river-hover', riverFilter(river ? [river] : []));
     });
     m.on('mouseout', () => {
-      adminAreas.current?.hover(null);
       hoveredRiver = undefined;
       hoveredCustom = undefined;
       hoveredPlace = undefined;
@@ -860,33 +856,30 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
           ))}
         </div>
       )}
-      {(offline ||
-        (story.layers.admin &&
-          (adminError ||
-            boundaryStatus.status === 'error' ||
-            (showAdminDetail && detailStatus === 'error')))) && (
-        <div className="map-network" role="status">
-          {offline && <p>在线地形暂不可用 · 本地地理底图仍可浏览</p>}
-          {adminError && story.layers.admin && <p>省级数据加载失败，请刷新重试</p>}
-          {story.layers.admin && showAdminDetail && detailStatus === 'error' && (
-            <p>
-              部分市县数据暂不可用 · 保留省级对照{' '}
-              <Button onClick={() => adminDetail.current?.retry()}>重试市县数据</Button>
-            </p>
-          )}
-          {story.layers.admin && boundaryStatus.status === 'error' && (
-            <p>
-              {boundaryStatus.message}{' '}
-              <Button onClick={() => adminDetail.current?.retry()}>重试边界</Button>
-            </p>
-          )}
-        </div>
-      )}
-      {story.layers.admin &&
-        !offline &&
-        !adminError &&
-        boundaryStatus.status !== 'error' &&
-        !(showAdminDetail && detailStatus === 'error') && (
+      <div className="map-admin-feedback">
+        {(offline ||
+          (story.layers.admin &&
+            (adminError ||
+              boundaryStatus.status === 'error' ||
+              (showAdminDetail && detailStatus === 'error')))) && (
+          <div className="map-network" role="status">
+            {offline && <p>在线地形暂不可用 · 本地地理底图仍可浏览</p>}
+            {adminError && story.layers.admin && <p>省级数据加载失败，请刷新重试</p>}
+            {story.layers.admin && showAdminDetail && detailStatus === 'error' && (
+              <p>
+                部分市县数据暂不可用 · 保留省级对照{' '}
+                <Button onClick={() => adminDetail.current?.retry()}>重试市县数据</Button>
+              </p>
+            )}
+            {story.layers.admin && boundaryStatus.status === 'error' && (
+              <p>
+                {boundaryStatus.message}{' '}
+                <Button onClick={() => adminDetail.current?.retry()}>重试边界</Button>
+              </p>
+            )}
+          </div>
+        )}
+        {story.layers.admin && (
           <div
             className="admin-caption"
             aria-label={`现代行政区对照：${adminScale}`}
@@ -896,19 +889,35 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
               <i className="province-line" />
               省界
             </span>
-            <span className="admin-boundary-key" data-active={adminZoom >= cityBoundaryMinZoom}>
+            <Button
+              className="admin-boundary-key"
+              aria-label="查看市界"
+              aria-pressed={adminZoom >= cityBoundaryMinZoom && adminZoom < countyBoundaryMinZoom}
+              title="切换到市级视角，移入区域高亮完整市界"
+              onClick={() =>
+                map.current?.easeTo({ zoom: cityBoundaryMinZoom + 0.5, duration: motion() })
+              }
+            >
               <i className="city-line" />
               市界
-            </span>
-            <span className="admin-boundary-key" data-active={adminZoom >= countyBoundaryMinZoom}>
+            </Button>
+            <Button
+              className="admin-boundary-key"
+              aria-label="查看区县界"
+              aria-pressed={adminZoom >= countyBoundaryMinZoom}
+              title="切换到区县视角，移入区域高亮完整区县界"
+              onClick={() =>
+                map.current?.easeTo({ zoom: countyBoundaryMinZoom + 1, duration: motion() })
+              }
+            >
               <i className="county-line" />
               区县界
-            </span>
+            </Button>
             {(detailStatus === 'loading' || boundaryStatus.status === 'loading') &&
             showAdminDetail ? (
               <small>加载中…</small>
             ) : (
-              adminZoom < cityBoundaryMinZoom && <small>放大显示市县界</small>
+              adminZoom < cityBoundaryMinZoom && <small>点击市界 / 区县界，查看区域范围</small>
             )}
             {adminZoom >= cityBoundaryMinZoom && (
               <span className="admin-hover-info" role="status" aria-live="polite">
@@ -920,7 +929,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
                     </small>
                   </>
                 ) : adminHover.status === 'loading' ? (
-                  <small>读取区域轮廓…</small>
+                  <small>正在加载区域，稍候即会高亮…</small>
                 ) : adminHover.status === 'missing' ? (
                   <small>此处暂无完整区划轮廓</small>
                 ) : adminHover.status === 'error' ? (
@@ -929,12 +938,15 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
                     <Button onClick={() => adminAreas.current?.retry()}>重试轮廓</Button>
                   </>
                 ) : (
-                  <small>移入区域查看范围</small>
+                  <small>
+                    移入区域，高亮{adminZoom < countyBoundaryMinZoom ? '市界' : '区县界'}
+                  </small>
                 )}
               </span>
             )}
           </div>
         )}
+      </div>
       {fatal && (
         <div className="map-fallback">
           <strong>当前浏览器未启用 WebGL</strong>
