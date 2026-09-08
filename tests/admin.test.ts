@@ -111,7 +111,7 @@ test('admin labels use collision detection and source styles validate with exist
   assert.match(adminScaleLabel(12), /乡镇/);
 });
 
-test('detail tiles load lazily, reuse their source, hide completely and recover via retry', () => {
+test('detail tiles load lazily, reuse their source, hide completely and recover via retry', async () => {
   const handlers = new globalThis.Map<string, Set<(e?: any) => void>>();
   const sources = new globalThis.Map<string, any>();
   const addedLayers = new globalThis.Map<
@@ -132,11 +132,15 @@ test('detail tiles load lazily, reuse their source, hide completely and recover 
     getZoom() {
       return zoom;
     },
+    getBounds() {
+      return { getWest: () => 118.7, getEast: () => 119.1, getSouth: () => 31, getNorth: () => 32 };
+    },
     getSource(id: string) {
       return sources.get(id);
     },
     addSource(id: string) {
       sources.set(id, {
+        setData() {},
         setUrl(url: string) {
           assert.equal(url, modernAdminSource.url);
           urls++;
@@ -154,7 +158,14 @@ test('detail tiles load lazily, reuse their source, hide completely and recover 
     },
   } as unknown as Map;
   const emit = (name: string, e?: any) => handlers.get(name)?.forEach((fn) => fn(e));
-  const controller = new ModernAdminController(map, (s) => states.push(s));
+  const controller = new ModernAdminController(
+    map,
+    (s) => states.push(s),
+    () => {},
+    {
+      load: async () => ({ type: 'FeatureCollection', features: [] }),
+    },
+  );
   controller.setEnabled(true);
   assert.equal(sources.size, 0, 'province overview must not request detailed tiles');
   controller.setEnabled(false);
@@ -182,7 +193,7 @@ test('detail tiles load lazily, reuse their source, hide completely and recover 
   assert.equal(states.at(-1), 'ready');
   for (const info of addedLayers.values()) {
     assert.equal(info.before, 'major-river-hover');
-    assert.equal(info.visibility, 'visible');
+    assert.equal(info.visibility, info.layer.id.includes('-overview') ? 'none' : 'visible');
   }
   emit('error', { sourceId: modernAdminSourceId });
   assert.equal(states.at(-1), 'error');
@@ -201,6 +212,23 @@ test('detail tiles load lazily, reuse their source, hide completely and recover 
     isSourceLoaded: true,
   });
   assert.equal(states.at(-1), 'ready');
+  zoom = 7;
+  emit('zoomend');
+  assert.equal(addedLayers.get('modern-province-boundary')!.visibility, 'visible');
+  assert.equal(addedLayers.get('modern-province-overview')!.visibility, 'none');
+  await new Promise((resolve) => setImmediate(resolve));
+  for (const suffix of ['', '-casing']) {
+    assert.equal(
+      addedLayers.get(`modern-province-boundary${suffix}`)!.visibility,
+      'none',
+      'coarser province geometry must not overlap the overview province lines',
+    );
+    assert.equal(addedLayers.get(`modern-province-overview${suffix}`)!.visibility, 'visible');
+  }
+  zoom = 9;
+  emit('zoomend');
+  assert.equal(addedLayers.get('modern-province-boundary')!.visibility, 'visible');
+  assert.equal(addedLayers.get('modern-province-overview')!.visibility, 'none');
   controller.setEnabled(false);
   for (const info of addedLayers.values()) assert.equal(info.visibility, 'none');
   controller.setEnabled(true);

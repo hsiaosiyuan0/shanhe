@@ -9,10 +9,120 @@ import {
   type BoundaryData,
 } from '../src/map/adminBoundaryTiles';
 import { AdminBoundaryOverview, type BoundaryStatus } from '../src/map/AdminBoundaryOverview';
+import { clipBoundaryLines } from '../src/map/clipBoundaryLines';
+import { VectorTile } from '@mapbox/vector-tile';
+import Pbf from 'pbf';
 
 const z8 = readFileSync('tests/fixtures/admin-boundary-z8.pbf');
 const z9 = readFileSync('tests/fixtures/admin-boundary-z9.pbf');
 const hangzhou = { x: 426, y: 210, z: 9 };
+
+test('tile clipping preserves real rings but never connects separate boundary fragments', () => {
+  const points = (coordinates: number[][]) => coordinates.map(([x, y]) => ({ x, y }));
+  const ring = points([
+    [2, 2],
+    [4, 2],
+    [4, 4],
+    [2, 2],
+  ]);
+  assert.deepEqual(clipBoundaryLines([ring], 10), [ring]);
+  const crossing = points([
+    [2, 2],
+    [12, 2],
+    [12, 8],
+    [2, 8],
+  ]);
+  assert.deepEqual(clipBoundaryLines([crossing], 10), [
+    points([
+      [2, 2],
+      [10, 2],
+    ]),
+    points([
+      [10, 8],
+      [2, 8],
+    ]),
+  ]);
+  assert.deepEqual(
+    clipBoundaryLines(
+      [
+        points([
+          [10, 2],
+          [10, 8],
+        ]),
+      ],
+      10,
+    ),
+    [],
+  );
+  assert.deepEqual(
+    clipBoundaryLines(
+      [
+        points([
+          [0, 2],
+          [0, 8],
+        ]),
+      ],
+      10,
+    ),
+    [
+      points([
+        [0, 2],
+        [0, 8],
+      ]),
+    ],
+  );
+});
+
+test('Jiangnan source tiles lose duplicated buffers, retain province geometry and genuine closed parts', () => {
+  const edges = new Set<string>();
+  let outside = 0,
+    closed = 0,
+    province = 0;
+  for (const [x, y] of [
+    [424, 208],
+    [425, 208],
+    [425, 209],
+  ]) {
+    const bytes = readFileSync(`tests/fixtures/admin-jiangnan-9-${x}-${y}.pbf`);
+    const tile = { x, y, z: 9 };
+    const raw = new VectorTile(new Pbf(bytes)).layers.boundary;
+    for (let i = 0; i < raw.length; i++) {
+      const f = raw.feature(i);
+      if (![4, 5, 6].includes(Number(f.properties.admin_level))) continue;
+      for (const line of f.loadGeometry())
+        for (const p of line) if (p.x < 0 || p.y < 0 || p.x > f.extent || p.y > f.extent) outside++;
+    }
+    const global = ([lng, lat]: number[]) => [
+      ((lng + 180) / 360) * 512 * 4096,
+      ((1 - Math.asinh(Math.tan((lat * Math.PI) / 180)) / Math.PI) / 2) * 512 * 4096,
+    ];
+    for (const f of decodeBoundaryTile(bytes, tile).features) {
+      if (f.properties!.admin_level === 4) province++;
+      const lines =
+        f.geometry.type === 'LineString' ? [f.geometry.coordinates] : f.geometry.coordinates;
+      for (const line of lines) {
+        const coords = line.map(global);
+        if (JSON.stringify(coords[0]) === JSON.stringify(coords.at(-1))) closed++;
+        for (const [gx, gy] of coords) {
+          assert.ok(gx >= x * 4096 - 1e-6 && gx <= (x + 1) * 4096 + 1e-6);
+          assert.ok(gy >= y * 4096 - 1e-6 && gy <= (y + 1) * 4096 + 1e-6);
+        }
+        for (let i = 1; i < coords.length; i++) {
+          const key = coords
+            .slice(i - 1, i + 1)
+            .map((p) => p.map((v) => v.toFixed(5)).join(','))
+            .sort()
+            .join('|');
+          assert.ok(!edges.has(key), 'a shared buffered segment must not render twice');
+          edges.add(key);
+        }
+      }
+    }
+  }
+  assert.ok(outside > 100, 'real fixtures must exercise MVT buffer geometry');
+  assert.ok(province >= 3, 'province and city/county overview use the same source zoom');
+  assert.ok(closed > 0, 'retain source enclaves rather than removing small closed shapes');
+});
 
 test('real source tiles omit city/county borders at z8; overview reads their actual z9 geometry', () => {
   assert.equal(decodeBoundaryTile(z8, { x: 213, y: 105, z: 8 }).features.length, 0);

@@ -144,6 +144,7 @@ export function modernAdminLayers(): LayerSpecification[] {
   const borders = [
     ['modern-county-overview', 6, countyBoundaryMinZoom, 1.15, true],
     ['modern-city-overview', 5, cityBoundaryMinZoom, 2, true],
+    ['modern-province-overview', 4, cityBoundaryMinZoom, 2.4, true],
     ['modern-county-boundary', 6, 9, 1.15, false],
     ['modern-city-boundary', 5, 9, 2, false],
     ['modern-province-boundary', 4, 6, 2.4, false],

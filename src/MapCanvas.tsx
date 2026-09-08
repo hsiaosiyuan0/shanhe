@@ -189,6 +189,7 @@ function style(): StyleSpecification {
         id: 'admin-boundaries',
         type: 'line',
         source: 'admin',
+        maxzoom: 6,
         layout: { visibility: 'none', 'line-join': 'round' },
         paint: {
           'line-color': '#786779',
@@ -583,17 +584,13 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     adminDetail.current?.setEnabled(story.layers.admin);
     (m.getSource('province-labels') as GeoJSONSource).setData(provinceLabelFeatures(regions));
     m.setLayoutProperty('province-labels', 'visibility', story.layers.admin ? 'visible' : 'none');
-    // Keep the local province context if detailed online data fails to load.
+    // Province labels can fall back locally, but coarse Natural Earth outlines
+    // must never overlap OSM detail (the outline layer ends at zoom 6).
     const detailed = detailStatus === 'ready';
     m.setPaintProperty(
       'province-labels',
       'text-opacity',
       detailed ? ['interpolate', ['linear'], ['zoom'], 5.5, 1, 7, 0] : 0.9,
-    );
-    m.setPaintProperty(
-      'admin-boundaries',
-      'line-opacity',
-      detailed ? ['interpolate', ['linear'], ['zoom'], 6, 0.65, 6.5, 0] : 0.65,
     );
   }, [ready, story.layers.admin, regions, detailStatus]);
   useEffect(() => {

@@ -1,6 +1,7 @@
 import { VectorTile } from '@mapbox/vector-tile';
 import Pbf from 'pbf';
 import type { FeatureCollection, LineString, MultiLineString } from 'geojson';
+import { clipBoundaryLines } from './clipBoundaryLines';
 
 // OpenFreeMap's z6–8 tiles omit admin levels 5/6. Read real z9 geometry for
 // the overview instead of assuming a style's minzoom can create missing data.
@@ -43,17 +44,29 @@ export function decodeBoundaryTile(bytes: Uint8Array, tile: BoundaryTile): Bound
   for (let i = 0; i < (layer?.length || 0); i++) {
     const feature = layer.feature(i);
     if (
-      ![5, 6].includes(Number(feature.properties.admin_level)) ||
+      ![4, 5, 6].includes(Number(feature.properties.admin_level)) ||
       feature.properties.maritime === 1
     )
       continue;
-    const geojson = feature.toGeoJSON(tile.x, tile.y, tile.z);
-    if (geojson.geometry.type !== 'LineString' && geojson.geometry.type !== 'MultiLineString')
-      continue;
+    if (feature.type !== 2) continue;
+    const size = feature.extent * 2 ** tile.z;
+    const lines = clipBoundaryLines(feature.loadGeometry(), feature.extent).map((line) =>
+      line.map(({ x, y }) => {
+        const mercatorY = 180 - ((y + tile.y * feature.extent) * 360) / size;
+        return [
+          ((x + tile.x * feature.extent) * 360) / size - 180,
+          (360 / Math.PI) * Math.atan(Math.exp((mercatorY * Math.PI) / 180)) - 90,
+        ];
+      }),
+    );
+    if (!lines.length) continue;
     features.push({
       type: 'Feature',
-      properties: { admin_level: Number(feature.properties.admin_level), maritime: 0 },
-      geometry: geojson.geometry,
+      properties: { ...feature.properties, admin_level: Number(feature.properties.admin_level) },
+      geometry:
+        lines.length === 1
+          ? { type: 'LineString', coordinates: lines[0] }
+          : { type: 'MultiLineString', coordinates: lines },
     });
   }
   return { type: 'FeatureCollection', features };

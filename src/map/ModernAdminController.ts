@@ -5,8 +5,10 @@ import {
   modernAdminSource,
   modernAdminSourceId,
   boundaryOverviewSourceId,
+  cityBoundaryMinZoom,
 } from './modernAdmin';
 import { AdminBoundaryOverview, type BoundaryStatus } from './AdminBoundaryOverview';
+import type { AdminBoundaryTileLoader } from './adminBoundaryTiles';
 
 export type AdminDetailStatus = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -17,12 +19,22 @@ export class ModernAdminController {
   private status: AdminDetailStatus = 'idle';
   private layerIds = modernAdminLayers().map((layer) => layer.id);
   private overview: AdminBoundaryOverview;
+  private overviewReady = false;
   constructor(
     private map: Map,
     private onStatus: (status: AdminDetailStatus) => void,
     onBoundaryStatus: (state: BoundaryStatus) => void = () => {},
+    boundaryLoader?: Pick<AdminBoundaryTileLoader, 'load'>,
   ) {
-    this.overview = new AdminBoundaryOverview(map, onBoundaryStatus);
+    this.overview = new AdminBoundaryOverview(
+      map,
+      (state) => {
+        this.overviewReady = state.status === 'ready';
+        this.syncBoundaryVisibility();
+        onBoundaryStatus(state);
+      },
+      boundaryLoader,
+    );
     map.on('zoomend', this.update);
     map.on('sourcedata', this.onData);
     map.on('error', this.onError);
@@ -66,7 +78,20 @@ export class ModernAdminController {
       if (this.map.getLayer(id))
         this.map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none');
     this.overview.setEnabled(visible);
+    this.syncBoundaryVisibility();
   };
+  private syncBoundaryVisibility() {
+    const zoom = this.map.getZoom();
+    const visible = this.enabled && zoom >= adminDetailMinZoom;
+    const overview = this.overviewReady && zoom >= cityBoundaryMinZoom && zoom < 9;
+    for (const id of this.layerIds) {
+      if (!this.map.getLayer(id)) continue;
+      if (id.includes('-overview'))
+        this.map.setLayoutProperty(id, 'visibility', visible && overview ? 'visible' : 'none');
+      if (id.startsWith('modern-province-boundary'))
+        this.map.setLayoutProperty(id, 'visibility', visible && !overview ? 'visible' : 'none');
+    }
+  }
   setEnabled(enabled: boolean) {
     this.enabled = enabled;
     this.update();
