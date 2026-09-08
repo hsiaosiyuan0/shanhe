@@ -4,33 +4,18 @@
 
 - `land.geojson`：`ne_110m_land.geojson`，全球陆地轮廓，未包含国界。
 - `rivers.geojson`：从 `ne_50m_rivers_lake_centerlines.geojson` 提取与 75–135°E / 15–54°N 区域相交的 80 条河流要素；保留 name、name_zh、scalerank 属性。另从 1:10m 数据补入 3 条淮河要素，共 83 条。
-- `admin.geojson`：从 `ne_10m_admin_1_states_provinces.geojson` 提取 31 个中国大陆省级行政区（`adm0_a3=CHN`、`adm1_code` 以 `CHN-` 开头）。保留中文名、标签位置与多边形，坐标保留 4 位小数。保持来源数据的范围与边界表达；用于概览对照，不是权威行政区划数据，不含港澳台或市县级区划。
 
-行政区提取可复现：下载 Natural Earth 源 GeoJSON 后执行 `node scripts/extract-admin.mjs <源文件路径>`。所有地理数据使用 WGS84，与故事坐标一致。省名为现代名称，不随故事年份改变。
+陆地与河流数据使用 WGS84。来源、比例尺与用途限制见下文。
 
-## 在线市县与地名
+## 行政区本地数据包
 
-### 区域悬停轮廓
+`admin/` 统一提供天地图下载的省、市、区县数据（2025 年 9 月版），34 / 375 / 2,891 个面要素。原始 EPSG:4490（CGCS2000）文件、独立境界线、版本元数据、SHA-256 和审计结果均保留。仅供地图可视化使用，坐标按区域尺度近似显示，不作测绘用途。
 
-矢量瓦片中的 `boundary` 是无区域名称的线段，不能据此判断鼠标在哪个行政区。悬停另用 [Private.coffee Overpass](https://overpass.private.coffee/) 的 `is_in` / `relation(pivot)` 查询完整 OSM 行政区 relation，`out geom` 返回原始 WGS84 多边形成员。7 级视角选择市级（`admin_level=5`，直辖市使用 4），8 级及以上选择区县（6）；完整面用于内部命中、轻微填色和整圈描边。它与底层 OpenFreeMap 同属 OSM 数据，但更新日期和简化精度可能不同，不能作为权威界址资料。
+详见 [行政区数据说明](../../docs/ADMIN_DATA.md)，包含可复现构建、精度说明与源数据已知交叠。旧的 Natural Earth 省界、OSM 边界瓦片与 Overpass 轮廓已从运行逻辑移除；同级公共边界只画一次，悬停直接使用同包多边形。
 
-地图停止移动后预取中心区域；新区域的指针查询等待停留 350 毫秒，同一时刻只运行一个请求。会话内缓存 48 个完整区域，命中测试排除内洞并保留飞地；缓存命中时不发送网络请求。请求有 25 秒超时，失败后有冷却与手动重试，关闭对照会取消请求。缺少闭合成员的区域不强行补线，缺少区县时不拿整个城市冒充。
+11 级以后补充的乡镇、街区地名仍来自 [OpenFreeMap](https://openfreemap.org/quick_start/) 的 OpenStreetMap 矢量瓦片（[ODbL](https://www.openstreetmap.org/copyright)，[OpenMapTiles schema](https://openmaptiles.org/schema/)），仅作地名参考，不参与边界或悬停。地图来源控件保留署名。
 
-`tests/fixtures/admin-nanjing-areas.json.gz` 为 2026-09-08 查询 `[118.79,32.06]` 得到的南京市（relation 2131524）与玄武区（2138698），保留拼接所需的原始成员坐标和名称、级别。服务返回的 OSM 数据日期为 `2026-05-31T22:37:44Z`，按 ODbL 使用；仅作为测试样本，不打包到应用静态资源。地图来源控件继续标示 OpenStreetMap 署名。
-
-### 边界线与地名瓦片
-
-市县数据没有打包到此目录，而由 [OpenFreeMap](https://openfreemap.org/quick_start/) 的 `https://tiles.openfreemap.org/planet` TileJSON 提供，随当前视野加载。源数据为 [OpenStreetMap（ODbL）](https://www.openstreetmap.org/copyright)，使用 [OpenMapTiles schema](https://openmaptiles.org/schema/)。地图来源控件保留 OpenFreeMap、OpenMapTiles 和 OpenStreetMap 署名。
-
-`boundary` 图层使用 `admin_level` 4 / 5 / 6 区分省、市、区县；`place` 图层优先使用 `name:zh-Hans`、`name:zh`，再回退 `name`。按 [OSM 中国区划约定](https://wiki.openstreetmap.org/wiki/China/Boundaries)，市县层级不能只看 `class=city`：区县政府所在地也可能采用该类型，因此用 `capital=6` 分出区县标签。地方数据可能存在缺漏，地图不承诺完整或权威的区划覆盖。
-
-缩放 5 / 8 / 11 级分别启用城市、区县、乡镇地名；市界从 7 级、区县界从 8 级显示。源瓦片在 6–8 级未包含市县界，不能只调低样式 `minzoom`。在 7–8 级视角下，应用按视野请求第 9 级瓦片，统一提取省、市、区县 `boundary` 线段为 GeoJSON；达到 9 级后改由原矢量源绘制。概览与原生省界互斥显示，Natural Earth 省界只在 6 级以下显示，防止不同精度的轮廓交叉。请求最多 6 路并发，缓存最近 192 个瓦片的边界几何；移动视角或关闭对照会取消旧请求。范围过大时提示放大，避免一次下载过多数据。
-
-MVT 瓦片带有超出本瓦片范围的缓冲几何，转换成 GeoJSON 时必须在瓦片坐标中裁剪，去除重复线段；裁剪后的分段不能沿瓦片边缘闭合，否则会凭空产生边界。应用保留源数据中的实际闭合线和小块区域，不按面积删除所谓“飞地”。南京、宣城附近的 `admin-jiangnan-9-424-208.pbf`、`admin-jiangnan-9-425-208.pbf`、`admin-jiangnan-9-425-209.pbf` 是上述同一源版本的原始 `boundary` 层，下载于 2026-09-08，用于重复线段、跨瓦片接缝和真实闭合区域的回归测试。
-
-截图中宣城附近的小块省级闭合线在 OSM 源数据中即存在，位置与军天湖、白茅岭等域外农场对应。关于上海在皖南的农场，可参看[上海市统计局调研说明](https://tjj.sh.gov.cn/tjxw/20230519/61f485df91194589b1c730d2d2ea84cb.html)。这种位置对应不代表我们核验了每一个界址点；域外农场管理范围与法定行政区划不能仅凭 OSM 的 `admin_level` 等同。图层表达来源数据，不用于判定精确行政归属。
-
-详细参考采用现代数据，不随故事年代变化，不替代历史行政区研究。`tests/fixtures/modern-admin-places.json` 保存了来源快照中杭州、眉山、武汉的少量真实地名记录。`admin-boundary-z8.pbf` 与 `admin-boundary-z9.pbf` 测试样本仅保留 `20260830_080001_pt/8/213/105.pbf` 和 `20260830_080001_pt/9/426/210.pbf` 中的原始 `boundary` 层（ODbL / OpenStreetMap），用于防止“地名出现但边界源实际为空”的回归。
+## 河道
 
 下载日期：2026-09-07。数据仅适用于概览，不代表历史海岸线、历史河道或精确测绘资料。
 

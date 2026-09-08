@@ -3228,9 +3228,6 @@ button {
   gap: 4px;
   white-space: nowrap;
 }
-.admin-boundary-key[data-active='false'] {
-  opacity: 0.4;
-}
 button.admin-boundary-key {
   pointer-events: auto;
   padding: 4px 7px;
@@ -3247,15 +3244,14 @@ button.admin-boundary-key[aria-pressed='true'] {
   background: #ece2ed;
   border-color: #927394;
 }
-.admin-boundary-key i {
-  width: 18px;
-  border-top: 2px dashed #68456b;
+.admin-source {
+  pointer-events: auto;
+  color: var(--muted);
+  padding: 7px 4px;
+  text-underline-offset: 3px;
 }
-.admin-boundary-key .province-line {
-  border-top-width: 3px;
-}
-.admin-boundary-key .county-line {
-  border-top: 1.5px solid #7b617b;
+.admin-source:hover {
+  color: #68456b;
 }
 .admin-caption small {
   font-size: 9px;

@@ -22,10 +22,10 @@
     "dev:pages": "vite --mode pages --host 127.0.0.1 --port 5179",
     "preview:pages": "vite preview --mode pages --host 127.0.0.1 --port 4173",
     "desktop:dist": "npm run desktop:pack && node scripts/package-macos.mjs && node scripts/verify-macos.mjs",
-    "desktop:verify": "node scripts/verify-macos.mjs"
+    "desktop:verify": "node scripts/verify-macos.mjs",
+    "data:admin": "node scripts/build-admin-package.mjs"
   },
   "dependencies": {
-    "@mapbox/vector-tile": "2.0.5",
     "@radix-ui/react-checkbox": "^1.3.11",
     "@radix-ui/react-collapsible": "^1.1.20",
     "@radix-ui/react-dialog": "^1.1.23",
@@ -37,9 +37,9 @@
     "express": "^5.1.0",
     "lucide-react": "^0.468.0",
     "maplibre-gl": "^5.15.0",
-    "pbf": "4.0.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "topojson-client": "^3.1.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {
@@ -47,12 +47,17 @@
     "@types/express": "^5.0.5",
     "@types/geojson": "^7946.0.16",
     "@types/node": "^24.10.0",
+    "@types/polylabel": "^2.0.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "@types/topojson-client": "^3.1.5",
+    "@types/topojson-server": "^3.0.4",
     "@vitejs/plugin-react": "^5.1.0",
     "concurrently": "^9.2.1",
     "fake-indexeddb": "^6.2.5",
+    "polylabel": "^2.1.0",
     "prettier": "^3.9.6",
+    "topojson-server": "^3.0.1",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vite": "^7.2.2"

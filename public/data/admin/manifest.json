@@ -1,0 +1,46 @@
+{
+  "format": "shanhe-admin-v1",
+  "name": "国家地理信息公共服务平台 · 天地图",
+  "url": "https://cloudcenter.tianditu.gov.cn/administrativeDivision/",
+  "version": "2025-09",
+  "downloadedAt": "2026-09-08",
+  "sourceCrs": "EPSG:4490",
+  "sourceMapApproval": "GS（2024）0650号",
+  "usage": "该数据仅供地图可视化使用（来源页面说明）",
+  "displayCoordinates": "CGCS2000 经纬度原值；区域尺度下按地理经纬度近似显示，未施加 GCJ-02 偏移，不用于测绘。",
+  "levels": {
+    "4": {
+      "file": "province.topo.json",
+      "sha256": "82d894e6464da92005467c5b85b30b642a46bc89a2f9088b512f02bdd72f22df",
+      "bytes": 1279013,
+      "areaCount": 34,
+      "referenceCount": 8,
+      "originalFile": "中国_省.geojson",
+      "originalArchive": "source/province.geojson.gz",
+      "originalSha256": "3af8294f9ad61cc2bf84c1bb7e4bbf86a6336c68d754b699a0e6ddc33ef81486",
+      "originalBytes": 1698398
+    },
+    "5": {
+      "file": "city.topo.json",
+      "sha256": "fc8147dab9cea1cb092e48faa0dba364b0fe14cdc7f20df8de9568fec8eba90e",
+      "bytes": 2650998,
+      "areaCount": 375,
+      "referenceCount": 13,
+      "originalFile": "中国_市.geojson",
+      "originalArchive": "source/city.geojson.gz",
+      "originalSha256": "d7a6f05b7e58cf758d74bd71ed0ea2ce981ef99436e4881e9a68098c3cd80b3b",
+      "originalBytes": 4265699
+    },
+    "6": {
+      "file": "county.topo.json",
+      "sha256": "ce57d885ad18ef29aea49403e4f98bd1dbadfb05c1ba764c9898ae31d7d95b3d",
+      "bytes": 6147919,
+      "areaCount": 2891,
+      "referenceCount": 7,
+      "originalFile": "中国_县.geojson",
+      "originalArchive": "source/county.geojson.gz",
+      "originalSha256": "91edf86abe109a1de33052977852e37f848f350d37ae069b40e0d80dcc2a97d3",
+      "originalBytes": 10006881
+    }
+  }
+}

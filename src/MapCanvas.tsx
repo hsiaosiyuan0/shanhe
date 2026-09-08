@@ -17,17 +17,14 @@ import { Button } from './ui';
 import { declutterLabels } from './map/declutterLabels';
 import { customRiverFeatures, customRiverLabels, customRiverLayers } from './map/customRivers';
 import { riverLines } from '../shared/rivers';
-import { ModernAdminController, type AdminDetailStatus } from './map/ModernAdminController';
-import { AdminAreaController, type AdminHoverState } from './map/AdminAreaController';
-import type { BoundaryStatus } from './map/AdminBoundaryOverview';
+import { ModernAdminController, type AdminState } from './map/ModernAdminController';
+import { AdminPackageLoader } from './map/adminPackage';
 import {
-  adminDetailMinZoom,
   adminScaleLabel,
+  adminLevelName,
   modernPlaceName,
   modernPlaceKind,
   placeLayerIds,
-  provinceLabels,
-  provinceLabelFeatures,
   cityBoundaryMinZoom,
   countyBoundaryMinZoom,
 } from './map/modernAdmin';
@@ -94,12 +91,6 @@ function style(): StyleSpecification {
         attribution:
           '<a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noopener">Elevation: Mapzen / AWS</a>',
       },
-      admin: {
-        type: 'geojson',
-        data: assetUrl('data/admin.geojson'),
-        attribution: 'Modern provinces: Natural Earth',
-      },
-      'province-labels': { type: 'geojson', data: empty },
       relief: {
         type: 'raster',
         tiles: [
@@ -179,27 +170,6 @@ function style(): StyleSpecification {
           'line-opacity': 0.75,
         },
       },
-      {
-        id: 'admin-fill',
-        type: 'fill',
-        source: 'admin',
-        layout: { visibility: 'none' },
-        paint: { 'fill-color': '#736278', 'fill-opacity': 0.025 },
-      },
-      {
-        id: 'admin-boundaries',
-        type: 'line',
-        source: 'admin',
-        maxzoom: 6,
-        layout: { visibility: 'none', 'line-join': 'round' },
-        paint: {
-          'line-color': '#786779',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 3, 0.8, 7, 1.6],
-          'line-opacity': 0.65,
-          'line-dasharray': [5, 3],
-        },
-      },
-      provinceLabels,
       ...majorRiverLayers(),
       ...customRiverLayers(),
       {
@@ -260,20 +230,14 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   const markers = useRef<maplibregl.Marker[]>([]);
   const popups = useRef<MapPopupController | null>(null);
   const adminDetail = useRef<ModernAdminController | null>(null);
-  const adminAreas = useRef<AdminAreaController | null>(null);
   const callbacks = useRef({ onSelect, onSelectRoute, onPoint });
   callbacks.current = { onSelect, onSelectRoute, onPoint };
   const [ready, setReady] = useState(false);
   const [offline, setOffline] = useState(false);
   const [fatal, setFatal] = useState(false);
-  const [regions, setRegions] = useState<{ name: string; center: [number, number] }[]>([]);
-  const [adminError, setAdminError] = useState(false);
-  const [detailStatus, setDetailStatus] = useState<AdminDetailStatus>('idle');
-  const [boundaryStatus, setBoundaryStatus] = useState<BoundaryStatus>({ status: 'idle' });
-  const [adminHover, setAdminHover] = useState<AdminHoverState>({ status: 'idle' });
+  const [adminState, setAdminState] = useState<AdminState>({ status: 'idle', level: 4 });
   const [adminZoom, setAdminZoom] = useState(Math.floor(story.view.zoom));
   const [adminScale, setAdminScale] = useState(adminScaleLabel(story.view.zoom));
-  const [showAdminDetail, setShowAdminDetail] = useState(story.view.zoom >= adminDetailMinZoom);
   const failedSources = useRef(new Set<string>());
   const lastNavigation = useRef<{ view: string; selectedId?: string } | null>(null);
   const currentStory = useRef(story);
@@ -390,8 +354,11 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     }
     map.current = m;
     popups.current = new MapPopupController(m);
-    adminDetail.current = new ModernAdminController(m, setDetailStatus, setBoundaryStatus);
-    adminAreas.current = new AdminAreaController(m, setAdminHover);
+    adminDetail.current = new ModernAdminController(
+      m,
+      setAdminState,
+      new AdminPackageLoader(assetUrl('data/admin/')),
+    );
     const updateLabelVisibility = () => declutterLabels(m.getContainer());
     m.on('moveend', updateLabelVisibility);
     const onPopupKeyDown = (event: KeyboardEvent) => {
@@ -405,7 +372,6 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     const updateLabelDetail = () => {
       container.current?.classList.toggle('journey-detail', m.getZoom() >= 6.5);
       setAdminScale(adminScaleLabel(m.getZoom()));
-      setShowAdminDetail(m.getZoom() >= adminDetailMinZoom);
       setAdminZoom(Math.floor(m.getZoom()));
     };
     updateLabelDetail();
@@ -489,7 +455,9 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
           null,
           coordinates,
           placeName,
-          `现代${modernPlaceKind(place.properties)}。这是地名参考位置，不代表整个行政区的范围。\n\n来源：OpenStreetMap / OpenFreeMap。市县边界与地名不随故事年份变化。`,
+          place.properties.level
+            ? `现代${modernPlaceKind(place.properties)}。名称标注在区域内部，不代表政府驻地。\n\n来源：天地图行政区划数据，2025 年 9 月更新，CGCS2000。仅供地图可视化使用；不随故事年份变化。`
+            : `现代${modernPlaceKind(place.properties)}。这是地名参考位置，不代表整个行政区的范围。\n\n来源：OpenStreetMap / OpenFreeMap。地名不随故事年份变化。`,
           'center',
         );
         return;
@@ -505,8 +473,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
         coordinates: [Number(event.lngLat.lng.toFixed(5)), Number(event.lngLat.lat.toFixed(5))],
         elevation,
         modernRegion: currentStory.current.layers.admin
-          ? adminAreas.current?.at([event.lngLat.lng, event.lngLat.lat])?.properties.name ||
-            m.queryRenderedFeatures(event.point, { layers: ['admin-fill'] })[0]?.properties?.name
+          ? adminDetail.current?.at([event.lngLat.lng, event.lngLat.lat])?.properties.name
           : undefined,
       });
     });
@@ -556,8 +523,6 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       popups.current = null;
       adminDetail.current?.dispose();
       adminDetail.current = null;
-      adminAreas.current?.dispose();
-      adminAreas.current = null;
       markers.current.forEach((v) => v.remove());
       markers.current = [];
       m.remove();
@@ -566,41 +531,9 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     };
   }, []);
   useEffect(() => {
-    const controller = new AbortController();
-    fetch(assetUrl('data/admin.geojson'), { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error('Administrative data unavailable');
-        return response.json();
-      })
-      .then((data: FeatureCollection) =>
-        setRegions(
-          data.features.map((f) => ({
-            name: String(f.properties?.name),
-            center: f.properties?.center,
-          })),
-        ),
-      )
-      .catch(() => {
-        if (!controller.signal.aborted) setAdminError(true);
-      });
-    return () => controller.abort();
-  }, []);
-  useEffect(() => {
-    const m = map.current;
-    if (!m || !ready) return;
+    if (!map.current || !ready) return;
     adminDetail.current?.setEnabled(story.layers.admin);
-    adminAreas.current?.setEnabled(story.layers.admin);
-    (m.getSource('province-labels') as GeoJSONSource).setData(provinceLabelFeatures(regions));
-    m.setLayoutProperty('province-labels', 'visibility', story.layers.admin ? 'visible' : 'none');
-    // Province labels can fall back locally, but coarse Natural Earth outlines
-    // must never overlap OSM detail (the outline layer ends at zoom 6).
-    const detailed = detailStatus === 'ready';
-    m.setPaintProperty(
-      'province-labels',
-      'text-opacity',
-      detailed ? ['interpolate', ['linear'], ['zoom'], 5.5, 1, 7, 0] : 0.9,
-    );
-  }, [ready, story.layers.admin, regions, detailStatus]);
+  }, [ready, story.layers.admin]);
   useEffect(() => {
     if (!ready || !map.current) return;
     const key = JSON.stringify(story.view);
@@ -683,8 +616,6 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       m.setLayoutProperty(id, 'visibility', story.layers.rivers ? 'visible' : 'none');
     for (const id of ['elevation', 'hillshade'])
       m.setLayoutProperty(id, 'visibility', story.layers.elevation ? 'visible' : 'none');
-    for (const id of ['admin-fill', 'admin-boundaries'])
-      m.setLayoutProperty(id, 'visibility', story.layers.admin ? 'visible' : 'none');
     if (story.layers.terrain) {
       // Terrain and painted DEM layers use different tile resolutions in MapLibre.
       // Separate sources prevent the 3D mesh from reducing color/hillshade quality.
@@ -857,24 +788,13 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
         </div>
       )}
       <div className="map-admin-feedback">
-        {(offline ||
-          (story.layers.admin &&
-            (adminError ||
-              boundaryStatus.status === 'error' ||
-              (showAdminDetail && detailStatus === 'error')))) && (
+        {(offline || (story.layers.admin && adminState.status === 'error')) && (
           <div className="map-network" role="status">
             {offline && <p>在线地形暂不可用 · 本地地理底图仍可浏览</p>}
-            {adminError && story.layers.admin && <p>省级数据加载失败，请刷新重试</p>}
-            {story.layers.admin && showAdminDetail && detailStatus === 'error' && (
+            {story.layers.admin && adminState.status === 'error' && (
               <p>
-                部分市县数据暂不可用 · 保留省级对照{' '}
-                <Button onClick={() => adminDetail.current?.retry()}>重试市县数据</Button>
-              </p>
-            )}
-            {story.layers.admin && boundaryStatus.status === 'error' && (
-              <p>
-                {boundaryStatus.message}{' '}
-                <Button onClick={() => adminDetail.current?.retry()}>重试边界</Button>
+                {adminState.message}{' '}
+                <Button onClick={() => adminDetail.current?.retry()}>重新加载行政区</Button>
               </p>
             )}
           </div>
@@ -885,10 +805,14 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
             aria-label={`现代行政区对照：${adminScale}`}
             title={adminScale}
           >
-            <span className="admin-boundary-key">
-              <i className="province-line" />
+            <Button
+              className="admin-boundary-key"
+              aria-label="查看省界"
+              aria-pressed={adminZoom < cityBoundaryMinZoom}
+              onClick={() => map.current?.easeTo({ zoom: 5.5, duration: motion() })}
+            >
               省界
-            </span>
+            </Button>
             <Button
               className="admin-boundary-key"
               aria-label="查看市界"
@@ -898,7 +822,6 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
                 map.current?.easeTo({ zoom: cityBoundaryMinZoom + 0.5, duration: motion() })
               }
             >
-              <i className="city-line" />
               市界
             </Button>
             <Button
@@ -910,40 +833,29 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
                 map.current?.easeTo({ zoom: countyBoundaryMinZoom + 1, duration: motion() })
               }
             >
-              <i className="county-line" />
               区县界
             </Button>
-            {(detailStatus === 'loading' || boundaryStatus.status === 'loading') &&
-            showAdminDetail ? (
-              <small>加载中…</small>
-            ) : (
-              adminZoom < cityBoundaryMinZoom && <small>点击市界 / 区县界，查看区域范围</small>
-            )}
-            {adminZoom >= cityBoundaryMinZoom && (
-              <span className="admin-hover-info" role="status" aria-live="polite">
-                {adminHover.area ? (
-                  <>
-                    <strong>{adminHover.area.properties.name}</strong>
-                    <small>
-                      {adminHover.area.properties.level === 5 ? '市级范围' : '区县范围'}
-                    </small>
-                  </>
-                ) : adminHover.status === 'loading' ? (
-                  <small>正在加载区域，稍候即会高亮…</small>
-                ) : adminHover.status === 'missing' ? (
-                  <small>此处暂无完整区划轮廓</small>
-                ) : adminHover.status === 'error' ? (
-                  <>
-                    <small>区域轮廓暂不可用</small>
-                    <Button onClick={() => adminAreas.current?.retry()}>重试轮廓</Button>
-                  </>
-                ) : (
-                  <small>
-                    移入区域，高亮{adminZoom < countyBoundaryMinZoom ? '市界' : '区县界'}
-                  </small>
-                )}
-              </span>
-            )}
+            <a
+              className="admin-source"
+              href="https://cloudcenter.tianditu.gov.cn/administrativeDivision/"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="天地图行政区划数据 · 2025 年 9 月更新 · 仅供地图可视化使用"
+            >
+              天地图 · 2025.09
+            </a>
+            <span className="admin-hover-info" role="status" aria-live="polite">
+              {adminState.status === 'loading' ? (
+                <small>正在加载{adminLevelName(adminState.level)}数据…</small>
+              ) : adminState.area ? (
+                <>
+                  <strong>{adminState.area.properties.name}</strong>
+                  <small>{adminLevelName(adminState.level)}范围</small>
+                </>
+              ) : adminState.status === 'ready' ? (
+                <small>移入区域，查看完整轮廓</small>
+              ) : null}
+            </span>
           </div>
         )}
       </div>

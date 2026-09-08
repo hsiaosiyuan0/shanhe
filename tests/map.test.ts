@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { smoothRoute, routeThroughAnchor } from '../src/map/routeGeometry.js';
 import { Store } from '../server/db.js';
 import { createStory } from '../server/seeds.js';
@@ -101,17 +100,5 @@ test('old documents get new layer defaults, and new toggles survive save and res
     );
   } finally {
     store.close();
-  }
-});
-
-test('bundled modern province data contains named, bounded geographic features', () => {
-  const data = JSON.parse(readFileSync('public/data/admin.geojson', 'utf8'));
-  assert.equal(data.features.length, 31);
-  assert.ok(data.features.some((f: any) => f.properties.name === '四川省'));
-  for (const feature of data.features) {
-    assert.ok(feature.properties.name);
-    assert.equal(feature.properties.center.length, 2);
-    assert.ok(['Polygon', 'MultiPolygon'].includes(feature.geometry.type));
-    assert.ok(feature.geometry.coordinates.flat(Infinity).every(Number.isFinite));
   }
 });

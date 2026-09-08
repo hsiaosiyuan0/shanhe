@@ -78,7 +78,7 @@ server/              独立 HTTP API、SQLite、模型工具循环、种子故�
 shared/schema.ts     前后端共用的数据结构与地图操作校验
 desktop/main.swift   macOS WebKit 外壳与本地 API 生命周期
 scripts/             打包原生 App，内置 Node 与生产依赖
-public/data/         可离线读取的海岸线、河流、现代省级行政区 GeoJSON
+public/data/         可离线读取的海岸线、河流、天地图省市县行政区包
 tests/               持久化、并发、工具协议与回滚集成测试
 docs/ARCHITECTURE.md  产品模型、接口与下一阶段设计
 ```

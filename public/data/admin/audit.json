@@ -1,0 +1,139 @@
+{
+  "sourceVersion": "2025-09",
+  "engine": "Shapely 2.1.2",
+  "overlapThresholdSquareDegrees": 1e-10,
+  "levels": {
+    "4": {
+      "originalSha256": "3af8294f9ad61cc2bf84c1bb7e4bbf86a6336c68d754b699a0e6ddc33ef81486",
+      "areaCount": 34,
+      "invalid": [],
+      "overlaps": [
+        {
+          "a": {
+            "name": "江苏省",
+            "gb": "156320000"
+          },
+          "b": {
+            "name": "山东省",
+            "gb": "156370000"
+          },
+          "areaSquareDegrees": 2.6501042000028647e-05
+        }
+      ]
+    },
+    "5": {
+      "originalSha256": "d7a6f05b7e58cf758d74bd71ed0ea2ce981ef99436e4881e9a68098c3cd80b3b",
+      "areaCount": 375,
+      "invalid": [],
+      "overlaps": [
+        {
+          "a": {
+            "name": "日照市",
+            "gb": "156371100"
+          },
+          "b": {
+            "name": "连云港市",
+            "gb": "156320700"
+          },
+          "areaSquareDegrees": 2.6501042000028647e-05
+        }
+      ]
+    },
+    "6": {
+      "originalSha256": "91edf86abe109a1de33052977852e37f848f350d37ae069b40e0d80dcc2a97d3",
+      "areaCount": 2891,
+      "invalid": [],
+      "overlaps": [
+        {
+          "a": {
+            "name": "岚山区",
+            "gb": "156371103"
+          },
+          "b": {
+            "name": "连云区",
+            "gb": "156320703"
+          },
+          "areaSquareDegrees": 2.6501042000028647e-05
+        },
+        {
+          "a": {
+            "name": "南票区",
+            "gb": "156211404"
+          },
+          "b": {
+            "name": "太和区",
+            "gb": "156210711"
+          },
+          "areaSquareDegrees": 8.237004010517488e-08
+        },
+        {
+          "a": {
+            "name": "大洼区",
+            "gb": "156211104"
+          },
+          "b": {
+            "name": "兴隆台区",
+            "gb": "156211103"
+          },
+          "areaSquareDegrees": 1.4628233787654312e-09
+        },
+        {
+          "a": {
+            "name": "大洼区",
+            "gb": "156211104"
+          },
+          "b": {
+            "name": "盘山县",
+            "gb": "156211122"
+          },
+          "areaSquareDegrees": 1.275676533214633e-09
+        },
+        {
+          "a": {
+            "name": "千山区",
+            "gb": "156210311"
+          },
+          "b": {
+            "name": "铁东区",
+            "gb": "156210302"
+          },
+          "areaSquareDegrees": 1.7950002170313318e-10
+        }
+      ]
+    }
+  },
+  "screenshotCheck": {
+    "names": [
+      "高淳区",
+      "郎溪县"
+    ],
+    "overlapSquareDegrees": 0.0,
+    "sharedBoundaryDegrees": 0.182596952004124,
+    "areas": {
+      "宣州区": {
+        "parts": 1,
+        "holes": 1
+      },
+      "郎溪县": {
+        "parts": 1,
+        "holes": 0
+      },
+      "溧水区": {
+        "parts": 1,
+        "holes": 0
+      },
+      "高淳区": {
+        "parts": 1,
+        "holes": 0
+      },
+      "广德市": {
+        "parts": 1,
+        "holes": 0
+      },
+      "溧阳市": {
+        "parts": 1,
+        "holes": 0
+      }
+    }
+  }
+}
