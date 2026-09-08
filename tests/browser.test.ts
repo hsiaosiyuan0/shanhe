@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { BrowserStore } from '../src/browser/store';
 import { createBrowserApi, desktopOnlyMessage } from '../src/browser/api';
 import type { Story, Message, StoryDetail, Snapshot } from '../shared/schema';
+import { customRiverFeatures, customRiverLabels } from '../src/map/customRivers';
 
 const json = (method: string, body: unknown) => ({ method, body: JSON.stringify(body) });
 function fixture() {
@@ -11,6 +12,110 @@ function fixture() {
   const store = new BrowserStore(name);
   return { name, store, ...createBrowserApi(store) };
 }
+
+// Write the historical on-disk shape directly: using today's insert/import
+// would already add defaults and miss the production upgrade failure.
+async function rawRecord(name: string, id: string, change?: (record: any) => void) {
+  const db = await new Promise<IDBDatabase>((resolve, reject) => {
+    const req = indexedDB.open(name, 1);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  try {
+    return await new Promise<any>((resolve, reject) => {
+      const tx = db.transaction('stories', change ? 'readwrite' : 'readonly');
+      const records = tx.objectStore('stories');
+      const req = records.get(id);
+      let record: any;
+      req.onsuccess = () => {
+        record = req.result;
+        if (change) {
+          change(record);
+          records.put(record);
+        }
+      };
+      tx.oncomplete = () => resolve(record);
+      tx.onabort = () => reject(tx.error);
+      tx.onerror = () => reject(tx.error);
+    });
+  } finally {
+    db.close();
+  }
+}
+
+test('an existing v1 browser library gets current story defaults without erasing edits, messages or snapshots', async () => {
+  const { name, store } = fixture();
+  const original = (await store.list())[0];
+  const snapshot = await store.snapshot(original.id, '升级前保存的版本');
+  await store.close();
+  const legacy = await rawRecord(name, original.id, (record) => {
+    record.story.title = '用户此前编辑过的标题';
+    record.story.revision = 7;
+    record.messages = [
+      {
+        id: 'saved-message',
+        role: 'assistant',
+        content: '升级前保存的对话',
+        actions: [],
+        mode: 'live',
+        createdAt: original.createdAt,
+      },
+    ];
+    for (const story of [record.story, record.snapshots[0].story]) {
+      delete story.riverChannels;
+      delete story.layers.elevation;
+      delete story.layers.admin;
+      delete story.layers.connections;
+    }
+  });
+  const reopened = new BrowserStore(name);
+  const { api } = createBrowserApi(reopened);
+  try {
+    const listed = (await api<Story[]>('/stories')).find((s) => s.id === original.id)!;
+    const current = await api<StoryDetail>(`/stories/${original.id}`);
+    for (const story of [listed, current.story]) {
+      assert.deepEqual(story.riverChannels, []);
+      assert.equal(customRiverFeatures(story.riverChannels).features.length, 0);
+      assert.equal(customRiverLabels(story.riverChannels).features.length, 0);
+      assert.deepEqual(story.layers, {
+        ...legacy.story.layers,
+        elevation: true,
+        admin: false,
+        connections: false,
+      });
+      assert.equal(story.title, legacy.story.title);
+      assert.equal(story.revision, 7);
+      assert.deepEqual(story.events, original.events);
+      assert.deepEqual(story.routes, original.routes);
+    }
+    assert.deepEqual(current.messages, legacy.messages);
+    const exported = await api<{ story: Story; messages: Message[] }>(
+      `/stories/${original.id}/export`,
+    );
+    assert.deepEqual(exported.story, current.story);
+    assert.deepEqual(exported.messages, legacy.messages);
+    assert.deepEqual(
+      await rawRecord(name, original.id),
+      legacy,
+      'read compatibility must not rewrite the user library',
+    );
+    const fresh = await reopened.snapshot(original.id, '升级后保存');
+    const stored = await rawRecord(name, original.id);
+    assert.deepEqual(stored.snapshots.find((s: any) => s.id === fresh.id).story.riverChannels, []);
+    assert.equal(stored.story.revision, 7);
+    const edited = await reopened.save({ ...current.story, subtitle: '升级后继续编辑' }, 7);
+    await assert.rejects(reopened.save(current.story, 7), /另一处更新/);
+    const restored = await reopened.restore(original.id, snapshot.id, edited.revision);
+    assert.deepEqual(restored.story.riverChannels, []);
+    assert.equal(restored.story.title, original.title);
+    const beforeRestore = (await rawRecord(name, original.id)).snapshots[0];
+    assert.equal(beforeRestore.name, '恢复前的自动备份');
+    assert.equal(beforeRestore.story.subtitle, '升级后继续编辑');
+    assert.deepEqual(beforeRestore.messages, legacy.messages);
+  } finally {
+    await reopened.close();
+  }
+});
 
 test('browser stories survive reopening; clearing the library does not reseed it', async () => {
   const { name, store, api } = fixture();

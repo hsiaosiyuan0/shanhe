@@ -10,6 +10,14 @@ import { seedStories } from '../../shared/seeds';
 type SavedSnapshot = Snapshot & { story: Story; messages: Message[] };
 type RecordData = { id: string; story: Story; messages: Message[]; snapshots: SavedSnapshot[] };
 
+// IndexedDB keeps older documents across deployments. Apply schema defaults
+// on every read; the database layout version does not version story fields.
+// Read-only calls leave stored edits, history and revisions untouched.
+const normalizeRecord = (record: RecordData): RecordData => ({
+  ...record,
+  story: storySchema.parse(record.story),
+});
+
 const request = <T>(req: IDBRequest<T>) =>
   new Promise<T>((resolve, reject) => {
     req.onsuccess = () => resolve(req.result);
@@ -82,7 +90,7 @@ export class BrowserStore {
     return this.transaction('stories', 'readonly', async (store) => {
       const records = await request<RecordData[]>(store.getAll());
       return records
-        .map((r) => r.story)
+        .map((r) => normalizeRecord(r).story)
         .sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.title.localeCompare(b.title));
     });
   }
@@ -90,7 +98,7 @@ export class BrowserStore {
     return this.transaction('stories', 'readonly', async (store) => {
       const record = await request<RecordData | undefined>(store.get(id));
       if (!record) throw new Error('找不到这个故事');
-      return record;
+      return normalizeRecord(record);
     });
   }
   async detail(id: string) {
@@ -105,8 +113,9 @@ export class BrowserStore {
   }
   private async mutate<T>(id: string, change: (record: RecordData) => T) {
     return this.transaction('stories', 'readwrite', async (store) => {
-      const record = await request<RecordData | undefined>(store.get(id));
-      if (!record) throw new Error('找不到这个故事');
+      const saved = await request<RecordData | undefined>(store.get(id));
+      if (!saved) throw new Error('找不到这个故事');
+      const record = normalizeRecord(saved);
       const result = change(record);
       await request(store.put(record));
       return result;
