@@ -34,7 +34,7 @@ export type AdminManifest = {
   sourceCrs: string;
   levels: Record<
     AdminLevel,
-    { file: string; sha256: string; areaCount: number; referenceCount: number }
+    { file: string; gzipFile?: string; sha256: string; areaCount: number; referenceCount: number }
   >;
 };
 
@@ -126,17 +126,35 @@ export class AdminPackageLoader {
       if (
         manifest.format !== 'shanhe-admin-v1' ||
         manifest.sourceCrs !== 'EPSG:4490' ||
-        ![4, 5, 6].every((l) =>
-          /^[a-z]+\.topo\.json$/.test(manifest.levels?.[l as AdminLevel]?.file),
-        )
+        ![4, 5, 6].every((l) => {
+          const entry = manifest.levels?.[l as AdminLevel];
+          return (
+            /^[a-z]+\.topo\.json$/.test(entry?.file) &&
+            (entry.gzipFile === undefined || entry.gzipFile === `${entry.file}.gz`)
+          );
+        })
       )
         throw new Error('行政区数据目录格式不正确');
       this.manifest = manifest;
     }
     const entry = this.manifest.levels[level];
-    const response = await this.request(this.baseUrl + entry.file, { signal, cache: 'no-cache' });
+    const compressed = entry.gzipFile && typeof DecompressionStream !== 'undefined';
+    const response = await this.request(this.baseUrl + (compressed ? entry.gzipFile : entry.file), {
+      signal,
+      cache: 'no-cache',
+    });
     if (!response.ok) throw new Error('行政区数据包加载失败');
-    const bytes = await response.arrayBuffer();
+    const downloaded = await response.arrayBuffer();
+    // Explicit gzip assets also work on static hosts that do not compress JSON responses.
+    // Some hosts set Content-Encoding and fetch has already decoded the body; inspect bytes
+    // to avoid decompressing twice. Both paths verify the same unchanged package hash.
+    const header = new Uint8Array(downloaded, 0, Math.min(2, downloaded.byteLength));
+    const bytes =
+      compressed && header[0] === 0x1f && header[1] === 0x8b
+        ? await new Response(
+            new Blob([downloaded]).stream().pipeThrough(new DecompressionStream('gzip')),
+          ).arrayBuffer()
+        : downloaded;
     const digest = await crypto.subtle.digest('SHA-256', bytes);
     const hash = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join(
       '',

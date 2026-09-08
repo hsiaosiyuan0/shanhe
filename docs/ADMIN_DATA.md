@@ -16,6 +16,8 @@
 
 原文件以 gzip 无损归档在 [`public/data/admin/source/`](../public/data/admin/source/)，解压后的内容与下载文件逐字节一致。[manifest.json](../public/data/admin/manifest.json) 记录原文件、渲染包的 SHA-256、体积、数量与来源信息，应用加载时校验渲染包的哈希值。失败时提示重试，不退回另一来源的边界。
 
+渲染包另提供 `.topo.json.gz`，浏览器优先下载并无损解压，再校验原始 TopoJSON 的 SHA-256，避免静态托管未压缩 JSON 时下载过慢。不支持 `DecompressionStream` 的浏览器继续使用原始 JSON。
+
 ## 坐标与精度
 
 三个原文件均显式标注 **CGCS2000 / EPSG:4490**。应用保留原始经纬度，在区域尺度的 Web 地图上按地理经纬度近似显示，**未施加 GCJ-02 偏移，也没有声称完成精确的 CGCS2000 → WGS84 坐标转换**。故事点和其他底图使用其各自文档说明的坐标参考。

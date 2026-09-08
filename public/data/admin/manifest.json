@@ -11,6 +11,8 @@
   "levels": {
     "4": {
       "file": "province.topo.json",
+      "gzipFile": "province.topo.json.gz",
+      "gzipBytes": 454100,
       "sha256": "82d894e6464da92005467c5b85b30b642a46bc89a2f9088b512f02bdd72f22df",
       "bytes": 1279013,
       "areaCount": 34,
@@ -22,6 +24,8 @@
     },
     "5": {
       "file": "city.topo.json",
+      "gzipFile": "city.topo.json.gz",
+      "gzipBytes": 946849,
       "sha256": "fc8147dab9cea1cb092e48faa0dba364b0fe14cdc7f20df8de9568fec8eba90e",
       "bytes": 2650998,
       "areaCount": 375,
@@ -33,6 +37,8 @@
     },
     "6": {
       "file": "county.topo.json",
+      "gzipFile": "county.topo.json.gz",
+      "gzipBytes": 2143869,
       "sha256": "ce57d885ad18ef29aea49403e4f98bd1dbadfb05c1ba764c9898ae31d7d95b3d",
       "bytes": 6147919,
       "areaCount": 2891,

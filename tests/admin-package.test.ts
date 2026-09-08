@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { gunzipSync } from 'node:zlib';
+import { gunzipSync, gzipSync } from 'node:zlib';
 import { createHash } from 'node:crypto';
 import type { Position } from 'geojson';
 import { validateStyleMin } from '@maplibre/maplibre-gl-style-spec';
@@ -40,6 +40,13 @@ for (const [level, count, refs] of [
     const entry = manifest.levels[level];
     const bytes = gunzipSync(readFileSync(root + entry.originalArchive));
     const topoBytes = readFileSync(root + entry.file);
+    const compressed = readFileSync(root + entry.gzipFile);
+    assert.equal(compressed.length, entry.gzipBytes);
+    assert.deepEqual(
+      gunzipSync(compressed),
+      topoBytes,
+      'transport compression preserves every byte',
+    );
     assert.equal(hash(bytes), entry.originalSha256);
     assert.equal(hash(topoBytes), entry.sha256);
     const raw = JSON.parse(bytes.toString());
@@ -142,7 +149,7 @@ test('local static loader verifies bytes, caches tiers, honors abort and recover
     urls.push(url);
     const name = url.split('/').at(-1)!;
     const bytes = readFileSync(root + name);
-    return new Response(corrupt && name.endsWith('.topo.json') ? '{}' : bytes);
+    return new Response(corrupt && name.endsWith('.topo.json.gz') ? gzipSync('{}') : bytes);
   });
   await assert.rejects(loader.load(4, new AbortController().signal), /校验失败/);
   corrupt = false;
@@ -155,6 +162,33 @@ test('local static loader verifies bytes, caches tiers, honors abort and recover
   aborted.abort();
   await assert.rejects(loader.load(4, aborted.signal), { name: 'AbortError' });
   assert.ok(urls.every((u) => u.startsWith('/shanhe/data/admin/')));
+  assert.ok(urls.includes('/shanhe/data/admin/province.topo.json.gz'));
+  assert.equal(urls.includes('/shanhe/data/admin/province.topo.json'), false);
+});
+
+test('static loader accepts gzip bodies already decoded by HTTP Content-Encoding', async () => {
+  const loader = new AdminPackageLoader('/data/admin/', async (input) => {
+    const name = String(input).split('/').at(-1)!;
+    return new Response(readFileSync(root + name.replace(/\.gz$/, '')), {
+      headers: name.endsWith('.gz') ? { 'Content-Encoding': 'gzip' } : {},
+    });
+  });
+  assert.equal((await loader.load(5, new AbortController().signal)).areas.features.length, 375);
+});
+
+test('static loader still reads uncompressed packages from older manifests', async () => {
+  const legacy = structuredClone(manifest);
+  for (const entry of Object.values(legacy.levels) as any[]) delete entry.gzipFile;
+  const urls: string[] = [];
+  const loader = new AdminPackageLoader('/data/admin/', async (input) => {
+    const name = String(input).split('/').at(-1)!;
+    urls.push(name);
+    return new Response(
+      name === 'manifest.json' ? JSON.stringify(legacy) : readFileSync(root + name),
+    );
+  });
+  assert.equal((await loader.load(5, new AbortController().signal)).areas.features.length, 375);
+  assert.deepEqual(urls, ['manifest.json', 'city.topo.json']);
 });
 
 test('one zoom tier uses uniform border strokes; hover shares the polygon source and map style validates', () => {

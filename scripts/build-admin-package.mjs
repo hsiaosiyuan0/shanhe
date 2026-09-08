@@ -110,8 +110,12 @@ for (const [level, name, file] of [
   const archive = `source/${file}.geojson.gz`;
   writeFileSync(join(output, archive), gzipSync(bytes, { level: 9 }));
   writeFileSync(join(output, `${file}.topo.json`), body);
+  const compressed = gzipSync(body, { level: 9 });
+  writeFileSync(join(output, `${file}.topo.json.gz`), compressed);
   manifest.levels[level] = {
     file: `${file}.topo.json`,
+    gzipFile: `${file}.topo.json.gz`,
+    gzipBytes: compressed.length,
     sha256: sha256(body),
     bytes: Buffer.byteLength(body),
     areaCount: areas.length,

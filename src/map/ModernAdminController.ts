@@ -115,7 +115,12 @@ export class ModernAdminController {
       this.report({
         status: 'error',
         level,
-        message: error instanceof Error ? error.message : '行政区数据包加载失败',
+        message:
+          request.signal.aborted && request.signal.reason instanceof Error
+            ? request.signal.reason.message
+            : error instanceof Error
+              ? error.message
+              : '行政区数据包加载失败',
       });
     } finally {
       clearTimeout(timeout);
