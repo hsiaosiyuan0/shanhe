@@ -3326,7 +3326,7 @@ button.admin-boundary-key[aria-pressed='true'] {
 .journey-panel {
   position: absolute;
   left: var(--map-edge);
-  top: 65px;
+  top: max(65px, var(--map-feedback-bottom, 0px));
   bottom: var(--map-overlay-bottom);
   width: 310px;
   z-index: 11;

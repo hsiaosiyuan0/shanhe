@@ -230,6 +230,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   const markers = useRef<maplibregl.Marker[]>([]);
   const popups = useRef<MapPopupController | null>(null);
   const adminDetail = useRef<ModernAdminController | null>(null);
+  const adminFeedback = useRef<HTMLDivElement | null>(null);
   const callbacks = useRef({ onSelect, onSelectRoute, onPoint });
   callbacks.current = { onSelect, onSelectRoute, onPoint };
   const [ready, setReady] = useState(false);
@@ -531,6 +532,26 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     };
   }, []);
   useEffect(() => {
+    const feedback = adminFeedback.current;
+    const section = feedback?.parentElement;
+    if (!feedback || !section) return;
+    // Reading panels must clear the actual toolbar height, including wrapped labels
+    // and retry notices. Observe the section too, since breakpoints change its top.
+    const update = () =>
+      section.style.setProperty(
+        '--map-feedback-bottom',
+        `${feedback.childElementCount ? feedback.offsetTop + feedback.offsetHeight + 12 : 0}px`,
+      );
+    const observer = new ResizeObserver(update);
+    observer.observe(feedback);
+    observer.observe(section);
+    update();
+    return () => {
+      observer.disconnect();
+      section.style.removeProperty('--map-feedback-bottom');
+    };
+  }, []);
+  useEffect(() => {
     if (!map.current || !ready) return;
     adminDetail.current?.setEnabled(story.layers.admin);
   }, [ready, story.layers.admin]);
@@ -787,7 +808,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
           ))}
         </div>
       )}
-      <div className="map-admin-feedback">
+      <div className="map-admin-feedback" ref={adminFeedback}>
         {(offline || (story.layers.admin && adminState.status === 'error')) && (
           <div className="map-network" role="status">
             {offline && <p>在线地形暂不可用 · 本地地理底图仍可浏览</p>}
