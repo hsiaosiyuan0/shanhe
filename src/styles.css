@@ -3189,6 +3189,24 @@ button {
   font-size: 10px;
   z-index: 10;
   pointer-events: none;
+  flex-wrap: wrap;
+  max-width: calc(100% - 42px);
+}
+.admin-hover-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 7px;
+  border-left: 1px solid #c9bbca;
+}
+.admin-hover-info strong {
+  font-size: 12px;
+  color: #68456b;
+}
+.admin-hover-info button {
+  pointer-events: auto;
+  min-height: 28px;
+  text-decoration: underline;
 }
 .admin-boundary-key {
   display: inline-flex;

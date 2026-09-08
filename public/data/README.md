@@ -10,6 +10,16 @@
 
 ## 在线市县与地名
 
+### 区域悬停轮廓
+
+矢量瓦片中的 `boundary` 是无区域名称的线段，不能据此判断鼠标在哪个行政区。悬停另用 [Private.coffee Overpass](https://overpass.private.coffee/) 的 `is_in` / `relation(pivot)` 查询完整 OSM 行政区 relation，`out geom` 返回原始 WGS84 多边形成员。7 级视角选择市级（`admin_level=5`，直辖市使用 4），8 级及以上选择区县（6）；完整面用于内部命中、轻微填色和整圈描边。它与底层 OpenFreeMap 同属 OSM 数据，但更新日期和简化精度可能不同，不能作为权威界址资料。
+
+地图停止移动后预取中心区域；新区域的指针查询等待停留 350 毫秒，同一时刻只运行一个请求。会话内缓存 48 个完整区域，命中测试排除内洞并保留飞地；缓存命中时不发送网络请求。请求有 25 秒超时，失败后有冷却与手动重试，关闭对照会取消请求。缺少闭合成员的区域不强行补线，缺少区县时不拿整个城市冒充。
+
+`tests/fixtures/admin-nanjing-areas.json.gz` 为 2026-09-08 查询 `[118.79,32.06]` 得到的南京市（relation 2131524）与玄武区（2138698），保留拼接所需的原始成员坐标和名称、级别。服务返回的 OSM 数据日期为 `2026-05-31T22:37:44Z`，按 ODbL 使用；仅作为测试样本，不打包到应用静态资源。地图来源控件继续标示 OpenStreetMap 署名。
+
+### 边界线与地名瓦片
+
 市县数据没有打包到此目录，而由 [OpenFreeMap](https://openfreemap.org/quick_start/) 的 `https://tiles.openfreemap.org/planet` TileJSON 提供，随当前视野加载。源数据为 [OpenStreetMap（ODbL）](https://www.openstreetmap.org/copyright)，使用 [OpenMapTiles schema](https://openmaptiles.org/schema/)。地图来源控件保留 OpenFreeMap、OpenMapTiles 和 OpenStreetMap 署名。
 
 `boundary` 图层使用 `admin_level` 4 / 5 / 6 区分省、市、区县；`place` 图层优先使用 `name:zh-Hans`、`name:zh`，再回退 `name`。按 [OSM 中国区划约定](https://wiki.openstreetmap.org/wiki/China/Boundaries)，市县层级不能只看 `class=city`：区县政府所在地也可能采用该类型，因此用 `capital=6` 分出区县标签。地方数据可能存在缺漏，地图不承诺完整或权威的区划覆盖。

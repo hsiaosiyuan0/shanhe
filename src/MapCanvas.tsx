@@ -18,6 +18,7 @@ import { declutterLabels } from './map/declutterLabels';
 import { customRiverFeatures, customRiverLabels, customRiverLayers } from './map/customRivers';
 import { riverLines } from '../shared/rivers';
 import { ModernAdminController, type AdminDetailStatus } from './map/ModernAdminController';
+import { AdminAreaController, type AdminHoverState } from './map/AdminAreaController';
 import type { BoundaryStatus } from './map/AdminBoundaryOverview';
 import {
   adminDetailMinZoom,
@@ -259,6 +260,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   const markers = useRef<maplibregl.Marker[]>([]);
   const popups = useRef<MapPopupController | null>(null);
   const adminDetail = useRef<ModernAdminController | null>(null);
+  const adminAreas = useRef<AdminAreaController | null>(null);
   const callbacks = useRef({ onSelect, onSelectRoute, onPoint });
   callbacks.current = { onSelect, onSelectRoute, onPoint };
   const [ready, setReady] = useState(false);
@@ -268,6 +270,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   const [adminError, setAdminError] = useState(false);
   const [detailStatus, setDetailStatus] = useState<AdminDetailStatus>('idle');
   const [boundaryStatus, setBoundaryStatus] = useState<BoundaryStatus>({ status: 'idle' });
+  const [adminHover, setAdminHover] = useState<AdminHoverState>({ status: 'idle' });
   const [adminZoom, setAdminZoom] = useState(Math.floor(story.view.zoom));
   const [adminScale, setAdminScale] = useState(adminScaleLabel(story.view.zoom));
   const [showAdminDetail, setShowAdminDetail] = useState(story.view.zoom >= adminDetailMinZoom);
@@ -388,6 +391,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     map.current = m;
     popups.current = new MapPopupController(m);
     adminDetail.current = new ModernAdminController(m, setDetailStatus, setBoundaryStatus);
+    adminAreas.current = new AdminAreaController(m, setAdminHover);
     const updateLabelVisibility = () => declutterLabels(m.getContainer());
     m.on('moveend', updateLabelVisibility);
     const onPopupKeyDown = (event: KeyboardEvent) => {
@@ -501,7 +505,8 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
         coordinates: [Number(event.lngLat.lng.toFixed(5)), Number(event.lngLat.lat.toFixed(5))],
         elevation,
         modernRegion: currentStory.current.layers.admin
-          ? m.queryRenderedFeatures(event.point, { layers: ['admin-fill'] })[0]?.properties?.name
+          ? adminAreas.current?.hover([event.lngLat.lng, event.lngLat.lat])?.properties.name ||
+            m.queryRenderedFeatures(event.point, { layers: ['admin-fill'] })[0]?.properties?.name
           : undefined,
       });
     });
@@ -522,6 +527,9 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
         ? m.queryRenderedFeatures(event.point, { layers: placeLayers })[0]
         : undefined;
       const placeName = place && modernPlaceName(place.properties);
+      adminAreas.current?.hover(
+        river || customId || m.isMoving() ? null : [event.lngLat.lng, event.lngLat.lat],
+      );
       if (river?.id === hoveredRiver && customId === hoveredCustom && placeName === hoveredPlace)
         return;
       hoveredRiver = river?.id;
@@ -532,6 +540,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       m.setFilter('major-river-hover', riverFilter(river ? [river] : []));
     });
     m.on('mouseout', () => {
+      adminAreas.current?.hover(null);
       hoveredRiver = undefined;
       hoveredCustom = undefined;
       hoveredPlace = undefined;
@@ -551,6 +560,8 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       popups.current = null;
       adminDetail.current?.dispose();
       adminDetail.current = null;
+      adminAreas.current?.dispose();
+      adminAreas.current = null;
       markers.current.forEach((v) => v.remove());
       markers.current = [];
       m.remove();
@@ -582,6 +593,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     const m = map.current;
     if (!m || !ready) return;
     adminDetail.current?.setEnabled(story.layers.admin);
+    adminAreas.current?.setEnabled(story.layers.admin);
     (m.getSource('province-labels') as GeoJSONSource).setData(provinceLabelFeatures(regions));
     m.setLayoutProperty('province-labels', 'visibility', story.layers.admin ? 'visible' : 'none');
     // Province labels can fall back locally, but coarse Natural Earth outlines
@@ -897,6 +909,29 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
               <small>加载中…</small>
             ) : (
               adminZoom < cityBoundaryMinZoom && <small>放大显示市县界</small>
+            )}
+            {adminZoom >= cityBoundaryMinZoom && (
+              <span className="admin-hover-info" role="status" aria-live="polite">
+                {adminHover.area ? (
+                  <>
+                    <strong>{adminHover.area.properties.name}</strong>
+                    <small>
+                      {adminHover.area.properties.level === 5 ? '市级范围' : '区县范围'}
+                    </small>
+                  </>
+                ) : adminHover.status === 'loading' ? (
+                  <small>读取区域轮廓…</small>
+                ) : adminHover.status === 'missing' ? (
+                  <small>此处暂无完整区划轮廓</small>
+                ) : adminHover.status === 'error' ? (
+                  <>
+                    <small>区域轮廓暂不可用</small>
+                    <Button onClick={() => adminAreas.current?.retry()}>重试轮廓</Button>
+                  </>
+                ) : (
+                  <small>移入区域查看范围</small>
+                )}
+              </span>
             )}
           </div>
         )}

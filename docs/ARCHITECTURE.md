@@ -42,6 +42,8 @@ v0.1 的模型不能执行任意代码、SQL、文件读写、网络检索或删
 
 ## 前端组件
 
+行政区悬停由 `AdminAreaController` 管理：按缩放选择市（7 级）或区县（8 级以上），预取视图中心，串行处理停留后的指针查询，并缓存区域。`adminAreas.ts` 将 Overpass 完整 relation 的成员拼接成 Polygon / MultiPolygon，缺口、歧义和缺失内洞不会靠补线掩盖。命中测试考虑飞地和内洞，高亮采用独立 GeoJSON 源的淡色填充与完整轮廓，放在故事标记与河流下方。移动到另一行政区、离开地图、拖动或关闭图层都会清理旧高亮；迟到的网络结果只更新缓存，不把上一地区重新点亮。点击背景仍保留原有坐标查看行为，并可显示已缓存的区域名称；悬停状态不写入故事或快照。
+
 `src/ui` 封装 Radix UI 的 Select、Dialog、Checkbox、Switch、Collapsible、Dropdown Menu 和 Radio Group，统一使用纸白、墨绿的设计变量。Button、Input、Textarea 也从这一层复用，浏览器与 WKWebView 使用同一套样式。
 
 下拉菜单通过 Portal 显示，按触发器宽度对齐并避让视口边缘；弹窗与菜单使用统一层级，支持键盘选择、Esc 逐层关闭、焦点约束与返回。Select 对外保留原始字段值，包括 Codex 默认模型的空字符串，表单通过隐藏字段提交，避免组件内部值影响保存。
