@@ -117,6 +117,12 @@ export const layersSchema = z.object({
     ),
   terrain: z.boolean(),
   rivers: z.boolean(),
+  lakes: z
+    .boolean()
+    .default(true)
+    .describe(
+      'Show bundled modern lake and reservoir water surfaces and names, including Poyang and Dongting. Independent of rivers. Use set_view to explore; these are approximate modern outlines, never historical or live water levels.',
+    ),
   mountains: z.boolean(),
   routes: z.boolean(),
   connections: z

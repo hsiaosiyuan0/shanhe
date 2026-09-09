@@ -1,0 +1,16 @@
+{
+  "source": "Natural Earth · Lakes + Reservoirs · 1:10m",
+  "url": "https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-lakes/",
+  "revision": "ca96624a56bd078437bca8184e78163e5039ad19",
+  "sourceFile": "ne_10m_lakes.geojson",
+  "sha256": "2d036f53dedec578001c5c30c2959ee7d4eebc1306900fa4367c49929ec8f2d9",
+  "sourceCrs": "OGC:CRS84",
+  "region": [
+    75,
+    15,
+    135,
+    54
+  ],
+  "count": 192,
+  "geometrySha256": "0e2fda712e0e7dc541b0c01a2aced59c304a38b98346e9223fcc6f6ae86ff782"
+}

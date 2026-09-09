@@ -20,6 +20,17 @@ import { riverLines } from '../shared/rivers';
 import { ModernAdminController, type AdminState } from './map/ModernAdminController';
 import { AdminPackageLoader } from './map/adminPackage';
 import {
+  featuredLakes,
+  findLake,
+  lakeDescription,
+  lakeHitLayerIds,
+  lakeLabels,
+  lakeLayerIds,
+  lakeNameLayers,
+  lakeSourceUrl,
+  lakeWaterLayers,
+} from './map/lakes';
+import {
   adminLevelAtZoom,
   type AdminLevelMode,
   adminLevelName,
@@ -106,6 +117,13 @@ function style(): StyleSpecification {
           '<a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>',
       },
       'river-labels': { type: 'geojson', data: riverLabelAnchors() },
+      lakes: {
+        type: 'geojson',
+        data: assetUrl('data/lakes.geojson'),
+        tolerance: 0,
+        attribution: `<a href="${lakeSourceUrl}" target="_blank" rel="noopener">Lakes: Natural Earth · 1:10m</a>`,
+      },
+      'lake-labels': { type: 'geojson', data: lakeLabels() },
       'custom-rivers': { type: 'geojson', data: empty },
       'custom-river-labels': { type: 'geojson', data: empty },
       routes: { type: 'geojson', data: empty },
@@ -153,6 +171,7 @@ function style(): StyleSpecification {
           'hillshade-illumination-anchor': 'map',
         },
       },
+      ...lakeWaterLayers(),
       {
         id: 'coast',
         type: 'line',
@@ -170,6 +189,7 @@ function style(): StyleSpecification {
         },
       },
       ...majorRiverLayers(),
+      ...lakeNameLayers(),
       ...customRiverLayers(),
       {
         id: 'route-shadow',
@@ -443,6 +463,19 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
         callbacks.current.onSelectRoute(String(routeId));
         return;
       }
+      const lakeFeature = m.queryRenderedFeatures(event.point, { layers: lakeHitLayerIds })[0];
+      const lake = findLake(String(lakeFeature?.properties?.source_id ?? ''));
+      if (lake?.label && currentStory.current.layers.lakes) {
+        popups.current?.toggle(
+          `lake:${lake.id}`,
+          null,
+          [event.lngLat.lng, event.lngLat.lat],
+          lake.label,
+          lakeDescription(lake),
+          'center',
+        );
+        return;
+      }
       const placeLayers = placeLayerIds.filter((id) => m.getLayer(id));
       const place =
         placeLayers.length && currentStory.current.layers.admin
@@ -481,8 +514,9 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     let hoveredRiver: string | undefined;
     let hoveredCustom: string | undefined;
     let hoveredPlace: string | undefined;
+    let hoveredLake: string | undefined;
     m.on('mousemove', (event) => {
-      if (!m.isStyleLoaded()) return;
+      if (!m.getLayer('major-river-hit')) return;
       const feature = m.queryRenderedFeatures(event.point, {
         layers: ['major-river-hit', 'major-river-label', 'major-river-anchor-label'],
       })[0];
@@ -495,12 +529,22 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
         ? m.queryRenderedFeatures(event.point, { layers: placeLayers })[0]
         : undefined;
       const placeName = place && modernPlaceName(place.properties);
-      if (river?.id === hoveredRiver && customId === hoveredCustom && placeName === hoveredPlace)
+      const lakeId = m.queryRenderedFeatures(event.point, { layers: lakeHitLayerIds })[0]
+        ?.properties?.source_id as string | undefined;
+      if (
+        river?.id === hoveredRiver &&
+        customId === hoveredCustom &&
+        placeName === hoveredPlace &&
+        lakeId === hoveredLake
+      )
         return;
       hoveredRiver = river?.id;
       hoveredCustom = customId;
       hoveredPlace = placeName;
-      m.getCanvas().style.cursor = river || customId || placeName ? 'pointer' : '';
+      hoveredLake = lakeId;
+      m.getCanvas().style.cursor =
+        river || customId || placeName || findLake(lakeId ?? '')?.label ? 'pointer' : '';
+      m.setFilter('lakes-hover', ['==', ['get', 'source_id'], lakeId || '']);
       m.setFilter('custom-river-hover', ['==', ['get', 'id'], customId || '']);
       m.setFilter('major-river-hover', riverFilter(river ? [river] : []));
     });
@@ -508,6 +552,8 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       hoveredRiver = undefined;
       hoveredCustom = undefined;
       hoveredPlace = undefined;
+      hoveredLake = undefined;
+      if (m.getLayer('lakes-hover')) m.setFilter('lakes-hover', ['==', ['get', 'source_id'], '']);
       if (m.getLayer('custom-river-hover'))
         m.setFilter('custom-river-hover', ['==', ['get', 'id'], '']);
       m.getCanvas().style.cursor = '';
@@ -638,6 +684,9 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       m.setLayoutProperty(id, 'visibility', story.layers.rivers ? 'visible' : 'none');
     for (const id of ['elevation', 'hillshade'])
       m.setLayoutProperty(id, 'visibility', story.layers.elevation ? 'visible' : 'none');
+    for (const id of lakeLayerIds)
+      m.setLayoutProperty(id, 'visibility', story.layers.lakes ? 'visible' : 'none');
+    m.setFilter('lakes-hover', ['==', ['get', 'source_id'], '']);
     if (story.layers.terrain) {
       // Terrain and painted DEM layers use different tile resolutions in MapLibre.
       // Separate sources prevent the 3D mesh from reducing color/hillshade quality.
@@ -783,30 +832,51 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   return (
     <>
       <div className="map-canvas" ref={container} aria-label="交互式故事地图" />
-      {story.layers.rivers && (
-        <div className="river-key" aria-label="主要河流，现代河道参考">
-          {majorRivers.map((river) => (
-            <Button
-              key={river.id}
-              type="button"
-              aria-label={`${river.label}，查看河道说明`}
-              aria-haspopup="dialog"
-              aria-expanded={false}
-              onClick={(event) => {
-                const m = map.current;
-                if (!m) return;
-                m.easeTo({
-                  center: river.center,
-                  zoom: Math.max(5, m.getZoom()),
-                  duration: motion(),
-                });
-                openRiver(river, river.center, event.currentTarget);
-              }}
-            >
-              <span style={{ backgroundColor: river.color }} aria-hidden="true" />
-              {river.label}
-            </Button>
-          ))}
+      {(story.layers.rivers || story.layers.lakes) && (
+        <div className="river-key" aria-label="河流与湖泊，现代水系参考">
+          {story.layers.rivers &&
+            majorRivers.map((river) => (
+              <Button
+                key={river.id}
+                type="button"
+                aria-label={`${river.label}，查看河道说明`}
+                aria-haspopup="dialog"
+                aria-expanded={false}
+                onClick={(event) => {
+                  const m = map.current;
+                  if (!m) return;
+                  m.easeTo({
+                    center: river.center,
+                    zoom: Math.max(5, m.getZoom()),
+                    duration: motion(),
+                  });
+                  openRiver(river, river.center, event.currentTarget);
+                }}
+              >
+                <span style={{ backgroundColor: river.color }} aria-hidden="true" />
+                {river.label}
+              </Button>
+            ))}
+          {story.layers.lakes &&
+            featuredLakes.map((lake) => (
+              <Button
+                key={lake.id}
+                type="button"
+                aria-label={`定位${lake.label}`}
+                title={`查看${lake.label}水面与名称`}
+                onClick={() => {
+                  popups.current?.close();
+                  map.current?.fitBounds(lake.bounds as [number, number, number, number], {
+                    padding: 80,
+                    maxZoom: 8,
+                    duration: motion(),
+                  });
+                }}
+              >
+                <span className="lake-key-swatch" aria-hidden="true" />
+                {lake.label}
+              </Button>
+            ))}
         </div>
       )}
       <div className="map-admin-feedback" ref={adminFeedback}>

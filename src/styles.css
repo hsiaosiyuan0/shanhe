@@ -1285,6 +1285,8 @@ button svg {
   right: var(--map-edge);
   z-index: 12;
   display: flex;
+  flex-wrap: wrap;
+  max-width: calc(100% - 2 * var(--map-edge));
   gap: 4px;
   padding: 2px 4px;
   border-radius: 6px;
@@ -1309,6 +1311,13 @@ button svg {
   width: 20px;
   height: 3px;
   border-radius: 2px;
+}
+.river-key button > .lake-key-swatch {
+  height: 9px;
+  width: 13px;
+  background: #afd1d4;
+  border: 1px solid #5892a3;
+  border-radius: 50%;
 }
 .maplibregl-popup-close-button {
   padding: 3px 8px;

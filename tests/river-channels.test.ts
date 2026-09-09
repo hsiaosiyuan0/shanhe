@@ -245,7 +245,7 @@ test('HTTP channels persist, export/import and restore snapshots with optimistic
     });
   try {
     const story = store.list()[0];
-    assert.equal((await (await request('/tools')).json()).tools.length, 4);
+    assert.equal((await (await request('/tools')).json()).tools.length, 5);
     assert.equal((await (await request('/river-catalog')).json()).length, 4);
     const added = (await (
       await request(`/stories/${story.id}/actions`, {

@@ -2,13 +2,14 @@ import { z } from 'zod';
 import { actionsSchema, applyActions, type MapAction, type Story } from './schema.js';
 import { riverSummary } from './rivers.js';
 import { riverCatalog } from './river-catalog.js';
+import { lakeSource, searchLakes } from './lakes.js';
 
 export const toolDefinition = {
   type: 'function',
   function: {
     name: 'apply_story_actions',
     description:
-      'Edit events, markers, routes, view/layers and river CHANNELS. For real river geometry prefer add_catalog_river (search first), otherwise add_river with supplied GeoJSON. update_river accepts a partial patch; remove_river deletes a custom channel. set_layers.rivers controls all rivers, river.visible controls one channel. Coordinates: WGS84 [longitude,latitude]. Changes stage until final answer. Never invent river coordinates or verified sources.',
+      'Edit events, markers, routes, view/layers and river CHANNELS. For real river geometry prefer add_catalog_river (search first), otherwise add_river with supplied GeoJSON. update_river accepts a partial patch; remove_river deletes a custom channel. set_layers.rivers controls all rivers, river.visible controls one channel. set_layers.lakes independently shows bundled modern lake/reservoir surfaces and labels, including Poyang and Dongting. Coordinates: WGS84 [longitude,latitude]. Changes stage until final answer. Never invent river coordinates or verified sources.',
     parameters: z.toJSONSchema(actionsSchema, { target: 'draft-7' }),
   },
 };
@@ -20,6 +21,15 @@ const readRiverSchema = z.object({
 });
 export const toolDefinitions = [
   toolDefinition,
+  {
+    type: 'function',
+    function: {
+      name: 'search_lakes',
+      description:
+        'Search bundled lake/reservoir names and IDs. Returns source-derived label centers and bounds in WGS84, plus provenance. Use set_layers with lakes:true and set_view to locate a result. These modern approximate water surfaces are not historical shores or live water levels. Empty query lists named lakes.',
+      parameters: z.toJSONSchema(searchSchema, { target: 'draft-7' }),
+    },
+  },
   {
     type: 'function',
     function: {
@@ -82,6 +92,13 @@ export class StoryTools {
   call(name: string, input: unknown): unknown {
     if (name === 'apply_story_actions') return this.apply(input);
     if (name === 'get_story_context') return this.context();
+    if (name === 'search_lakes') {
+      return searchLakes(searchSchema.parse(input).query).map((lake) => ({
+        ...structuredClone(lake),
+        period: 'modern',
+        source: lakeSource,
+      }));
+    }
     if (name === 'search_rivers') {
       const query = searchSchema.parse(input).query.trim().toLowerCase();
       return [
@@ -158,4 +175,5 @@ export const agentInstructions = `你是「山河」的历史与地理探索助�
 新增史实、坐标与行程一律待核验。这里没有网络检索工具，不得声称查证文献、编造 URL 或精确古疆界。
 两个人生事件之间不等于真实旅途。不能以直线、平滑曲线或现代导航充当古代道路。独立行程需填写 journey 的年份、经停点、陆路/水路/未知分段与不确定性；证据未知就标 unknown。
 河道是 riverChannels，不是 river 地点标记，也不是旅途 route。先用 search_rivers 查询故事与内置目录；目录中的实际数据用 add_catalog_river 导入。get_river_data 可读取原始几何。需要目录之外的数据时，请用户在「图层 → 河道数据」导入 GeoJSON，或使用用户提供的几何；不要凭记忆编造折线。保留分段与缺口，不做平滑。可用 update_river 修改颜色、显示状态、说明或替换几何，remove_river 删除自定义河道。现代与历史河道必须区别标注，不能按故事年份自动推定。内置底图河流不在自定义数据列表内。
+湖泊水面是独立的 lakes 图层。先用 search_lakes 查名称、数据来源与轮廓内标注坐标，再通过 set_layers（保留其他图层设置）与 set_view 显示并定位。无需用地点标记替代已收录的水面，也不能把现代湖面当作历史湖岸。
 工具成功代表本轮暂存，最终回答完成后应用才会保存。不要把失败的操作说成成功。回答可以说明已完成哪些调整，但不要声称已核验。不要操作本机文件或运行程序。`;

@@ -164,6 +164,7 @@ export function createStory(title: string, kind: Story['kind'], template?: strin
       admin: false,
       terrain: false,
       rivers: true,
+      lakes: true,
       mountains: true,
       routes: true,
       connections: false,

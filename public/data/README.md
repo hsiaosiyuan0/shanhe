@@ -4,6 +4,7 @@
 
 - `land.geojson`：`ne_110m_land.geojson`，全球陆地轮廓，未包含国界。
 - `rivers.geojson`：从 `ne_50m_rivers_lake_centerlines.geojson` 提取与 75–135°E / 15–54°N 区域相交的 80 条河流要素；保留 name、name_zh、scalerank 属性。另从 1:10m 数据补入 3 条淮河要素，共 83 条。
+- `lakes.geojson`：Natural Earth 1:10m 湖泊与水库，在相同区域按包围框相交提取的 192 个完整水面要素。
 
 陆地与河流数据使用 WGS84。来源、比例尺与用途限制见下文。
 
@@ -36,3 +37,22 @@
 ```sh
 node scripts/extract-huai.mjs <ne_10m_rivers_lake_centerlines.geojson>
 ```
+
+## 湖泊与水库
+
+来源为 [Natural Earth · Lakes + Reservoirs · 1:10m](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-lakes/) 的 [`ne_10m_lakes.geojson`](https://github.com/nvkelso/natural-earth-vector/blob/ca96624a56bd078437bca8184e78163e5039ad19/geojson/ne_10m_lakes.geojson)，固定版本 `ca96624a56bd078437bca8184e78163e5039ad19`。来源 CRS 为 OGC:CRS84，即 WGS84 经度、纬度顺序。
+
+仅筛选与 75–135°E / 15–54°N 包围框相交的完整要素，不裁切、平滑、补画或连接湖岸，保留 Polygon / MultiPolygon 的所有环和内洞。`lakes-source/selected.geojson.gz` 归档所选要素的原始属性与几何，`manifest.json` 记录上游完整文件的 SHA-256 与提取结果哈希。该范围是地理窗口，不表示国界或归属。
+
+鄱阳湖对应 `ne_id=1159114015`，洞庭湖对应 `1159116351`，沿用源名称；不与源数据另列的 `Po Hu` 混同。未命名水面保留形状，不编造名称。区域名称优先使用源 `name_zh`，标注点通过 polylabel 求取在水面内部。鄱阳湖、洞庭湖、太湖、洪泽湖的名称从缩放 4.5 开始显示，这是标注可见性调整，不改变源几何。
+
+湖泊源数据经过概括，尤其在放大时不代表精细湖岸；不保证各湖水面的采集时间或水位一致，也不能用它表达实时水位、丰枯水期或古代水面。行政区、河道与湖岸来自不同数据集，不保证跨数据集端点严格贴合。
+
+重新下载上述固定版本后运行：
+
+```sh
+node scripts/extract-lakes.mjs <ne_10m_lakes.geojson>
+node --import tsx --test tests/lakes.test.ts
+```
+
+脚本检查完整源文件哈希，生成水面、目录与归档。测试逐要素比对源坐标与内洞，并验证标注点位于对应水面内部。模型的 `search_lakes` 返回名称、边界范围、内部标注点和来源，配合 `set_layers.lakes` / `set_view` 进行开关与定位。
