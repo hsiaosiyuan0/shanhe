@@ -1,0 +1,96 @@
+{
+  "source": "EC JRC/Google · Global Surface Water v1.5",
+  "url": "https://global-surface-water.appspot.com/download",
+  "period": "1984–2024",
+  "downloadUrl": "https://s3.waw4-1.cloudferro.com/swift/v1/global-surface-water/download2024/Aggregated/VER1-5/occurrence/occurrence_110E_30N_v1_5_2024.tif",
+  "sourceSha256": "a67a91d67d17576accb5374b6bbdda6763b4f191d61111e711cf50db465abe0d",
+  "resolutionMeters": 30,
+  "displayMercatorMeters": 50,
+  "meaning": "长期观测中的水面出现频率（%）；包括河流、湖泊、水库、季节性水面及其他积水，不是某年的湖岸或全湖边界。",
+  "colors": [
+    "#c3e1d7",
+    "#207190"
+  ],
+  "images": [
+    {
+      "id": "poyang",
+      "label": "鄱阳湖区域",
+      "bounds": [
+        115.65000000000019,
+        28.5997586598287,
+        116.85014921958386,
+        29.89999999999996
+      ],
+      "corners": [
+        [
+          115.65000000000019,
+          29.89999999999996
+        ],
+        [
+          116.85014921958386,
+          29.89999999999996
+        ],
+        [
+          116.85014921958386,
+          28.5997586598287
+        ],
+        [
+          115.65000000000019,
+          28.5997586598287
+        ]
+      ],
+      "file": "poyang-occurrence.png",
+      "sha256": "8ea3b507594a1370d6b81ea8e8dcf83760dc01b2d0259aa99636a280147841c2",
+      "nativeCrop": "poyang-occurrence.tif",
+      "nativePixelSha256": "2805f36a1509e36bbe7d0a46d2ba07b435f02504543ffcf7789fe042a848fb39",
+      "nativeShape": [
+        5200,
+        4800
+      ],
+      "displaySize": [
+        2672,
+        3318
+      ]
+    },
+    {
+      "id": "dongting",
+      "label": "洞庭湖区域",
+      "bounds": [
+        111.80000000000015,
+        28.59987921649338,
+        113.3500430227484,
+        29.799999999999965
+      ],
+      "corners": [
+        [
+          111.80000000000015,
+          29.799999999999965
+        ],
+        [
+          113.3500430227484,
+          29.799999999999965
+        ],
+        [
+          113.3500430227484,
+          28.59987921649338
+        ],
+        [
+          111.80000000000015,
+          28.59987921649338
+        ]
+      ],
+      "file": "dongting-occurrence.png",
+      "sha256": "d170cffdfc6c5ba54e41103c4d80414d2efdf08ea31bef2d9f9a0510cbe040df",
+      "nativeCrop": "dongting-occurrence.tif",
+      "nativePixelSha256": "e35c0f6703e0f96168780f14ba393fd71bcd2b4a311586045eccd8db90b4fb48",
+      "nativeShape": [
+        4800,
+        6200
+      ],
+      "displaySize": [
+        3451,
+        3061
+      ]
+    }
+  ]
+}

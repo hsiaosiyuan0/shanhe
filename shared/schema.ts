@@ -123,6 +123,12 @@ export const layersSchema = z.object({
     .describe(
       'Show bundled modern lake and reservoir water surfaces and names, including Poyang and Dongting. Independent of rivers. Use set_view to explore; these are approximate modern outlines, never historical or live water levels.',
     ),
+  lakeReference: z
+    .boolean()
+    .default(false)
+    .describe(
+      'Compare Poyang/Dongting areas with bundled JRC 1984–2024 water occurrence (%) imagery. Requires lakes:true. Covers only these two windows and replaces the HydroLAKES fill while on. Not a specific year, water level, lake ownership boundary, or historical shoreline. Use search_lakes.reference for bounds.',
+    ),
   mountains: z.boolean(),
   routes: z.boolean(),
   connections: z

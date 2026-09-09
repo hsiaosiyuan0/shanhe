@@ -1,0 +1,402 @@
+{
+  "151": {
+    "sourceName": "Poyang",
+    "label": "鄱阳湖"
+  },
+  "1470": {
+    "sourceName": "Dongting",
+    "label": "洞庭湖"
+  },
+  "148": {
+    "sourceName": "Tai",
+    "label": "太湖"
+  },
+  "145": {
+    "sourceName": "Hungtze",
+    "label": "洪泽湖"
+  },
+  "1430": {
+    "sourceName": "Chao",
+    "label": "巢湖"
+  },
+  "143": {
+    "sourceName": "Qinghai",
+    "label": "青海湖"
+  },
+  "1464": {
+    "sourceName": "Hong",
+    "label": "洪湖"
+  },
+  "1458": {
+    "sourceName": "Liangzi",
+    "label": "梁子湖"
+  },
+  "1463": {
+    "sourceName": "Longgan",
+    "label": "龙感湖"
+  },
+  "1416": {
+    "sourceName": "Kaoyu",
+    "label": "高邮湖"
+  },
+  "12": {
+    "sourceName": "Balkhash",
+    "label": "巴尔喀什湖",
+    "nameSource": "Natural Earth ne_id:1159113111",
+    "matchIoU": 0.9081
+  },
+  "11": {
+    "sourceName": "Baikal",
+    "label": "贝加尔湖",
+    "nameSource": "Natural Earth ne_id:1159113127",
+    "matchIoU": 0.9539
+  },
+  "119": {
+    "sourceName": "Khovsgol",
+    "label": "库苏古尔湖",
+    "nameSource": "Natural Earth ne_id:1159113373",
+    "matchIoU": 0.939
+  },
+  "134": {
+    "sourceName": "Khanka",
+    "label": "兴凯湖",
+    "nameSource": "Natural Earth ne_id:1159113423",
+    "matchIoU": 0.9592
+  },
+  "123": {
+    "sourceName": "Hulun",
+    "label": "呼倫湖",
+    "nameSource": "Natural Earth ne_id:1159113513",
+    "matchIoU": 0.8572
+  },
+  "149": {
+    "sourceName": "Nam",
+    "label": "纳木错",
+    "nameSource": "Natural Earth ne_id:1159113637",
+    "matchIoU": 0.9017
+  },
+  "1304": {
+    "sourceName": "Bosten",
+    "label": "博斯腾湖",
+    "nameSource": "Natural Earth ne_id:1159113927",
+    "matchIoU": 0.8996
+  },
+  "1461": {
+    "sourceName": "Daguan",
+    "label": "大官湖",
+    "nameSource": "Natural Earth ne_id:1159114031",
+    "matchIoU": 0.6843
+  },
+  "147": {
+    "sourceName": "Siling",
+    "label": "色林错",
+    "nameSource": "Natural Earth ne_id:1159114083",
+    "matchIoU": 0.8782
+  },
+  "127": {
+    "sourceName": "Khar Us",
+    "label": "哈尔乌苏湖",
+    "nameSource": "Natural Earth ne_id:1159114107",
+    "matchIoU": 0.6941
+  },
+  "1344": {
+    "sourceName": "Ayakkum",
+    "label": "阿雅克库木湖",
+    "nameSource": "Natural Earth ne_id:1159114215",
+    "matchIoU": 0.8677
+  },
+  "1377": {
+    "sourceName": "Ngoring",
+    "label": "鄂陵湖",
+    "nameSource": "Natural Earth ne_id:1159114305",
+    "matchIoU": 0.8351
+  },
+  "1385": {
+    "sourceName": "Gyaring",
+    "label": "扎陵湖",
+    "nameSource": "Natural Earth ne_id:1159114475",
+    "matchIoU": 0.7947
+  },
+  "1452": {
+    "sourceName": "La-ang",
+    "label": "拉昂错",
+    "nameSource": "Natural Earth ne_id:1159114537",
+    "matchIoU": 0.7911
+  },
+  "1454": {
+    "sourceName": "Ma-p'ang yung-ts'o",
+    "label": "玛旁雍错",
+    "nameSource": "Natural Earth ne_id:1159114553",
+    "matchIoU": 0.9244
+  },
+  "1240": {
+    "sourceName": "Buir",
+    "label": "贝尔湖",
+    "nameSource": "Natural Earth ne_id:1159114715",
+    "matchIoU": 0.9265
+  },
+  "1431": {
+    "sourceName": "Ngangla Ringco",
+    "label": "昂拉仁错",
+    "nameSource": "Natural Earth ne_id:1159114735",
+    "matchIoU": 0.7592
+  },
+  "1450": {
+    "sourceName": "Tangra",
+    "label": "当惹雍错",
+    "nameSource": "Natural Earth ne_id:1159114759",
+    "matchIoU": 0.7682
+  },
+  "1195": {
+    "sourceName": "Kulundinskoye",
+    "label": "庫倫達湖",
+    "nameSource": "Natural Earth ne_id:1159114777",
+    "matchIoU": 0.8388
+  },
+  "1369": {
+    "sourceName": "Hoh Xil",
+    "label": "可可西里湖",
+    "nameSource": "Natural Earth ne_id:1159115243",
+    "matchIoU": 0.7179
+  },
+  "1218": {
+    "sourceName": "Orog",
+    "label": "烏雷格湖",
+    "nameSource": "Natural Earth ne_id:1159115657",
+    "matchIoU": 0.8758
+  },
+  "1400": {
+    "sourceName": "Pangong",
+    "label": "班公错",
+    "nameSource": "Natural Earth ne_id:1159115773",
+    "matchIoU": 0.7637
+  },
+  "1205": {
+    "sourceName": "Teletskoye",
+    "label": "捷列茨科耶湖",
+    "nameSource": "Natural Earth ne_id:1159116449",
+    "matchIoU": 0.7303
+  },
+  "1434": {
+    "sourceName": "Ge",
+    "label": "滆湖",
+    "nameSource": "Natural Earth ne_id:1159116495",
+    "matchIoU": 0.6322
+  },
+  "1254": {
+    "sourceName": "Sasykkol",
+    "label": "萨瑟克湖",
+    "nameSource": "Natural Earth ne_id:1159116577",
+    "matchIoU": 0.847
+  },
+  "1375": {
+    "sourceName": "Dorge",
+    "label": "多尔改错湖",
+    "nameSource": "Natural Earth ne_id:1159117201",
+    "matchIoU": 0.7425
+  },
+  "1286": {
+    "sourceName": "Quagan",
+    "label": "查干湖",
+    "nameSource": "Natural Earth ne_id:1159117583",
+    "matchIoU": 0.7269
+  },
+  "1359": {
+    "sourceName": "Dongping",
+    "label": "东平湖",
+    "nameSource": "Natural Earth ne_id:1159117745",
+    "matchIoU": 0.6745
+  },
+  "1290": {
+    "sourceName": "Ebi",
+    "label": "艾比湖",
+    "nameSource": "Natural Earth ne_id:1159118103",
+    "matchIoU": 0.8953
+  },
+  "1232": {
+    "sourceName": "Markakol'",
+    "label": "马尔卡湖",
+    "nameSource": "Natural Earth ne_id:1159118445",
+    "matchIoU": 0.8921
+  },
+  "1224": {
+    "sourceName": "Achit",
+    "label": "阿奇特湖",
+    "nameSource": "Natural Earth ne_id:1159118491",
+    "matchIoU": 0.8479
+  },
+  "1300": {
+    "sourceName": "Dalai",
+    "label": "达里诺尔",
+    "nameSource": "Natural Earth ne_id:1159119011",
+    "matchIoU": 0.8235
+  },
+  "1211": {
+    "sourceName": "Gusinoye",
+    "label": "古西諾耶湖",
+    "nameSource": "Natural Earth ne_id:1159119111",
+    "matchIoU": 0.7902
+  },
+  "13542": {
+    "sourceName": "",
+    "label": "伊辛加湖",
+    "nameSource": "Natural Earth ne_id:1159119231",
+    "matchIoU": 0.7845
+  },
+  "1201": {
+    "sourceName": "Bol'sho Yeravnoye",
+    "label": "大耶拉夫諾耶湖",
+    "nameSource": "Natural Earth ne_id:1159119273",
+    "matchIoU": 0.8409
+  },
+  "1231": {
+    "sourceName": "Telmen",
+    "label": "台尔明湖",
+    "nameSource": "Natural Earth ne_id:1159119433",
+    "matchIoU": 0.8453
+  },
+  "1225": {
+    "sourceName": "Sangiyn Dalay",
+    "label": "桑根达来湖",
+    "nameSource": "Natural Earth ne_id:1159119451",
+    "matchIoU": 0.6709
+  },
+  "13824": {
+    "sourceName": "",
+    "label": "哈湖",
+    "nameSource": "Natural Earth ne_id:1159119481",
+    "matchIoU": 0.6751
+  },
+  "1283": {
+    "sourceName": "",
+    "label": "乌拉盖戈壁",
+    "nameSource": "Natural Earth ne_id:1159119607",
+    "matchIoU": 0.6159
+  },
+  "1352": {
+    "sourceName": "Aqqikkol",
+    "label": "阿其克庫勒湖",
+    "nameSource": "Natural Earth ne_id:1159119895",
+    "matchIoU": 0.8252
+  },
+  "1399": {
+    "sourceName": "Lumajangdong",
+    "label": "鲁玛江东错",
+    "nameSource": "Natural Earth ne_id:1159120185",
+    "matchIoU": 0.7757
+  },
+  "1439": {
+    "sourceName": "Ko-jen",
+    "label": "格仁错",
+    "nameSource": "Natural Earth ne_id:1159120293",
+    "matchIoU": 0.6642
+  },
+  "1447": {
+    "sourceName": "Ang-tzu",
+    "label": "昂孜错",
+    "nameSource": "Natural Earth ne_id:1159120311",
+    "matchIoU": 0.7706
+  },
+  "1373": {
+    "sourceName": "Aksayquin",
+    "label": "阿克赛钦湖",
+    "nameSource": "Natural Earth ne_id:1159120483",
+    "matchIoU": 0.6321
+  },
+  "1194": {
+    "sourceName": "",
+    "label": "大托波利諾耶湖",
+    "nameSource": "Natural Earth ne_id:1159120753",
+    "matchIoU": 0.8014
+  },
+  "1200": {
+    "sourceName": "Kuchukskoye",
+    "label": "库丘克湖",
+    "nameSource": "Natural Earth ne_id:1159120771",
+    "matchIoU": 0.856
+  },
+  "13620": {
+    "sourceName": "",
+    "label": "马拉尔德湖",
+    "nameSource": "Natural Earth ne_id:1159120805",
+    "matchIoU": 0.8332
+  },
+  "1202": {
+    "sourceName": "Gor'koye",
+    "label": "切尔诺库利因斯卡埃湖",
+    "nameSource": "Natural Earth ne_id:1159120829",
+    "matchIoU": 0.6313
+  },
+  "1221": {
+    "sourceName": "Karasor",
+    "label": "加拉索湖",
+    "nameSource": "Natural Earth ne_id:1159121247",
+    "matchIoU": 0.7097
+  },
+  "13506": {
+    "sourceName": "",
+    "label": "伊肯日波拉特湖",
+    "nameSource": "Natural Earth ne_id:1159121307",
+    "matchIoU": 0.7056
+  },
+  "1477": {
+    "sourceName": "P'u-mo-ts'o",
+    "label": "普莫雍错",
+    "nameSource": "Natural Earth ne_id:1159122887",
+    "matchIoU": 0.7921
+  },
+  "113": {
+    "sourceName": "Novosibirskoye",
+    "label": "新西伯利亚水库",
+    "nameSource": "Natural Earth ne_id:1159123075",
+    "matchIoU": 0.7726
+  },
+  "122": {
+    "sourceName": "Zaysan",
+    "label": "斋桑泊",
+    "nameSource": "Natural Earth ne_id:1159123091",
+    "matchIoU": 0.7798
+  },
+  "1502": {
+    "sourceName": "Hirakud Reservoir",
+    "label": "希纳库德水库",
+    "nameSource": "Natural Earth ne_id:1159125483",
+    "matchIoU": 0.6348
+  },
+  "135": {
+    "sourceName": "Qapshaghay Bogeni Reservoir",
+    "label": "卡普恰盖水库",
+    "nameSource": "Natural Earth ne_id:1159125523",
+    "matchIoU": 0.632
+  },
+  "136": {
+    "sourceName": "Issyk Kul",
+    "label": "伊塞克湖",
+    "nameSource": "Natural Earth ne_id:1159126655",
+    "matchIoU": 0.9633
+  },
+  "121": {
+    "sourceName": "Uvs",
+    "label": "烏布蘇湖",
+    "nameSource": "Natural Earth ne_id:1159126709",
+    "matchIoU": 0.9104
+  },
+  "131": {
+    "sourceName": "Alakol",
+    "label": "阿拉湖",
+    "nameSource": "Natural Earth ne_id:1159126789",
+    "matchIoU": 0.9122
+  },
+  "124": {
+    "sourceName": "Khyargas",
+    "label": "吉爾吉斯湖",
+    "nameSource": "Natural Earth ne_id:1159126887",
+    "matchIoU": 0.9269
+  },
+  "1230": {
+    "sourceName": "",
+    "label": "艾拉格湖",
+    "nameSource": "Natural Earth ne_id:1159127061",
+    "matchIoU": 0.7623
+  }
+}

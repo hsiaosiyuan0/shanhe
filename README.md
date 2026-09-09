@@ -47,7 +47,7 @@
 
 - **海拔分层设色**：用颜色和山体明暗呈现高低起伏，配合海拔图例，观察山地、盆地与平原。
 - **河道上的名字**：长江、黄河、淮河沿河道着色与标注；点击图例定位，结合淮河理解“淮南、淮北”等地域称谓。
-- **湖泊水面**：鄱阳湖、洞庭湖等湖泊直接显示水面轮廓与名称，独立开关，点击查看来源；模型可查询内置湖泊并定位。数据为现代概略参考，不代表实时水位或历史湖岸。
+- **湖泊与遥感核对**：HydroLAKES 湖泊轮廓按视野加载；鄱阳湖、洞庭湖可切换 JRC 遥感水面核对，标明观测时期与覆盖缺口。模型可查询、定位和切换，数据说明见[湖泊来源](docs/LAKE_DATA.md)。
 - **自己的河道数据**：在「图层 → 河道数据」导入 GeoJSON，或从目录添加汉江等河流；预览、换色、编辑来源、导出，模型也能读取和修改。[使用说明](docs/RIVER_DATA.md)
 - **现代行政区对照**：内置天地图省、市、区县数据，可随缩放逐级查看，也可固定在省、市或区县；选中「市界」后继续放大仍保留市界和市名。鼠标移入区域即可高亮完整轮廓。边界与悬停共用同一份数据，公共边界只绘制一次，桌面版无需联网查询区域。版本与精度说明见[行政区数据](docs/ADMIN_DATA.md)。
 - **三维地形**：独立切换立体视角，开启后可查询已加载地形的估算高程。
@@ -163,6 +163,6 @@ npm run desktop
 ---
 
 <p align="center">
-  <sub>地图数据：天地图 · Natural Earth · OpenStreetMap / OpenFreeMap / OpenMapTiles · Esri / USGS · Mapzen / AWS<br />
+  <sub>地图数据：天地图 · HydroLAKES · EC JRC/Google · Natural Earth · OpenStreetMap / OpenFreeMap / OpenMapTiles · Esri / USGS · Mapzen / AWS<br />
   资料与署名见 <a href="docs/GEOGRAPHY.md">地图数据说明</a> · 截图来自实际运行的山河 App</sub>
 </p>

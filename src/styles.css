@@ -1303,8 +1303,36 @@ button svg {
   color: #4f635a;
 }
 .river-key button:hover,
+.river-key button[aria-pressed='true'],
 .river-key button[aria-expanded='true'] {
   background: #e5ebdc;
+}
+.lake-reference-key {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #fffdf1ee;
+  color: #4f635a;
+  font-size: 11px;
+  pointer-events: auto;
+}
+.lake-reference-key a {
+  color: #215d75;
+  text-decoration: underline;
+}
+.lake-frequency-scale {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.lake-frequency-scale i {
+  width: 72px;
+  height: 7px;
+  border-radius: 4px;
+  background: linear-gradient(to right, #c3e1d7, #207190);
 }
 .river-key button > span {
   width: 20px;

@@ -1,5 +1,6 @@
 import type { Story, MapAction } from './schema.js';
 import { lakeCatalog } from './lakes.js';
+import { lakeReference } from './lake-reference.js';
 
 export function demo(story: Story, prompt: string): { content: string; actions: MapAction[] } {
   const actions: MapAction[] = [];
@@ -13,6 +14,27 @@ export function demo(story: Story, prompt: string): { content: string; actions: 
     );
     content =
       '1056 年首次赴京赶考，整体走陆路：从蜀中经剑门进入秦岭、关中，再东行至汴京；1057 年是登第年份。\n\n现在地图采用「金牛道—陈仓故道」的研究方案。秦岭支道有分歧，部分嘉陵江路段是否兼用舟行也未定，不能当作已查明的逐段道路。点击地图上方「行程」，可查看经过地区、待考段落和两份资料依据。\n\n1059 年再次赴京时，沿岷江、长江至江陵后转陆路北上，这是另一趟行程。';
+  } else if (/核对|遥感/.test(prompt) && /湖|水面/.test(prompt)) {
+    const enabled = !/关闭|隐藏|取消/.test(prompt);
+    const area =
+      lakeReference.images.find((a) => prompt.includes(a.label.replace('区域', ''))) ??
+      lakeReference.images[0];
+    actions.push({
+      type: 'set_layers',
+      layers: { ...story.layers, lakes: true, lakeReference: enabled },
+    });
+    if (enabled)
+      actions.push({
+        type: 'set_view',
+        view: {
+          center: [(area.bounds[0] + area.bounds[2]) / 2, (area.bounds[1] + area.bounds[3]) / 2],
+          zoom: 7,
+          pitch: 0,
+        },
+      });
+    content = enabled
+      ? `已打开${area.label}的 JRC 遥感水面核对。颜色表示 1984—2024 年观测中的水面出现频率，包含各类积水，不代表某年的湖岸或全湖范围。关闭「水面核对」可回到 HydroLAKES 轮廓。`
+      : '已关闭遥感水面核对，恢复 HydroLAKES 湖泊轮廓。';
   } else if (/鄱阳湖|洞庭湖|太湖|洪泽湖|湖泊/.test(prompt)) {
     const enabled = !/关闭|隐藏|取消/.test(prompt);
     actions.push({ type: 'set_layers', layers: { ...story.layers, lakes: enabled } });
@@ -23,7 +45,7 @@ export function demo(story: Story, prompt: string): { content: string; actions: 
         view: { center: lake.center as [number, number], zoom: 7.5, pitch: 0 },
       });
     content = enabled
-      ? `已显示${lake?.label || '湖泊'}的水面与名称。可在「图层 → 湖泊与水库」独立开关，点击水面查看来源。\n\n轮廓来自 Natural Earth 1:10m，保留原数据形状，属于现代概略地理参考；湖面会随季节、水位与年代变化，不代表故事年代的湖岸。`
+      ? `已显示${lake?.label || '湖泊'}的水面与名称。可在「图层 → 湖泊与水库」独立开关，点击水面查看来源。\n\n轮廓来自 HydroLAKES v1.0，保留原数据形状，属于现代地理参考；湖面会随季节、水位与年代变化，不代表故事年代的湖岸。${lake?.coverage === 'partial' ? '\n\n洞庭湖的命名要素仅代表局部水面，不能将其边界或面积解释为全湖。' : ''}`
       : '已隐藏湖泊与水库，河流图层保持原有设置。';
   } else if (/淮河|淮南|淮北/.test(prompt)) {
     actions.push(

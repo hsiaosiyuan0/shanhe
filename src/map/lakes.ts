@@ -4,12 +4,34 @@ import { lakeCatalog, lakeSource } from '../../shared/lakes';
 
 export const lakeSourceUrl = lakeSource.url;
 export const lakes = lakeCatalog;
-export const featuredLakes = ['Poyang Hu', 'Dongting Hu'].map((name) =>
-  lakes.find((lake) => lake.name === name)!,
+export const featuredLakes = ['hydrolakes:151', 'hydrolakes:1470'].map((id) =>
+  lakes.find((lake) => lake.id === id)!,
 );
 export const findLake = (id: string) => lakes.find((lake) => lake.id === id);
-export const lakeDescription = (lake: (typeof lakes)[number]) =>
-  `${lake.kind === 'Reservoir' ? '水库' : '湖泊'}水面 · 现代地理参考\n\n这里显示 Natural Earth 收录的概略水面轮廓。湖面会随季节、水位和年代变化，不能当作实时水域或故事年代的湖岸线。\n\n来源：Natural Earth · Lakes + Reservoirs · 1:10m\n${lakeSourceUrl}`;
+type LakeInfo = Pick<
+  (typeof lakes)[number],
+  'id' | 'label' | 'kind' | 'coverage' | 'sourceId' | 'polygonSource'
+>;
+export const lakeFeatureInfo = (
+  properties: Record<string, unknown> | undefined,
+): LakeInfo | undefined => {
+  const id = String(properties?.source_id ?? '');
+  return (
+    findLake(id) ??
+    (typeof properties?.Hylak_id === 'number'
+      ? {
+          id,
+          sourceId: properties.Hylak_id,
+          label: String(properties.label || '未命名湖泊 / 水库'),
+          kind: properties.Lake_type === 2 ? 'Reservoir' : 'Lake',
+          coverage: 'source-record',
+          polygonSource: String(properties.Poly_src ?? ''),
+        }
+      : undefined)
+  );
+};
+export const lakeDescription = (lake: LakeInfo) =>
+  `${lake.kind === 'Reservoir' ? '水库' : '湖泊'}水面 · 现代地理参考\n\n${lake.coverage === 'partial' ? '此处是 HydroLAKES 命名为 Dongting 的局部水面，不代表东、南、西洞庭湖的完整范围。周边水面按各自原始要素保留，未补画或连成全湖。\n\n' : ''}轮廓来自 HydroLAKES v1.0，保留源数据的湖岸和岛屿。中国区域约 1:25 万，采集时间因要素而异；不代表实时水位、丰枯水期或故事年代的湖岸。\n\n源要素：${lake.sourceId} · 原始底图：${lake.polygonSource}\n来源：HydroLAKES · CC BY 4.0\n${lakeSourceUrl}`;
 export function lakeLabels(): FeatureCollection<Point> {
   return {
     type: 'FeatureCollection',
@@ -20,7 +42,7 @@ export function lakeLabels(): FeatureCollection<Point> {
         id: lake.id,
         properties: {
           source_id: lake.id,
-          label: lake.label,
+          label: lake.coverage === 'partial' ? `${lake.label}（局部）` : lake.label,
           labelZoom: lake.labelZoom,
           priority: lake.priority,
         },

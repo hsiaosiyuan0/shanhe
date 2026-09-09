@@ -89,6 +89,7 @@ const layerLabels: Record<keyof Layers, string> = {
   terrain: '三维地形',
   rivers: '主要河流',
   lakes: '湖泊与水库',
+  lakeReference: '遥感水面核对（鄱阳湖、洞庭湖）',
   mountains: '山脉与地貌',
   routes: '行程与路线',
   connections: '地点连线（非行程）',
@@ -99,6 +100,7 @@ const layerIcons = {
   terrain: Mountain,
   rivers: Waves,
   lakes: Waves,
+  lakeReference: Waves,
   mountains: MapPin,
   routes: Route,
   connections: Route,
@@ -769,6 +771,7 @@ export default function App() {
                 onSelect={selectEvent}
                 onSelectRoute={selectRoute}
                 onPoint={setPoint}
+                onToggleLakeReference={() => toggleLayer('lakeReference')}
               />
               <div className="map-top">
                 <div className="map-mode">

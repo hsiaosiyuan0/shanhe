@@ -21,15 +21,17 @@ import { ModernAdminController, type AdminState } from './map/ModernAdminControl
 import { AdminPackageLoader } from './map/adminPackage';
 import {
   featuredLakes,
-  findLake,
   lakeDescription,
   lakeHitLayerIds,
   lakeLabels,
   lakeLayerIds,
   lakeNameLayers,
   lakeSourceUrl,
+  lakeFeatureInfo,
   lakeWaterLayers,
 } from './map/lakes';
+import { LakePackageLoader } from './map/lakePackage';
+import { lakeReference, referenceForLake } from '../shared/lake-reference';
 import {
   adminLevelAtZoom,
   type AdminLevelMode,
@@ -61,6 +63,7 @@ type Props = {
   activeRouteId?: string | null;
   onSelect: (id: string) => void;
   onSelectRoute: (id: string) => void;
+  onToggleLakeReference: () => void;
   onPoint: (point: {
     coordinates: [number, number];
     elevation: number | null;
@@ -119,9 +122,9 @@ function style(): StyleSpecification {
       'river-labels': { type: 'geojson', data: riverLabelAnchors() },
       lakes: {
         type: 'geojson',
-        data: assetUrl('data/lakes.geojson'),
+        data: empty,
         tolerance: 0,
-        attribution: `<a href="${lakeSourceUrl}" target="_blank" rel="noopener">Lakes: Natural Earth · 1:10m</a>`,
+        attribution: `<a href="${lakeSourceUrl}" target="_blank" rel="noopener">Lakes: HydroLAKES · CC BY 4.0</a>`,
       },
       'lake-labels': { type: 'geojson', data: lakeLabels() },
       'custom-rivers': { type: 'geojson', data: empty },
@@ -241,7 +244,7 @@ function style(): StyleSpecification {
 }
 
 const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
-  { story, selected, activeRouteId, onSelect, onSelectRoute, onPoint },
+  { story, selected, activeRouteId, onSelect, onSelectRoute, onPoint, onToggleLakeReference },
   ref,
 ) {
   const container = useRef<HTMLDivElement>(null);
@@ -255,6 +258,10 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   const [ready, setReady] = useState(false);
   const [offline, setOffline] = useState(false);
   const [fatal, setFatal] = useState(false);
+  const lakeLoader = useRef<LakePackageLoader | null>(null);
+  const [lakeState, setLakeState] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  const [lakeRetry, setLakeRetry] = useState(0);
+  const [referenceState, setReferenceState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [adminState, setAdminState] = useState<AdminState>({
     status: 'idle',
     level: adminLevelAtZoom(story.view.zoom),
@@ -400,12 +407,21 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     m.on('style.load', () => setReady(true));
     m.on('error', (event) => {
       const sourceId = (event as unknown as { sourceId?: string }).sourceId;
+      if (sourceId?.startsWith('lake-reference-')) setReferenceState('error');
       if (sourceId === 'relief' || sourceId === 'dem' || sourceId === 'terrain-dem') {
         failedSources.current.add(sourceId);
         setOffline(true);
       }
     });
     m.on('sourcedata', (event) => {
+      if (
+        event.sourceId?.startsWith('lake-reference-') &&
+        lakeReference.images.every(
+          (a) =>
+            m.getSource(`lake-reference-${a.id}`) && m.isSourceLoaded(`lake-reference-${a.id}`),
+        )
+      )
+        setReferenceState('ready');
       if (event.sourceId && event.sourceDataType === 'content') {
         failedSources.current.delete(event.sourceId);
         setOffline(failedSources.current.size > 0);
@@ -464,7 +480,27 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
         return;
       }
       const lakeFeature = m.queryRenderedFeatures(event.point, { layers: lakeHitLayerIds })[0];
-      const lake = findLake(String(lakeFeature?.properties?.source_id ?? ''));
+      if (currentStory.current.layers.lakes && currentStory.current.layers.lakeReference) {
+        const area = lakeReference.images.find(
+          ({ bounds: b }) =>
+            event.lngLat.lng >= b[0] &&
+            event.lngLat.lng <= b[2] &&
+            event.lngLat.lat >= b[1] &&
+            event.lngLat.lat <= b[3],
+        );
+        if (area) {
+          popups.current?.toggle(
+            `lake-reference:${area.id}`,
+            null,
+            [event.lngLat.lng, event.lngLat.lat],
+            `${area.label} · 水面观测`,
+            `${lakeReference.period} · 水面出现频率\n\n${lakeReference.meaning}\n\n原始分辨率约 30 米；显示时重投影为 50 米格网。窗口是核对范围，不是湖泊边界。\n\n来源：${lakeReference.source}\n${lakeReference.url}`,
+            'center',
+          );
+          return;
+        }
+      }
+      const lake = lakeFeatureInfo(lakeFeature?.properties);
       if (lake?.label && currentStory.current.layers.lakes) {
         popups.current?.toggle(
           `lake:${lake.id}`,
@@ -542,8 +578,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
       hoveredCustom = customId;
       hoveredPlace = placeName;
       hoveredLake = lakeId;
-      m.getCanvas().style.cursor =
-        river || customId || placeName || findLake(lakeId ?? '')?.label ? 'pointer' : '';
+      m.getCanvas().style.cursor = river || customId || placeName || lakeId ? 'pointer' : '';
       m.setFilter('lakes-hover', ['==', ['get', 'source_id'], lakeId || '']);
       m.setFilter('custom-river-hover', ['==', ['get', 'id'], customId || '']);
       m.setFilter('major-river-hover', riverFilter(river ? [river] : []));
@@ -602,6 +637,76 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     adminDetail.current?.setLevelMode(adminMode);
     adminDetail.current?.setEnabled(story.layers.admin);
   }, [ready, story.layers.admin, adminMode]);
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !ready || !story.layers.lakes) return;
+    const loader = (lakeLoader.current ??= new LakePackageLoader(assetUrl('data/hydrolakes/')));
+    let request: AbortController | undefined;
+    let loadingTimer: ReturnType<typeof setTimeout> | undefined;
+    const update = async () => {
+      request?.abort();
+      clearTimeout(loadingTimer);
+      const current = new AbortController();
+      request = current;
+      loadingTimer = setTimeout(() => setLakeState('loading'), 250);
+      const b = m.getBounds();
+      try {
+        const data = await loader.load(
+          [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()],
+          m.getZoom(),
+          current.signal,
+        );
+        current.signal.throwIfAborted();
+        (m.getSource('lakes') as GeoJSONSource).setData(data);
+        setLakeState('ready');
+      } catch {
+        if (!current.signal.aborted) setLakeState('error');
+      } finally {
+        if (request === current) clearTimeout(loadingTimer);
+      }
+    };
+    void update();
+    m.on('moveend', update);
+    return () => {
+      request?.abort();
+      clearTimeout(loadingTimer);
+      m.off('moveend', update);
+    };
+  }, [ready, story.layers.lakes, lakeRetry]);
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !ready) return;
+    const enabled = story.layers.lakes && story.layers.lakeReference;
+    for (const area of lakeReference.images) {
+      const id = `lake-reference-${area.id}`;
+      if (enabled && !m.getSource(id)) {
+        m.addSource(id, {
+          type: 'image',
+          url: assetUrl(`data/lake-reference/${area.file}?v=${area.sha256.slice(0, 12)}`),
+          coordinates: area.corners as [
+            [number, number],
+            [number, number],
+            [number, number],
+            [number, number],
+          ],
+        });
+        m.addLayer(
+          {
+            id,
+            type: 'raster',
+            source: id,
+            paint: {
+              'raster-opacity': 1,
+              'raster-resampling': 'nearest',
+              'raster-fade-duration': 0,
+            },
+          },
+          'lakes-fill',
+        );
+      }
+      if (m.getLayer(id)) m.setLayoutProperty(id, 'visibility', enabled ? 'visible' : 'none');
+    }
+  }, [ready, story.layers.lakes, story.layers.lakeReference]);
   useEffect(() => {
     if (!ready || !map.current) return;
     const key = JSON.stringify(story.view);
@@ -685,7 +790,14 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     for (const id of ['elevation', 'hillshade'])
       m.setLayoutProperty(id, 'visibility', story.layers.elevation ? 'visible' : 'none');
     for (const id of lakeLayerIds)
-      m.setLayoutProperty(id, 'visibility', story.layers.lakes ? 'visible' : 'none');
+      m.setLayoutProperty(
+        id,
+        'visibility',
+        story.layers.lakes &&
+          !(story.layers.lakeReference && ['lakes-fill', 'lakes-shore', 'lakes-hover'].includes(id))
+          ? 'visible'
+          : 'none',
+      );
     m.setFilter('lakes-hover', ['==', ['get', 'source_id'], '']);
     if (story.layers.terrain) {
       // Terrain and painted DEM layers use different tile resolutions in MapLibre.
@@ -833,13 +945,21 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
     <>
       <div className="map-canvas" ref={container} aria-label="交互式故事地图" />
       <div className="map-admin-feedback" ref={adminFeedback}>
-        {(offline || (story.layers.admin && adminState.status === 'error')) && (
+        {(offline ||
+          (story.layers.admin && adminState.status === 'error') ||
+          (story.layers.lakes && lakeState === 'error')) && (
           <div className="map-network" role="status">
             {offline && <p>在线地形暂不可用 · 本地地理底图仍可浏览</p>}
             {story.layers.admin && adminState.status === 'error' && (
               <p>
                 {adminState.message}{' '}
                 <Button onClick={() => adminDetail.current?.retry()}>重新加载行政区</Button>
+              </p>
+            )}
+            {story.layers.lakes && lakeState === 'error' && (
+              <p>
+                湖泊数据未能加载。
+                <Button onClick={() => setLakeRetry((n) => n + 1)}>重新加载湖泊</Button>
               </p>
             )}
           </div>
@@ -937,17 +1057,68 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
                   title={`查看${lake.label}水面与名称`}
                   onClick={() => {
                     popups.current?.close();
-                    map.current?.fitBounds(lake.bounds as [number, number, number, number], {
-                      padding: 80,
-                      maxZoom: 8,
-                      duration: motion(),
-                    });
+                    const reference = story.layers.lakeReference && referenceForLake(lake.id);
+                    map.current?.fitBounds(
+                      (reference ? reference.bounds : lake.bounds) as [
+                        number,
+                        number,
+                        number,
+                        number,
+                      ],
+                      {
+                        padding: 80,
+                        maxZoom: 8,
+                        duration: motion(),
+                      },
+                    );
                   }}
                 >
                   <span className="lake-key-swatch" aria-hidden="true" />
                   {lake.label}
                 </Button>
               ))}
+            {story.layers.lakes && lakeState === 'loading' && (
+              <small role="status">正在加载湖泊轮廓…</small>
+            )}
+            {story.layers.lakes && (
+              <Button
+                aria-label="遥感水面核对"
+                aria-pressed={story.layers.lakeReference}
+                onClick={() => {
+                  if (!story.layers.lakeReference) {
+                    const center = map.current?.getCenter();
+                    const area = lakeReference.images.reduce((a, b) =>
+                      Math.abs((center?.lng ?? 116) - a.bounds[0]) <
+                      Math.abs((center?.lng ?? 116) - b.bounds[0])
+                        ? a
+                        : b,
+                    );
+                    map.current?.fitBounds(area.bounds as [number, number, number, number], {
+                      padding: 80,
+                      maxZoom: 8,
+                      duration: motion(),
+                    });
+                  }
+                  onToggleLakeReference();
+                }}
+              >
+                水面核对
+              </Button>
+            )}
+          </div>
+        )}
+        {story.layers.lakes && story.layers.lakeReference && (
+          <div className="lake-reference-key" role="status">
+            <span>鄱阳湖 / 洞庭湖区域 · 1984—2024</span>
+            <a href={lakeReference.url} target="_blank" rel="noopener noreferrer">
+              JRC 水面出现频率
+            </a>
+            <span className="lake-frequency-scale">
+              低 <i aria-hidden="true" /> 高
+            </span>
+            <small>长期观测，非当年湖岸</small>
+            {referenceState === 'loading' && <small>正在加载遥感水面…</small>}
+            {referenceState === 'error' && <small>遥感水面加载失败，请关闭核对后刷新重试</small>}
           </div>
         )}
       </div>
