@@ -1278,6 +1278,32 @@ button svg {
   font-size: 11px;
   line-height: 1.8;
   white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.map-popup-body {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.map-popup-sources {
+  border-top: 1px solid #50604424;
+  margin-top: 12px;
+  padding-top: 8px;
+  font-size: 11px;
+}
+.map-popup-sources summary {
+  cursor: pointer;
+  padding: 4px 0;
+}
+.map-popup-sources a {
+  display: block;
+  padding: 4px 0;
+  color: #215d75;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.map-popup-sources :is(summary, a):focus-visible {
+  outline: 2px solid #215d75;
+  outline-offset: 2px;
 }
 .river-key {
   position: static;

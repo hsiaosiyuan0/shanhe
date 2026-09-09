@@ -1,0 +1,4494 @@
+{
+  "version": 1,
+  "gdw": {
+    "url": "https://doi.org/10.6084/m9.figshare.25988293.v1",
+    "downloadUrl": "https://ndownloader.figshare.com/files/47913754",
+    "sha256": "2fe0b367ed3fcfb299160cd9652b16a8a19338951026ee2ac91edfebf1f3b7ae",
+    "license": "CC-BY-4.0",
+    "excerptSha256": "a2534766caf079b635a89d6ac9d11c42a5da67a45dfba5e9bd44f21acbe9217c"
+  },
+  "geonames": {
+    "url": "https://download.geonames.org/export/dump/CN.zip",
+    "sha256": "547e7e972084a0aa600512fa54c95e3fcf04166130a2f8f77898d9daf66e74c8",
+    "license": "CC-BY-4.0",
+    "snapshotDate": "2026-09-09",
+    "waterSha256": "350c4afbc94d38b0ff70acf1b1015bce91ab3f836218fec8061438a253225e16",
+    "waterRecords": 5519,
+    "excerptSha256": "e9b2ccd640905bbbbf7dfc5e18ed2413af9ff99f5f86618b9e2f2703af464fa0"
+  },
+  "rules": "Stable IDs for GDW; unique point containment for GeoNames; no nearest-name joins.",
+  "originalNamed": 373,
+  "totalNamed": 3510,
+  "chineseNamed": 1994,
+  "damAssociated": 991,
+  "added": 3137,
+  "matchedGeoNames": 2229,
+  "rejected": [
+    {
+      "source": "GeoNames",
+      "id": "148",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1791128,
+          "name": "Wuli Hu"
+        },
+        {
+          "id": 1793666,
+          "name": "Tai Hu"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "151",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1798547,
+          "name": "Poyang Hu"
+        },
+        {
+          "id": 1817091,
+          "name": "Beng Hu"
+        },
+        {
+          "id": 1925526,
+          "name": "Dalianzi Hu"
+        },
+        {
+          "id": 7329082,
+          "name": "Qijin Hu"
+        },
+        {
+          "id": 7329083,
+          "name": "Houshi Hu"
+        },
+        {
+          "id": 7329086,
+          "name": "Nanjian Hu"
+        },
+        {
+          "id": 7329087,
+          "name": "Beicha Hu"
+        },
+        {
+          "id": 7329089,
+          "name": "Beikou Hu"
+        },
+        {
+          "id": 7329090,
+          "name": "Yunhu Hu"
+        },
+        {
+          "id": 7330542,
+          "name": "Beijiao Hu"
+        },
+        {
+          "id": 7635249,
+          "name": "Qi Hu"
+        },
+        {
+          "id": 12561786,
+          "name": "Nanxi Hu"
+        },
+        {
+          "id": 12561788,
+          "name": "Longtan Hu"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1252",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 8505320,
+          "name": "Dalonghu Pao"
+        },
+        {
+          "id": 8505321,
+          "name": "Xiaolonghu Pao"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1290",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1529525,
+          "name": "Ebi Nuur"
+        },
+        {
+          "id": 1529526,
+          "name": "Ebinur Hu"
+        },
+        {
+          "id": 7839075,
+          "name": "Aibi Lake"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1297",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 2034699,
+          "name": "Songhua Hu"
+        },
+        {
+          "id": 9116911,
+          "name": "Songhua Hu"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1344",
+      "reason": "conflicting-existing-name",
+      "existing": "阿雅克库木湖",
+      "candidates": [
+        "阿牙克库木湖"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1352",
+      "reason": "conflicting-existing-name",
+      "existing": "阿其克庫勒湖",
+      "candidates": [
+        "阿其克库勒湖"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1358",
+      "reason": "conflicting-existing-name",
+      "existing": "Longyangxia · 库区",
+      "candidates": [
+        "龙羊峡水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1363",
+      "reason": "conflicting-existing-name",
+      "existing": "Liujiaxia · 库区",
+      "candidates": [
+        "刘家峡水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1375",
+      "reason": "conflicting-existing-name",
+      "existing": "多尔改错湖",
+      "candidates": [
+        "错仁德加"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1399",
+      "reason": "conflicting-existing-name",
+      "existing": "鲁玛江东错",
+      "candidates": [
+        "措作错",
+        "鲁马江冬错"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1404",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1280465,
+          "name": "Ngangba Cozha"
+        },
+        {
+          "id": 1280556,
+          "name": "Migriggyangzham Co"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1412",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1798000,
+          "name": "Qili Hu"
+        },
+        {
+          "id": 1799169,
+          "name": "Nüshan Hu"
+        },
+        {
+          "id": 6252031,
+          "name": "七里湖"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1438",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1881769,
+          "name": "Yangcheng Hu"
+        },
+        {
+          "id": 1898313,
+          "name": "Yangdeng Xihu"
+        },
+        {
+          "id": 1898322,
+          "name": "Yangdeng Zhonghu"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1456",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1815715,
+          "name": "Chang Hu"
+        },
+        {
+          "id": 1941009,
+          "name": "Miao Hu"
+        },
+        {
+          "id": 1941010,
+          "name": "Haizi Hu"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1476",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1804921,
+          "name": "Junshan Hu"
+        },
+        {
+          "id": 7328970,
+          "name": "Hongyuan Hu"
+        },
+        {
+          "id": 7329177,
+          "name": "Junshan Hu"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1478",
+      "reason": "conflicting-existing-name",
+      "existing": "Dongjiang · 库区",
+      "candidates": [
+        "东江湖"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1479",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1811697,
+          "name": "Er Hai"
+        },
+        {
+          "id": 7839079,
+          "name": "Erhai Lake"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1483",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1812946,
+          "name": "Dian Chi"
+        },
+        {
+          "id": 7626899,
+          "name": "Dianchi"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177281",
+      "reason": "conflicting-existing-name",
+      "existing": "Dongfeng · 库区",
+      "candidates": [
+        "东风水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15460",
+      "reason": "conflicting-existing-name",
+      "existing": "Maojiacun · 库区",
+      "candidates": [
+        "毛家村水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15484",
+      "reason": "conflicting-existing-name",
+      "existing": "Dumu · 库区",
+      "candidates": [
+        "独木水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176163",
+      "reason": "conflicting-existing-name",
+      "existing": "Zonggangshan · 库区",
+      "candidates": [
+        "总岗山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176246",
+      "reason": "conflicting-existing-name",
+      "existing": "Maoba · 库区",
+      "candidates": [
+        "毛坝水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176317",
+      "reason": "conflicting-existing-name",
+      "existing": "Huanghezhen · 库区",
+      "candidates": [
+        "黄河镇水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176357",
+      "reason": "conflicting-existing-name",
+      "existing": "Xindian · 库区",
+      "candidates": [
+        "新店水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176630",
+      "reason": "conflicting-existing-name",
+      "existing": "Mahu · 库区",
+      "candidates": [
+        "马湖"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176769",
+      "reason": "conflicting-existing-name",
+      "existing": "Yudong · 库区",
+      "candidates": [
+        "渔洞水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177001",
+      "reason": "conflicting-existing-name",
+      "existing": "Xihe · 库区",
+      "candidates": [
+        "西河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177022",
+      "reason": "conflicting-existing-name",
+      "existing": "Xiaoxiang · 库区",
+      "candidates": [
+        "潇湘水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15308",
+      "reason": "conflicting-existing-name",
+      "existing": "Sancha · 库区",
+      "candidates": [
+        "三岔水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15321",
+      "reason": "conflicting-existing-name",
+      "existing": "Heilongtan · 库区",
+      "candidates": [
+        "黑龙滩水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175518",
+      "reason": "conflicting-existing-name",
+      "existing": "Baishuihe · 库区",
+      "candidates": [
+        "白水河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175537",
+      "reason": "conflicting-existing-name",
+      "existing": "Shangyou · 库区",
+      "candidates": [
+        "上游水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175680",
+      "reason": "conflicting-existing-name",
+      "existing": "Tuanjie · 库区",
+      "candidates": [
+        "团结水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175818",
+      "reason": "conflicting-existing-name",
+      "existing": "Jiguang · 库区",
+      "candidates": [
+        "继光水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175955",
+      "reason": "conflicting-existing-name",
+      "existing": "Yuanxing · 库区",
+      "candidates": [
+        "元兴水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175966",
+      "reason": "conflicting-existing-name",
+      "existing": "Shipan · 库区",
+      "candidates": [
+        "石盘水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1378176",
+      "reason": "conflicting-existing-name",
+      "existing": "Zhangjiayan · 库区",
+      "candidates": [
+        "张家岩水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15655",
+      "reason": "conflicting-existing-name",
+      "existing": "Daguanba · 库区",
+      "candidates": [
+        "大广坝水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "178274",
+      "reason": "conflicting-existing-name",
+      "existing": "Fushan · 库区",
+      "candidates": [
+        "福山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "178337",
+      "reason": "conflicting-existing-name",
+      "existing": "Shilu · 库区",
+      "candidates": [
+        "石碌水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "178380",
+      "reason": "conflicting-existing-name",
+      "existing": "Tuoxin · 库区",
+      "candidates": [
+        "陀兴水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "178405",
+      "reason": "conflicting-existing-name",
+      "existing": "Xiaomei · 库区",
+      "candidates": [
+        "小妹水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "178414",
+      "reason": "conflicting-existing-name",
+      "existing": "Changmao · 库区",
+      "candidates": [
+        "长茅水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1393768",
+      "reason": "conflicting-existing-name",
+      "existing": "Baogu · 库区",
+      "candidates": [
+        "抱古水库",
+        "抱石水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1393839",
+      "reason": "conflicting-existing-name",
+      "existing": "Banling · 库区",
+      "candidates": [
+        "半岭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15524",
+      "reason": "conflicting-existing-name",
+      "existing": "Chengbihe · 库区",
+      "candidates": [
+        "澄碧河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15537",
+      "reason": "conflicting-existing-name",
+      "existing": "Dalongdong · 库区",
+      "candidates": [
+        "大龙洞水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15543",
+      "reason": "conflicting-existing-name",
+      "existing": "Dakai · 库区",
+      "candidates": [
+        "达开水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15560",
+      "reason": "conflicting-existing-name",
+      "existing": "Xijin · 库区",
+      "candidates": [
+        "西津水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15564",
+      "reason": "conflicting-existing-name",
+      "existing": "Dawangtan · 库区",
+      "candidates": [
+        "大王滩水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177254",
+      "reason": "conflicting-existing-name",
+      "existing": "Luodong · 库区",
+      "candidates": [
+        "洛东水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177373",
+      "reason": "conflicting-existing-name",
+      "existing": "Baidonghe · 库区",
+      "candidates": [
+        "百东河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177384",
+      "reason": "conflicting-existing-name",
+      "existing": "Dahongjiang · 库区",
+      "candidates": [
+        "达洪江水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177513",
+      "reason": "conflicting-existing-name",
+      "existing": "Pinglong · 库区",
+      "candidates": [
+        "平龙水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177630",
+      "reason": "conflicting-existing-name",
+      "existing": "Wusijiang · 库区",
+      "candidates": [
+        "武思江水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177795",
+      "reason": "conflicting-existing-name",
+      "existing": "Lingdong · 库区",
+      "candidates": [
+        "灵东水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15330",
+      "reason": "conflicting-existing-name",
+      "existing": "Shizitan · 库区",
+      "candidates": [
+        "长寿湖"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176216",
+      "reason": "conflicting-existing-name",
+      "existing": "Motanhe · 库区",
+      "candidates": [
+        "磨滩河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176236",
+      "reason": "conflicting-existing-name",
+      "existing": "Shangyou · 库区",
+      "candidates": [
+        "上游水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176244",
+      "reason": "conflicting-existing-name",
+      "existing": "Hualong · 库区",
+      "candidates": [
+        "化龙水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176264",
+      "reason": "conflicting-existing-name",
+      "existing": "Songlin · 库区",
+      "candidates": [
+        "松林水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176287",
+      "reason": "conflicting-existing-name",
+      "existing": "Xiaonanhai · 库区",
+      "candidates": [
+        "小南海"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176313",
+      "reason": "conflicting-existing-name",
+      "existing": "Yutan · 库区",
+      "candidates": [
+        "玉滩水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176316",
+      "reason": "conflicting-existing-name",
+      "existing": "Longshuihu · 库区",
+      "candidates": [
+        "龙水湖水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176378",
+      "reason": "conflicting-existing-name",
+      "existing": "Guyumiao · 库区",
+      "candidates": [
+        "宇庙水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176428",
+      "reason": "conflicting-existing-name",
+      "existing": "Sanxikou · 库区",
+      "candidates": [
+        "三溪口水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176572",
+      "reason": "conflicting-existing-name",
+      "existing": "Mamiao · 库区",
+      "candidates": [
+        "马庙水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1379280",
+      "reason": "conflicting-existing-name",
+      "existing": "Xinqiao · 库区",
+      "candidates": [
+        "新桥水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1379921",
+      "reason": "conflicting-existing-name",
+      "existing": "Bailinsi · 库区",
+      "candidates": [
+        "柏林寺水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1381167",
+      "reason": "conflicting-existing-name",
+      "existing": "Kapeng · 库区",
+      "candidates": [
+        "长棚水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1381566",
+      "reason": "conflicting-existing-name",
+      "existing": "Zhongling · 库区",
+      "candidates": [
+        "钟灵水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15186",
+      "reason": "conflicting-existing-name",
+      "existing": "Shengzhong · 库区",
+      "candidates": [
+        "升钟水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15259",
+      "reason": "conflicting-existing-name",
+      "existing": "Luban · 库区",
+      "candidates": [
+        "鲁班水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15288",
+      "reason": "conflicting-existing-name",
+      "existing": "Quanmin · 库区",
+      "candidates": [
+        "全民水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15323",
+      "reason": "conflicting-existing-name",
+      "existing": "Dahonghe · 库区",
+      "candidates": [
+        "大洪河水库",
+        "洪河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "174718",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1910291,
+          "name": "Ganhe Shuiku"
+        },
+        {
+          "id": 1998705,
+          "name": "Ganhe Shuiku"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "174723",
+      "reason": "conflicting-existing-name",
+      "existing": "Yangmaowan · 库区",
+      "candidates": [
+        "羊毛湾水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "174755",
+      "reason": "conflicting-existing-name",
+      "existing": "Youhe · 库区",
+      "candidates": [
+        "泷河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "174766",
+      "reason": "conflicting-existing-name",
+      "existing": "Wangjiawan · 库区",
+      "candidates": [
+        "王家崖水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175008",
+      "reason": "conflicting-existing-name",
+      "existing": "Shimen · 库区",
+      "candidates": [
+        "石门水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175368",
+      "reason": "conflicting-existing-name",
+      "existing": "Yutang · 库区",
+      "candidates": [
+        "五堂水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175424",
+      "reason": "conflicting-existing-name",
+      "existing": "Huacheng · 库区",
+      "candidates": [
+        "化成水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175532",
+      "reason": "conflicting-existing-name",
+      "existing": "Side · 库区",
+      "candidates": [
+        "思德水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175586",
+      "reason": "conflicting-existing-name",
+      "existing": "Hongqiyan · 库区",
+      "candidates": [
+        "红旗堰水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175646",
+      "reason": "conflicting-existing-name",
+      "existing": "Xingfu · 库区",
+      "candidates": [
+        "幸福水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175662",
+      "reason": "conflicting-existing-name",
+      "existing": "Baertan · 库区",
+      "candidates": [
+        "八尔滩水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175663",
+      "reason": "conflicting-existing-name",
+      "existing": "Bailin · 库区",
+      "candidates": [
+        "柏林水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175710",
+      "reason": "conflicting-existing-name",
+      "existing": "Baoshi · 库区",
+      "candidates": [
+        "宝石桥水库",
+        "宝石水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175808",
+      "reason": "conflicting-existing-name",
+      "existing": "Mingxing · 库区",
+      "candidates": [
+        "明星水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175883",
+      "reason": "conflicting-existing-name",
+      "existing": "Wumu · 库区",
+      "candidates": [
+        "乌木滩水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175888",
+      "reason": "conflicting-existing-name",
+      "existing": "Huilong · 库区",
+      "candidates": [
+        "回龙水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175921",
+      "reason": "conflicting-existing-name",
+      "existing": "Dagaotan · 库区",
+      "candidates": [
+        "大高滩水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175938",
+      "reason": "conflicting-existing-name",
+      "existing": "Xiangshuitan · 库区",
+      "candidates": [
+        "响水滩水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175999",
+      "reason": "conflicting-existing-name",
+      "existing": "Wupaishui · 库区",
+      "candidates": [
+        "五排水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176015",
+      "reason": "conflicting-existing-name",
+      "existing": "Mazitan · 库区",
+      "candidates": [
+        "麻子滩水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176043",
+      "reason": "conflicting-existing-name",
+      "existing": "Paomatan · 库区",
+      "candidates": [
+        "跑马滩水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176071",
+      "reason": "conflicting-existing-name",
+      "existing": "Baihe · 库区",
+      "candidates": [
+        "红旗水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176082",
+      "reason": "conflicting-existing-name",
+      "existing": "Shuanghe · 库区",
+      "candidates": [
+        "双龙湖水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176121",
+      "reason": "conflicting-existing-name",
+      "existing": "Zhaoyang · 库区",
+      "candidates": [
+        "朝阳水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1375718",
+      "reason": "conflicting-existing-name",
+      "existing": "Zhenzhuya · 库区",
+      "candidates": [
+        "东方红水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1377680",
+      "reason": "conflicting-existing-name",
+      "existing": "Qiyi · 库区",
+      "candidates": [
+        "七一水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1377822",
+      "reason": "conflicting-existing-name",
+      "existing": "Yanjingkou · 库区",
+      "candidates": [
+        "盐井口水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1378370",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 6864430,
+          "name": "Gaofeng Shuiku"
+        },
+        {
+          "id": 6864431,
+          "name": "Gaofeng Shuiku"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14745",
+      "reason": "conflicting-existing-name",
+      "existing": "Zinqiao · 库区",
+      "candidates": [
+        "新桥水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14758",
+      "reason": "conflicting-existing-name",
+      "existing": "Changshantou · 库区",
+      "candidates": [
+        "长山头水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "174041",
+      "reason": "conflicting-existing-name",
+      "existing": "Shixiakou · 库区",
+      "candidates": [
+        "石峡口水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "174166",
+      "reason": "conflicting-existing-name",
+      "existing": "Sikousi · 库区",
+      "candidates": [
+        "寺口子水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "174318",
+      "reason": "conflicting-existing-name",
+      "existing": "Zhangjiazuitou · 库区",
+      "candidates": [
+        "张家嘴头水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15656",
+      "reason": "conflicting-existing-name",
+      "existing": "Niululing · 库区",
+      "candidates": [
+        "牛路岭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15501",
+      "reason": "conflicting-existing-name",
+      "existing": "Nanshui · 库区",
+      "candidates": [
+        "南水水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15504",
+      "reason": "conflicting-existing-name",
+      "existing": "Guishi · 库区",
+      "candidates": [
+        "龟石水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15529",
+      "reason": "conflicting-existing-name",
+      "existing": "Tiantangshan · 库区",
+      "candidates": [
+        "天堂山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15585",
+      "reason": "conflicting-existing-name",
+      "existing": "Jinjiang · 库区",
+      "candidates": [
+        "锦江水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15587",
+      "reason": "conflicting-existing-name",
+      "existing": "Gaozhou · 库区",
+      "candidates": [
+        "高州水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15590",
+      "reason": "conflicting-existing-name",
+      "existing": "Dalongdong · 库区",
+      "candidates": [
+        "大隆洞水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15599",
+      "reason": "conflicting-existing-name",
+      "existing": "Hedi · 库区",
+      "candidates": [
+        "鹤地水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177172",
+      "reason": "conflicting-existing-name",
+      "existing": "Liheng · 库区",
+      "candidates": [
+        "礼亨水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177335",
+      "reason": "conflicting-existing-name",
+      "existing": "Sankeng · 库区",
+      "candidates": [
+        "三坑水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177383",
+      "reason": "conflicting-existing-name",
+      "existing": "Huanglongdai · 库区",
+      "candidates": [
+        "黄龙带水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177385",
+      "reason": "conflicting-existing-name",
+      "existing": "Liuxihe · 库区",
+      "candidates": [
+        "流溪河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177424",
+      "reason": "conflicting-existing-name",
+      "existing": "Shuidongpi · 库区",
+      "candidates": [
+        "水东陂水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177427",
+      "reason": "conflicting-existing-name",
+      "existing": "Jintian · 库区",
+      "candidates": [
+        "金田水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177437",
+      "reason": "conflicting-existing-name",
+      "existing": "Huangshandong · 库区",
+      "candidates": [
+        "黄山洞水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177483",
+      "reason": "conflicting-existing-name",
+      "existing": "Shepo · 库区",
+      "candidates": [
+        "社坡河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177493",
+      "reason": "conflicting-existing-name",
+      "existing": "Lianhe · 库区",
+      "candidates": [
+        "联和水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177502",
+      "reason": "conflicting-existing-name",
+      "existing": "Xiangang · 库区",
+      "candidates": [
+        "显岗水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177573",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1792659,
+          "name": "Tong Hu"
+        },
+        {
+          "id": 7005978,
+          "name": "Tong Hu"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177608",
+      "reason": "conflicting-existing-name",
+      "existing": "Songmushan · 库区",
+      "candidates": [
+        "松木山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177953",
+      "reason": "conflicting-existing-name",
+      "existing": "Huangsha · 库区",
+      "candidates": [
+        "黄沙水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1386011",
+      "reason": "conflicting-existing-name",
+      "existing": "Longxing · 库区",
+      "candidates": [
+        "龙兴水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1388312",
+      "reason": "conflicting-existing-name",
+      "existing": "Baishi · 库区",
+      "candidates": [
+        "白石水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1390648",
+      "reason": "conflicting-existing-name",
+      "existing": "Renshui · 库区",
+      "candidates": [
+        "热水水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15326",
+      "reason": "conflicting-existing-name",
+      "existing": "Weishui · 库区",
+      "candidates": [
+        "洈水水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15349",
+      "reason": "conflicting-existing-name",
+      "existing": "Lushui · 库区",
+      "candidates": [
+        "陆水水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15358",
+      "reason": "conflicting-existing-name",
+      "existing": "Jiangya · 库区",
+      "candidates": [
+        "江垭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15377",
+      "reason": "conflicting-existing-name",
+      "existing": "Huangshi · 库区",
+      "candidates": [
+        "黄石水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15390",
+      "reason": "conflicting-existing-name",
+      "existing": "Dongjin · 库区",
+      "candidates": [
+        "东津水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15420",
+      "reason": "conflicting-existing-name",
+      "existing": "Zhexi · 库区",
+      "candidates": [
+        "柘溪水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15439",
+      "reason": "conflicting-existing-name",
+      "existing": "Jiufujiang · 库区",
+      "candidates": [
+        "酒埠江水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15468",
+      "reason": "conflicting-existing-name",
+      "existing": "Shuangpai · 库区",
+      "candidates": [
+        "双牌水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15478",
+      "reason": "conflicting-existing-name",
+      "existing": "Qingshitan · 库区",
+      "candidates": [
+        "青狮潭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176190",
+      "reason": "conflicting-existing-name",
+      "existing": "Shanmen · 库区",
+      "candidates": [
+        "三门水库",
+        "山门水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176243",
+      "reason": "conflicting-existing-name",
+      "existing": "Wangjiachang · 库区",
+      "candidates": [
+        "王家厂水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176260",
+      "reason": "conflicting-existing-name",
+      "existing": "Guanting · 库区",
+      "candidates": [
+        "官亭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176312",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1927322,
+          "name": "Baini Hu"
+        },
+        {
+          "id": 13254447,
+          "name": "Liutian Hu"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176348",
+      "reason": "conflicting-existing-name",
+      "existing": "Mengquan · 库区",
+      "candidates": [
+        "蒙泉水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176373",
+      "reason": "conflicting-existing-name",
+      "existing": "Qunying · 库区",
+      "candidates": [
+        "群英水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176418",
+      "reason": "conflicting-existing-name",
+      "existing": "Maoxi · 库区",
+      "candidates": [
+        "茅溪水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176545",
+      "reason": "conflicting-existing-name",
+      "existing": "Zhuyuan · 库区",
+      "candidates": [
+        "竹园水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176585",
+      "reason": "conflicting-existing-name",
+      "existing": "Cangshan · 库区",
+      "candidates": [
+        "沧山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176649",
+      "reason": "conflicting-existing-name",
+      "existing": "Taohuajiang · 库区",
+      "candidates": [
+        "桃花江水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176726",
+      "reason": "conflicting-existing-name",
+      "existing": "Guanzhuang · 库区",
+      "candidates": [
+        "官庄水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176774",
+      "reason": "conflicting-existing-name",
+      "existing": "Liuduzhai · 库区",
+      "candidates": [
+        "六都寨水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176775",
+      "reason": "conflicting-existing-name",
+      "existing": "Muguashan · 库区",
+      "candidates": [
+        "木瓜山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176788",
+      "reason": "conflicting-existing-name",
+      "existing": "Bailian · 库区",
+      "candidates": [
+        "白莲水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177033",
+      "reason": "conflicting-existing-name",
+      "existing": "Youluokou · 库区",
+      "candidates": [
+        "油罗口水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177035",
+      "reason": "conflicting-existing-name",
+      "existing": "Zoumalong · 库区",
+      "candidates": [
+        "走马垄水库",
+        "走马垅水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177057",
+      "reason": "conflicting-existing-name",
+      "existing": "Wudugang · 库区",
+      "candidates": [
+        "五渡港水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1380725",
+      "reason": "conflicting-existing-name",
+      "existing": "Dajiangdong · 库区",
+      "candidates": [
+        "大江洞水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14992",
+      "reason": "conflicting-existing-name",
+      "existing": "Guxian · 库区",
+      "candidates": [
+        "故县水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14995",
+      "reason": "conflicting-existing-name",
+      "existing": "Luhun · 库区",
+      "candidates": [
+        "陆浑水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15019",
+      "reason": "conflicting-existing-name",
+      "existing": "Zhaopingtai · 库区",
+      "candidates": [
+        "昭平台水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15022",
+      "reason": "conflicting-existing-name",
+      "existing": "Baiguishan · 库区",
+      "candidates": [
+        "白龟山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15039",
+      "reason": "conflicting-existing-name",
+      "existing": "Yahekou · 库区",
+      "candidates": [
+        "鸭河口水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15061",
+      "reason": "conflicting-existing-name",
+      "existing": "Banqiao · 库区",
+      "candidates": [
+        "板桥水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15064",
+      "reason": "conflicting-existing-name",
+      "existing": "Xuyahu · 库区",
+      "candidates": [
+        "宿鸭湖水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15078",
+      "reason": "conflicting-existing-name",
+      "existing": "Songjiachang · 库区",
+      "candidates": [
+        "宋家场水库",
+        "铜山湖"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15134",
+      "reason": "conflicting-existing-name",
+      "existing": "Nanwan · 库区",
+      "candidates": [
+        "南湾水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15139",
+      "reason": "conflicting-existing-name",
+      "existing": "Shishankou · 库区",
+      "candidates": [
+        "石山口水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15152",
+      "reason": "conflicting-existing-name",
+      "existing": "Xionghe · 库区",
+      "candidates": [
+        "熊河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15165",
+      "reason": "conflicting-existing-name",
+      "existing": "Pohe · 库区",
+      "candidates": [
+        "泼河水库",
+        "泼陂河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15167",
+      "reason": "conflicting-existing-name",
+      "existing": "Yinghe · 库区",
+      "candidates": [
+        "莺河一水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15187",
+      "reason": "conflicting-existing-name",
+      "existing": "Xujiahe · 库区",
+      "candidates": [
+        "徐家河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15192",
+      "reason": "conflicting-existing-name",
+      "existing": "Huangpo · 库区",
+      "candidates": [
+        "黄坡水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15196",
+      "reason": "conflicting-existing-name",
+      "existing": "Wenxiakou · 库区",
+      "candidates": [
+        "温峡口水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15210",
+      "reason": "conflicting-existing-name",
+      "existing": "Gaoguang · 库区",
+      "candidates": [
+        "高关水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15247",
+      "reason": "conflicting-existing-name",
+      "existing": "Huiting · 库区",
+      "candidates": [
+        "惠亭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15251",
+      "reason": "conflicting-existing-name",
+      "existing": "Gonghe · 库区",
+      "candidates": [
+        "巩河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15298",
+      "reason": "conflicting-existing-name",
+      "existing": "Geheyan · 库区",
+      "candidates": [
+        "隔河岩水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "174707",
+      "reason": "conflicting-existing-name",
+      "existing": "Longbo · 库区",
+      "candidates": [
+        "龙脖水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "174783",
+      "reason": "conflicting-existing-name",
+      "existing": "Zhaikou · 库区",
+      "candidates": [
+        "窄口水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "174792",
+      "reason": "conflicting-existing-name",
+      "existing": "Baisha · 库区",
+      "candidates": [
+        "白沙水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "174958",
+      "reason": "conflicting-existing-name",
+      "existing": "Gushitan · 库区",
+      "candidates": [
+        "孤石滩水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "174995",
+      "reason": "conflicting-existing-name",
+      "existing": "Shimantan · 库区",
+      "candidates": [
+        "石漫滩水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175050",
+      "reason": "conflicting-existing-name",
+      "existing": "Zhaowan · 库区",
+      "candidates": [
+        "赵湾水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175185",
+      "reason": "conflicting-existing-name",
+      "existing": "Boshan · 库区",
+      "candidates": [
+        "薄山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175442",
+      "reason": "conflicting-existing-name",
+      "existing": "Wuyue · 库区",
+      "candidates": [
+        "五岳水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175454",
+      "reason": "conflicting-existing-name",
+      "existing": "Xianjuemiao · 库区",
+      "candidates": [
+        "先觉庙水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175501",
+      "reason": "conflicting-existing-name",
+      "existing": "Xiangshan · 库区",
+      "candidates": [
+        "香山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175566",
+      "reason": "conflicting-existing-name",
+      "existing": "Nanhe · 库区",
+      "candidates": [
+        "南河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175584",
+      "reason": "conflicting-existing-name",
+      "existing": "Zhengjiahe · 库区",
+      "candidates": [
+        "郑家河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175691",
+      "reason": "conflicting-existing-name",
+      "existing": "Bazimen · 库区",
+      "candidates": [
+        "八字门水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175770",
+      "reason": "conflicting-existing-name",
+      "existing": "Shilong · 库区",
+      "candidates": [
+        "石龙水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175894",
+      "reason": "conflicting-existing-name",
+      "existing": "Paoma · 库区",
+      "candidates": [
+        "跑马水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176098",
+      "reason": "conflicting-existing-name",
+      "existing": "Beihe · 库区",
+      "candidates": [
+        "北河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1372423",
+      "reason": "conflicting-existing-name",
+      "existing": "Dindian · 库区",
+      "candidates": [
+        "丁店水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1376480",
+      "reason": "conflicting-existing-name",
+      "existing": "Xianghe · 库区",
+      "candidates": [
+        "象河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1377180",
+      "reason": "conflicting-existing-name",
+      "existing": "Yangshuhe · 库区",
+      "candidates": [
+        "杨树河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1378793",
+      "reason": "conflicting-existing-name",
+      "existing": "Wenjiahe · 库区",
+      "candidates": [
+        "文家河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14567",
+      "reason": "conflicting-existing-name",
+      "existing": "Cetian · 库区",
+      "candidates": [
+        "册田水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14668",
+      "reason": "conflicting-existing-name",
+      "existing": "Xidayang · 库区",
+      "candidates": [
+        "西大洋水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14670",
+      "reason": "conflicting-existing-name",
+      "existing": "Wangkuai · 库区",
+      "candidates": [
+        "王快水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14697",
+      "reason": "conflicting-existing-name",
+      "existing": "Gangnan · 库区",
+      "candidates": [
+        "岗南水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14703",
+      "reason": "conflicting-existing-name",
+      "existing": "Huangbizhuang · 库区",
+      "candidates": [
+        "黄壁庄水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14827",
+      "reason": "conflicting-existing-name",
+      "existing": "Dongsiwu · 库区",
+      "candidates": [
+        "东武仕水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172953",
+      "reason": "conflicting-existing-name",
+      "existing": "Zhenziliang · 库区",
+      "candidates": [
+        "镇子梁水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "173354",
+      "reason": "conflicting-existing-name",
+      "existing": "Koutou · 库区",
+      "candidates": [
+        "口头水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "173369",
+      "reason": "conflicting-existing-name",
+      "existing": "Hengshanling · 库区",
+      "candidates": [
+        "横山岭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "173740",
+      "reason": "conflicting-existing-name",
+      "existing": "Baicaoping · 库区",
+      "candidates": [
+        "白草坪水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "173796",
+      "reason": "conflicting-existing-name",
+      "existing": "Lincheng · 库区",
+      "candidates": [
+        "临城水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "173971",
+      "reason": "conflicting-existing-name",
+      "existing": "Zhuzhuang · 库区",
+      "candidates": [
+        "朱庄水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "174374",
+      "reason": "conflicting-existing-name",
+      "existing": "Kuaihe · 库区",
+      "candidates": [
+        "浍河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1369744",
+      "reason": "conflicting-existing-name",
+      "existing": "Yegoumen · 库区",
+      "candidates": [
+        "野沟门水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1370142",
+      "reason": "conflicting-existing-name",
+      "existing": "Chegu · 库区",
+      "candidates": [
+        "车谷水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1370662",
+      "reason": "conflicting-existing-name",
+      "existing": "Nangudong · 库区",
+      "candidates": [
+        "南古洞水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1370994",
+      "reason": "conflicting-existing-name",
+      "existing": "Gongshang · 库区",
+      "candidates": [
+        "弓上水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1371579",
+      "reason": "conflicting-existing-name",
+      "existing": "Ma'amshi · 库区",
+      "candidates": [
+        "马安石水库",
+        "马鞍石水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172357",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 8555481,
+          "name": "Dong’an Hai"
+        },
+        {
+          "id": 8740991,
+          "name": "Shaohai Lake"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172578",
+      "reason": "conflicting-existing-name",
+      "existing": "Youyi · 库区",
+      "candidates": [
+        "友谊水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15513",
+      "reason": "conflicting-existing-name",
+      "existing": "Fengshuba · 库区",
+      "candidates": [
+        "枫树坝水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15527",
+      "reason": "conflicting-existing-name",
+      "existing": "Tangxi · 库区",
+      "candidates": [
+        "汤溪水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15550",
+      "reason": "conflicting-existing-name",
+      "existing": "Baipenzhu · 库区",
+      "candidates": [
+        "白盆珠水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177143",
+      "reason": "conflicting-existing-name",
+      "existing": "Houqiao · 库区",
+      "candidates": [
+        "后桥水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177181",
+      "reason": "conflicting-existing-name",
+      "existing": "Shibi · 库区",
+      "candidates": [
+        "石壁水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177200",
+      "reason": "conflicting-existing-name",
+      "existing": "Huangtian · 库区",
+      "candidates": [
+        "黄田水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177202",
+      "reason": "conflicting-existing-name",
+      "existing": "Changtan · 库区",
+      "candidates": [
+        "长潭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177278",
+      "reason": "conflicting-existing-name",
+      "existing": "Meixi · 库区",
+      "candidates": [
+        "梅西水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177305",
+      "reason": "conflicting-existing-name",
+      "existing": "Yangmei · 库区",
+      "candidates": [
+        "扬美水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177342",
+      "reason": "conflicting-existing-name",
+      "existing": "Fengtou · 库区",
+      "candidates": [
+        "峰头水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177355",
+      "reason": "conflicting-existing-name",
+      "existing": "Zumalin · 库区",
+      "candidates": [
+        "祖妈林水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177364",
+      "reason": "conflicting-existing-name",
+      "existing": "Fenghuang · 库区",
+      "candidates": [
+        "风凰水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177553",
+      "reason": "conflicting-existing-name",
+      "existing": "Longtan · 库区",
+      "candidates": [
+        "龙潭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1386073",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1975059,
+          "name": "Bantou Shuiku"
+        },
+        {
+          "id": 8598303,
+          "name": "Bantou Shuiku"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1386327",
+      "reason": "conflicting-existing-name",
+      "existing": "Fushi · 库区",
+      "candidates": [
+        "富石水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1386495",
+      "reason": "conflicting-existing-name",
+      "existing": "Wengong · 库区",
+      "candidates": [
+        "温公水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1387117",
+      "reason": "conflicting-existing-name",
+      "existing": "Fengxi · 库区",
+      "candidates": [
+        "风溪水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1387200",
+      "reason": "conflicting-existing-name",
+      "existing": "Dutang · 库区",
+      "candidates": [
+        "杜塘水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1388113",
+      "reason": "conflicting-existing-name",
+      "existing": "Nangao · 库区",
+      "candidates": [
+        "南告水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1388138",
+      "reason": "conflicting-existing-name",
+      "existing": "Hexi · 库区",
+      "candidates": [
+        "河溪水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1388566",
+      "reason": "conflicting-existing-name",
+      "existing": "Wusongling · 库区",
+      "candidates": [
+        "蜈蜙岭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15346",
+      "reason": "conflicting-existing-name",
+      "existing": "Fuchunjiang · 库区",
+      "candidates": [
+        "富春江水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15367",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 12561784,
+          "name": "Xinmiao Hu"
+        },
+        {
+          "id": 12561787,
+          "name": "Shaojia Hu"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15409",
+      "reason": "conflicting-existing-name",
+      "existing": "Hunanzhen · 库区",
+      "candidates": [
+        "湖南镇水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15423",
+      "reason": "conflicting-existing-name",
+      "existing": "Jinshuitan · 库区",
+      "candidates": [
+        "紧水滩水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15426",
+      "reason": "conflicting-existing-name",
+      "existing": "Panqiao · 库区",
+      "candidates": [
+        "潘桥水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15429",
+      "reason": "conflicting-existing-name",
+      "existing": "Ziyunshan · 库区",
+      "candidates": [
+        "山里水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15433",
+      "reason": "conflicting-existing-name",
+      "existing": "Hongmen · 库区",
+      "candidates": [
+        "洪门水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15443",
+      "reason": "conflicting-existing-name",
+      "existing": "Tuanjie · 库区",
+      "candidates": [
+        "团结水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15448",
+      "reason": "conflicting-existing-name",
+      "existing": "Chitan · 库区",
+      "candidates": [
+        "池潭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15451",
+      "reason": "conflicting-existing-name",
+      "existing": "Shaxikou · 库区",
+      "candidates": [
+        "沙溪口水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15453",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1802373,
+          "name": "Longting Shuiku"
+        },
+        {
+          "id": 1809201,
+          "name": "Gutian Shuiku"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15461",
+      "reason": "conflicting-existing-name",
+      "existing": "Changgang · 库区",
+      "candidates": [
+        "长冈水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15462",
+      "reason": "conflicting-existing-name",
+      "existing": "Shuikou · 库区",
+      "candidates": [
+        "水口水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15467",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1922275,
+          "name": "Ansha Shuiku"
+        },
+        {
+          "id": 7452279,
+          "name": "Zisha Shuiku"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15476",
+      "reason": "conflicting-existing-name",
+      "existing": "Dongzhang · 库区",
+      "candidates": [
+        "东张水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15481",
+      "reason": "conflicting-existing-name",
+      "existing": "Dongzhen · 库区",
+      "candidates": [
+        "东圳水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15483",
+      "reason": "conflicting-existing-name",
+      "existing": "Wananxi · 库区",
+      "candidates": [
+        "万安水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15487",
+      "reason": "conflicting-existing-name",
+      "existing": "Shanmei · 库区",
+      "candidates": [
+        "山美水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176182",
+      "reason": "conflicting-existing-name",
+      "existing": "Fengle · 库区",
+      "candidates": [
+        "丰乐水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176303",
+      "reason": "conflicting-existing-name",
+      "existing": "Junmin · 库区",
+      "candidates": [
+        "军民水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176331",
+      "reason": "conflicting-existing-name",
+      "existing": "Duanshen · 库区",
+      "candidates": [
+        "段莘水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176355",
+      "reason": "conflicting-existing-name",
+      "existing": "Qixi · 库区",
+      "candidates": [
+        "齐溪水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176404",
+      "reason": "conflicting-existing-name",
+      "existing": "Shantian · 库区",
+      "candidates": [
+        "山田水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176433",
+      "reason": "conflicting-existing-name",
+      "existing": "Gongchanzhuyi · 库区",
+      "candidates": [
+        "共产主义水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176434",
+      "reason": "conflicting-existing-name",
+      "existing": "Tongshanyuan · 库区",
+      "candidates": [
+        "铜山源水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176466",
+      "reason": "conflicting-existing-name",
+      "existing": "Jinlan · 库区",
+      "candidates": [
+        "金兰水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176475",
+      "reason": "conflicting-existing-name",
+      "existing": "Andi · 库区",
+      "candidates": [
+        "安地水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176480",
+      "reason": "conflicting-existing-name",
+      "existing": "Xinfan · 库区",
+      "candidates": [
+        "莘畈水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176504",
+      "reason": "conflicting-existing-name",
+      "existing": "Shuangxi · 库区",
+      "candidates": [
+        "双溪水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176516",
+      "reason": "conflicting-existing-name",
+      "existing": "Huangtankou · 库区",
+      "candidates": [
+        "黄坛口水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176521",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 7330532,
+          "name": "Beihu Hu"
+        },
+        {
+          "id": 7330543,
+          "name": "Beihu"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176539",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 7328985,
+          "name": "Dongyuanshan Shuiku"
+        },
+        {
+          "id": 7328986,
+          "name": "Fengling Shuiku"
+        },
+        {
+          "id": 7328988,
+          "name": "Shangxiafan Shuiku"
+        },
+        {
+          "id": 7328989,
+          "name": "Weikuangku"
+        },
+        {
+          "id": 7328990,
+          "name": "Dashanwan Shuiku"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176576",
+      "reason": "conflicting-existing-name",
+      "existing": "Wangzhai · 库区",
+      "candidates": [
+        "王宅水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176589",
+      "reason": "conflicting-existing-name",
+      "existing": "Muxi · 库区",
+      "candidates": [
+        "木溪水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176596",
+      "reason": "conflicting-existing-name",
+      "existing": "Dagangqiao · 库区",
+      "candidates": [
+        "大港桥水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176607",
+      "reason": "conflicting-existing-name",
+      "existing": "Mingyangguan · 库区",
+      "candidates": [
+        "茗洋关水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176611",
+      "reason": "conflicting-existing-name",
+      "existing": "Chaijiaowan · 库区",
+      "candidates": [
+        "紫角湾水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176614",
+      "reason": "conflicting-existing-name",
+      "existing": "Fenglinwan · 库区",
+      "candidates": [
+        "枫林湾水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176619",
+      "reason": "conflicting-existing-name",
+      "existing": "Shangyou · 库区",
+      "candidates": [
+        "上游水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176620",
+      "reason": "conflicting-existing-name",
+      "existing": "Jinbei · 库区",
+      "candidates": [
+        "锦北水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176627",
+      "reason": "conflicting-existing-name",
+      "existing": "Xiakou · 库区",
+      "candidates": [
+        "峡口水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176629",
+      "reason": "conflicting-existing-name",
+      "existing": "Yingshiling · 库区",
+      "candidates": [
+        "硬石岭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176645",
+      "reason": "conflicting-existing-name",
+      "existing": "Shangtan · 库区",
+      "candidates": [
+        "上潭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176647",
+      "reason": "conflicting-existing-name",
+      "existing": "Hengshan · 库区",
+      "candidates": [
+        "横山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176651",
+      "reason": "conflicting-existing-name",
+      "existing": "Shuiduili · 库区",
+      "candidates": [
+        "水碓李水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176657",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1924646,
+          "name": "Xingfu Shuiku"
+        },
+        {
+          "id": 7329154,
+          "name": "Minbing Shuiku"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176663",
+      "reason": "conflicting-existing-name",
+      "existing": "Juntan · 库区",
+      "candidates": [
+        "军潭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176689",
+      "reason": "conflicting-existing-name",
+      "existing": "Fangtuan · 库区",
+      "candidates": [
+        "万团水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176719",
+      "reason": "conflicting-existing-name",
+      "existing": "Gaofang · 库区",
+      "candidates": [
+        "高坊水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176720",
+      "reason": "conflicting-existing-name",
+      "existing": "Majie · 库区",
+      "candidates": [
+        "马街水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176730",
+      "reason": "conflicting-existing-name",
+      "existing": "Shilu · 库区",
+      "candidates": [
+        "石路水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176735",
+      "reason": "conflicting-existing-name",
+      "existing": "Qianjin · 库区",
+      "candidates": [
+        "前进水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176736",
+      "reason": "conflicting-existing-name",
+      "existing": "Dongxi · 库区",
+      "candidates": [
+        "东溪水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176742",
+      "reason": "conflicting-existing-name",
+      "existing": "Shangyou · 库区",
+      "candidates": [
+        "上游水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176755",
+      "reason": "conflicting-existing-name",
+      "existing": "Mayuan · 库区",
+      "candidates": [
+        "麻源水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176784",
+      "reason": "conflicting-existing-name",
+      "existing": "Liaoyuan · 库区",
+      "candidates": [
+        "燎源水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176794",
+      "reason": "conflicting-existing-name",
+      "existing": "Tanhu · 库区",
+      "candidates": [
+        "潭湖水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176845",
+      "reason": "conflicting-existing-name",
+      "existing": "Laoyingpan · 库区",
+      "candidates": [
+        "老营盘水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176847",
+      "reason": "conflicting-existing-name",
+      "existing": "Fengling · 库区",
+      "candidates": [
+        "缝岭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176859",
+      "reason": "conflicting-existing-name",
+      "existing": "Zhukeng · 库区",
+      "candidates": [
+        "竹坑水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176902",
+      "reason": "conflicting-existing-name",
+      "existing": "Liutang · 库区",
+      "candidates": [
+        "柳塘水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176904",
+      "reason": "conflicting-existing-name",
+      "existing": "Shuidong · 库区",
+      "candidates": [
+        "水东水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176931",
+      "reason": "conflicting-existing-name",
+      "existing": "Ridong · 库区",
+      "candidates": [
+        "日东水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176935",
+      "reason": "conflicting-existing-name",
+      "existing": "Longshan · 库区",
+      "candidates": [
+        "龙山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176972",
+      "reason": "conflicting-existing-name",
+      "existing": "Zheya · 库区",
+      "candidates": [
+        "涌溪水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177000",
+      "reason": "conflicting-existing-name",
+      "existing": "Jianxin · 库区",
+      "candidates": [
+        "建新水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177019",
+      "reason": "conflicting-existing-name",
+      "existing": "Longmentan · 库区",
+      "candidates": [
+        "龙门滩水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177050",
+      "reason": "conflicting-existing-name",
+      "existing": "Jitou · 库区",
+      "candidates": [
+        "矶头水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177076",
+      "reason": "conflicting-existing-name",
+      "existing": "Lingxi · 库区",
+      "candidates": [
+        "菱溪水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177098",
+      "reason": "conflicting-existing-name",
+      "existing": "Wutan · 库区",
+      "candidates": [
+        "乌潭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "177116",
+      "reason": "conflicting-existing-name",
+      "existing": "Huanggang · 库区",
+      "candidates": [
+        "黄岗水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1380003",
+      "reason": "conflicting-existing-name",
+      "existing": "Yutian · 库区",
+      "candidates": [
+        "玉田水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1380753",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 7329108,
+          "name": "Beifeng Hu"
+        },
+        {
+          "id": 7329109,
+          "name": "Beifeng Hu"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1380836",
+      "reason": "conflicting-existing-name",
+      "existing": "Qingxikou · 库区",
+      "candidates": [
+        "清溪口水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1380878",
+      "reason": "conflicting-existing-name",
+      "existing": "Qinjian · 库区",
+      "candidates": [
+        "勤俭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1381174",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1924650,
+          "name": "Zhangjiashan Shuiku"
+        },
+        {
+          "id": 7329206,
+          "name": "Xinwuji Shuiku"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1381201",
+      "reason": "conflicting-existing-name",
+      "existing": "Zhangshuling · 库区",
+      "candidates": [
+        "樟树岭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1381329",
+      "reason": "conflicting-existing-name",
+      "existing": "Duitouling · 库区",
+      "candidates": [
+        "碓头岭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1381498",
+      "reason": "conflicting-existing-name",
+      "existing": "Yangtang · 库区",
+      "candidates": [
+        "万金塘水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1381526",
+      "reason": "conflicting-existing-name",
+      "existing": "Guanli · 库区",
+      "candidates": [
+        "关里水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1381662",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 7329155,
+          "name": "Qunying Shuiku"
+        },
+        {
+          "id": 13050415,
+          "name": "Majinglong Shuiku"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1381820",
+      "reason": "conflicting-existing-name",
+      "existing": "Baimiao · 库区",
+      "candidates": [
+        "白庙水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1381882",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1924141,
+          "name": "Tangwan Shuiku"
+        },
+        {
+          "id": 7846929,
+          "name": "Xiaoshanqiao Shuiku"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1383075",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 12165208,
+          "name": "Yuanyang Hu"
+        },
+        {
+          "id": 12165210,
+          "name": "Santan Shuiku"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1384082",
+      "reason": "conflicting-existing-name",
+      "existing": "Qinyuan · 库区",
+      "candidates": [
+        "琴源水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1384593",
+      "reason": "conflicting-existing-name",
+      "existing": "Xiyuan · 库区",
+      "candidates": [
+        "溪源水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1384813",
+      "reason": "conflicting-existing-name",
+      "existing": "Guyang · 库区",
+      "candidates": [
+        "古洋水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1384854",
+      "reason": "conflicting-existing-name",
+      "existing": "Dongxi · 库区",
+      "candidates": [
+        "东溪水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15155",
+      "reason": "conflicting-existing-name",
+      "existing": "Dongpu · 库区",
+      "candidates": [
+        "董铺水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15164",
+      "reason": "conflicting-existing-name",
+      "existing": "Nianyushan · 库区",
+      "candidates": [
+        "鲇鱼山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15172",
+      "reason": "conflicting-existing-name",
+      "existing": "Meishan · 库区",
+      "candidates": [
+        "梅山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15183",
+      "reason": "conflicting-existing-name",
+      "existing": "Xianghongdian · 库区",
+      "candidates": [
+        "响洪甸水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15198",
+      "reason": "conflicting-existing-name",
+      "existing": "Daxi · 库区",
+      "candidates": [
+        "大溪水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15199",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 8382333,
+          "name": "Tuanjiu"
+        },
+        {
+          "id": 8382341,
+          "name": "Xijiu"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15201",
+      "reason": "conflicting-existing-name",
+      "existing": "Foziling · 库区",
+      "candidates": [
+        "佛子岭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15205",
+      "reason": "conflicting-existing-name",
+      "existing": "Longhekou · 库区",
+      "candidates": [
+        "龙河口水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15255",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1796393,
+          "name": "Fengsha Hu"
+        },
+        {
+          "id": 1815065,
+          "name": "Chenyao Hu"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15297",
+      "reason": "conflicting-existing-name",
+      "existing": "Hualiangting · 库区",
+      "candidates": [
+        "花凉亭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15302",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1795677,
+          "name": "Shengjin Hu"
+        },
+        {
+          "id": 1807309,
+          "name": "Huangpen Hu"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15314",
+      "reason": "conflicting-existing-name",
+      "existing": "Qingshan · 库区",
+      "candidates": [
+        "青山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175252",
+      "reason": "conflicting-existing-name",
+      "existing": "Jinniushan · 库区",
+      "candidates": [
+        "金牛湖"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175266",
+      "reason": "conflicting-existing-name",
+      "existing": "Yuetang · 库区",
+      "candidates": [
+        "登月湖"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175370",
+      "reason": "conflicting-existing-name",
+      "existing": "Beishan · 库区",
+      "candidates": [
+        "北山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175373",
+      "reason": "conflicting-existing-name",
+      "existing": "Longshan · 库区",
+      "candidates": [
+        "仑山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175375",
+      "reason": "conflicting-existing-name",
+      "existing": "Lintan · 库区",
+      "candidates": [
+        "凌塘水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175403",
+      "reason": "conflicting-existing-name",
+      "existing": "Jurong · 库区",
+      "candidates": [
+        "句容水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175432",
+      "reason": "conflicting-existing-name",
+      "existing": "Mudong · 库区",
+      "candidates": [
+        "暮东水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175436",
+      "reason": "conflicting-existing-name",
+      "existing": "Ershengqiao · 库区",
+      "candidates": [
+        "二圣水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175449",
+      "reason": "conflicting-existing-name",
+      "existing": "Maoshan · 库区",
+      "candidates": [
+        "茅山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175476",
+      "reason": "conflicting-existing-name",
+      "existing": "Fangbian · 库区",
+      "candidates": [
+        "东屏水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175488",
+      "reason": "conflicting-existing-name",
+      "existing": "Zhongshan · 库区",
+      "candidates": [
+        "中山水库",
+        "中山湖"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175596",
+      "reason": "conflicting-existing-name",
+      "existing": "Shahe · 库区",
+      "candidates": [
+        "天目湖"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175623",
+      "reason": "conflicting-existing-name",
+      "existing": "Hengshan · 库区",
+      "candidates": [
+        "横山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175624",
+      "reason": "conflicting-existing-name",
+      "existing": "Mozitan · 库区",
+      "candidates": [
+        "磨子潭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175793",
+      "reason": "conflicting-existing-name",
+      "existing": "Sian · 库区",
+      "candidates": [
+        "泗安水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175809",
+      "reason": "conflicting-existing-name",
+      "existing": "Daoguanhe · 库区",
+      "candidates": [
+        "道观河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175827",
+      "reason": "conflicting-existing-name",
+      "existing": "Maojianshan · 库区",
+      "candidates": [
+        "毛尖山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175832",
+      "reason": "conflicting-existing-name",
+      "existing": "Lucun · 库区",
+      "candidates": [
+        "卢村水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175959",
+      "reason": "conflicting-existing-name",
+      "existing": "Duihekou · 库区",
+      "candidates": [
+        "对河口水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176140",
+      "reason": "conflicting-existing-name",
+      "existing": "Yanshiling · 库区",
+      "candidates": [
+        "岩石岭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1375303",
+      "reason": "conflicting-existing-name",
+      "existing": "Taishan · 库区",
+      "candidates": [
+        "泰山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1377586",
+      "reason": "conflicting-existing-name",
+      "existing": "Heping · 库区",
+      "candidates": [
+        "和平水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14565",
+      "reason": "conflicting-existing-name",
+      "existing": "Yanghe · 库区",
+      "candidates": [
+        "洋河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14604",
+      "reason": "conflicting-existing-name",
+      "existing": "Angezhuang · 库区",
+      "candidates": [
+        "安格庄水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14897",
+      "reason": "conflicting-existing-name",
+      "existing": "Doushan · 库区",
+      "candidates": [
+        "陡山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "173170",
+      "reason": "conflicting-existing-name",
+      "existing": "Longmen · 库区",
+      "candidates": [
+        "龙门水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "174210",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1941223,
+          "name": "Chujiawangwu Shuiku"
+        },
+        {
+          "id": 8696564,
+          "name": "Wangwu Shuiku"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14543",
+      "reason": "conflicting-existing-name",
+      "existing": "Panjiakou · 库区",
+      "candidates": [
+        "潘家口水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14553",
+      "reason": "conflicting-existing-name",
+      "existing": "Daheiding · 库区",
+      "candidates": [
+        "大黑汀水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172307",
+      "reason": "conflicting-existing-name",
+      "existing": "Miaogong · 库区",
+      "candidates": [
+        "庙宫水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172478",
+      "reason": "conflicting-existing-name",
+      "existing": "Yunzhou · 库区",
+      "candidates": [
+        "云州水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172760",
+      "reason": "conflicting-existing-name",
+      "existing": "Beitaishan · 库区",
+      "candidates": [
+        "雁栖湖"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172781",
+      "reason": "conflicting-existing-name",
+      "existing": "Huairou · 库区",
+      "candidates": [
+        "怀柔水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172798",
+      "reason": "conflicting-existing-name",
+      "existing": "Dafengkou · 库区",
+      "candidates": [
+        "大风口水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172808",
+      "reason": "conflicting-existing-name",
+      "existing": "Haizi · 库区",
+      "candidates": [
+        "金海湖"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172842",
+      "reason": "conflicting-existing-name",
+      "existing": "Shihe · 库区",
+      "candidates": [
+        "石河水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172857",
+      "reason": "conflicting-existing-name",
+      "existing": "Qiuzhuang · 库区",
+      "candidates": [
+        "邱庄水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1366452",
+      "reason": "conflicting-existing-name",
+      "existing": "Shuihutong · 库区",
+      "candidates": [
+        "水胡同水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15356",
+      "reason": "conflicting-existing-name",
+      "existing": "Chengcai · 库区",
+      "candidates": [
+        "陈蔡水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15399",
+      "reason": "conflicting-existing-name",
+      "existing": "Niutoushan · 库区",
+      "candidates": [
+        "牛头山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15414",
+      "reason": "conflicting-existing-name",
+      "existing": "Changtan · 库区",
+      "candidates": [
+        "长潭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176267",
+      "reason": "conflicting-existing-name",
+      "existing": "Hengxi · 库区",
+      "candidates": [
+        "横溪水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176285",
+      "reason": "conflicting-existing-name",
+      "existing": "Tingxia · 库区",
+      "candidates": [
+        "亭下水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176307",
+      "reason": "conflicting-existing-name",
+      "existing": "Hengshan · 库区",
+      "candidates": [
+        "横山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176333",
+      "reason": "conflicting-existing-name",
+      "existing": "Shibi · 库区",
+      "candidates": [
+        "石壁水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176344",
+      "reason": "conflicting-existing-name",
+      "existing": "Changzhao · 库区",
+      "candidates": [
+        "长诏水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176408",
+      "reason": "conflicting-existing-name",
+      "existing": "Hengjin · 库区",
+      "candidates": [
+        "横锦水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176450",
+      "reason": "conflicting-existing-name",
+      "existing": "Lishimen · 库区",
+      "candidates": [
+        "里石门水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176457",
+      "reason": "conflicting-existing-name",
+      "existing": "Taiping · 库区",
+      "candidates": [
+        "太平水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176497",
+      "reason": "conflicting-existing-name",
+      "existing": "Yangxi · 库区",
+      "candidates": [
+        "杨溪水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176540",
+      "reason": "conflicting-existing-name",
+      "existing": "Xikou · 库区",
+      "candidates": [
+        "溪口水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176624",
+      "reason": "conflicting-existing-name",
+      "existing": "Taihu · 库区",
+      "candidates": [
+        "太湖水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176639",
+      "reason": "conflicting-existing-name",
+      "existing": "Human · 库区",
+      "candidates": [
+        "湖漫水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176762",
+      "reason": "conflicting-existing-name",
+      "existing": "Qiaodun · 库区",
+      "candidates": [
+        "桥墩水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1379929",
+      "reason": "conflicting-existing-name",
+      "existing": "Qiaoying · 库区",
+      "candidates": [
+        "巧英水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1380414",
+      "reason": "conflicting-existing-name",
+      "existing": "Baifeng · 库区",
+      "candidates": [
+        "柏峰水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1381376",
+      "reason": "conflicting-existing-name",
+      "existing": "Fuxi · 库区",
+      "candidates": [
+        "福溪水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1381781",
+      "reason": "conflicting-existing-name",
+      "existing": "Zhongqian · 库区",
+      "candidates": [
+        "钟前水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1381791",
+      "reason": "conflicting-existing-name",
+      "existing": "Baishi · 库区",
+      "candidates": [
+        "白石水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1382154",
+      "reason": "conflicting-existing-name",
+      "existing": "Baizhanggji · 库区",
+      "candidates": [
+        "百丈漈水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1382491",
+      "reason": "conflicting-existing-name",
+      "existing": "Wujiayuan · 库区",
+      "candidates": [
+        "吴家园水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1382542",
+      "reason": "conflicting-existing-name",
+      "existing": "Nanxi · 库区",
+      "candidates": [
+        "南溪水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "175521",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1881772,
+          "name": "Ezhen Dang"
+        },
+        {
+          "id": 8327142,
+          "name": "Nanqing Dang"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "176119",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1884683,
+          "name": "Jiaohu Shuiku"
+        },
+        {
+          "id": 1898966,
+          "name": "Jiaohu Shuiku"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1378771",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 1899043,
+          "name": "Siqianwang Shuiku"
+        },
+        {
+          "id": 1899044,
+          "name": "Yaoling"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "173949",
+      "reason": "conflicting-existing-name",
+      "existing": "Muyu · 库区",
+      "candidates": [
+        "沐浴水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14383",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 2033848,
+          "name": "Xi Hu"
+        },
+        {
+          "id": 2036296,
+          "name": "Kongchunmiao Paozi"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14388",
+      "reason": "conflicting-existing-name",
+      "existing": "Selihu · 库区",
+      "candidates": [
+        "舍力虎水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14394",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 2033629,
+          "name": "Xi Paozi"
+        },
+        {
+          "id": 7012333,
+          "name": "Wolong Hu"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14401",
+      "reason": "conflicting-existing-name",
+      "existing": "Santaizi · 库区",
+      "candidates": [
+        "三台子水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14415",
+      "reason": "conflicting-existing-name",
+      "existing": "Huanzidong · 库区",
+      "candidates": [
+        "獾子洞水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14427",
+      "reason": "conflicting-existing-name",
+      "existing": "Zhenziling · 库区",
+      "candidates": [
+        "榛子岭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14440",
+      "reason": "conflicting-existing-name",
+      "existing": "Dahuofang · 库区",
+      "candidates": [
+        "大伙房水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14469",
+      "reason": "conflicting-existing-name",
+      "existing": "Guanyinge · 库区",
+      "candidates": [
+        "观音阁水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14496",
+      "reason": "conflicting-existing-name",
+      "existing": "Gedalou · 库区",
+      "candidates": [
+        "疙瘩楼水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "171648",
+      "reason": "conflicting-existing-name",
+      "existing": "Xiaoshan · 库区",
+      "candidates": [
+        "小山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172006",
+      "reason": "conflicting-existing-name",
+      "existing": "Hongshan · 库区",
+      "candidates": [
+        "红山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172023",
+      "reason": "conflicting-existing-name",
+      "existing": "Hongdingshan · 库区",
+      "candidates": [
+        "红顶山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172065",
+      "reason": "conflicting-existing-name",
+      "existing": "Naodehai · 库区",
+      "candidates": [
+        "闹德海水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172104",
+      "reason": "conflicting-existing-name",
+      "existing": "Julonghu · 库区",
+      "candidates": [
+        "巨龙湖水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172120",
+      "reason": "conflicting-existing-name",
+      "existing": "Jianshanzi · 库区",
+      "candidates": [
+        "尖山子水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172123",
+      "reason": "conflicting-existing-name",
+      "existing": "Paoziyan · 库区",
+      "candidates": [
+        "泡子沿水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172131",
+      "reason": "conflicting-existing-name",
+      "existing": "Sanhecheng · 库区",
+      "candidates": [
+        "三合城水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172133",
+      "reason": "conflicting-existing-name",
+      "existing": "Lamazhang · 库区",
+      "candidates": [
+        "拉马章水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172181",
+      "reason": "conflicting-existing-name",
+      "existing": "Niuqibao · 库区",
+      "candidates": [
+        "牛其堡子水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172183",
+      "reason": "conflicting-existing-name",
+      "existing": "Jianguo · 库区",
+      "candidates": [
+        "碱锅水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172209",
+      "reason": "conflicting-existing-name",
+      "existing": "Babaohai · 库区",
+      "candidates": [
+        "八宝海水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172234",
+      "reason": "conflicting-existing-name",
+      "existing": "Youling · 库区",
+      "candidates": [
+        "友邻水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172270",
+      "reason": "conflicting-existing-name",
+      "existing": "Longwan · 库区",
+      "candidates": [
+        "龙湾水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172319",
+      "reason": "conflicting-existing-name",
+      "existing": "Laolongkou · 库区",
+      "candidates": [
+        "老龙口水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172321",
+      "reason": "conflicting-existing-name",
+      "existing": "Yingshou · 库区",
+      "candidates": [
+        "英守水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172492",
+      "reason": "conflicting-existing-name",
+      "existing": "Wujintang · 库区",
+      "candidates": [
+        "乌金塘水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172575",
+      "reason": "conflicting-existing-name",
+      "existing": "Shangying · 库区",
+      "candidates": [
+        "上英水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172594",
+      "reason": "conflicting-existing-name",
+      "existing": "Rongxing · 库区",
+      "candidates": [
+        "荣兴水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172615",
+      "reason": "conflicting-existing-name",
+      "existing": "Wangjiakan · 库区",
+      "candidates": [
+        "王家坎水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172753",
+      "reason": "conflicting-existing-name",
+      "existing": "Shimen · 库区",
+      "candidates": [
+        "石门岭水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172811",
+      "reason": "conflicting-existing-name",
+      "existing": "Tumenzi · 库区",
+      "candidates": [
+        "土门子水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1364778",
+      "reason": "conflicting-existing-name",
+      "existing": "Shangsi · 库区",
+      "candidates": [
+        "上寺水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1364932",
+      "reason": "conflicting-existing-name",
+      "existing": "Liushan · 库区",
+      "candidates": [
+        "刘山水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14316",
+      "reason": "conflicting-existing-name",
+      "existing": "Shitoukoumen · 库区",
+      "candidates": [
+        "石头口门水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "14470",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 2036712,
+          "name": "Huanren Shuiku"
+        },
+        {
+          "id": 2054126,
+          "name": "Hengren Shuiku"
+        },
+        {
+          "id": 7554954,
+          "name": "Hengren Shuiku"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "171555",
+      "reason": "conflicting-existing-name",
+      "existing": "Huashouchuan · 库区",
+      "candidates": [
+        "桦树川水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "171987",
+      "reason": "conflicting-existing-name",
+      "existing": "Hongshi · 库区",
+      "candidates": [
+        "红石水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1364100",
+      "reason": "conflicting-existing-name",
+      "existing": "Daxin · 库区",
+      "candidates": [
+        "大新水库"
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "172094",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 7491788,
+          "name": "Liudao Paozi"
+        },
+        {
+          "id": 7491789,
+          "name": "Qidao Paozi"
+        },
+        {
+          "id": 7491790,
+          "name": "Badao Paozi"
+        },
+        {
+          "id": 7491791,
+          "name": "Jiudao Paozi"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "168881",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 8523292,
+          "name": "Nanshan Shuiku"
+        },
+        {
+          "id": 8528131,
+          "name": "Nanshan Shuiku"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "168946",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 8523217,
+          "name": "Wuhao Shuiku"
+        },
+        {
+          "id": 8527616,
+          "name": "Wuhao Shuiku"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1368909",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 12471066,
+          "name": "Yecheng Xian Bulekeqiya Shuiku"
+        },
+        {
+          "id": 12471070,
+          "name": "Yecheng Xian Bulekeqiya Shuiku"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "1369849",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 8992542,
+          "name": "Gazong Shuiku"
+        },
+        {
+          "id": 12475764,
+          "name": "Hetian Shi Gazong Shuiku"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15005",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 9073928,
+          "name": "Daneng Hu"
+        },
+        {
+          "id": 9074012,
+          "name": "Daxiong Hu"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "13911",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 7839092,
+          "name": "Kanas Lake"
+        },
+        {
+          "id": 12435103,
+          "name": "Kanasi Hu"
+        }
+      ]
+    },
+    {
+      "source": "GeoNames",
+      "id": "15388",
+      "reason": "multiple-names-in-polygon",
+      "candidates": [
+        {
+          "id": 6614238,
+          "name": "Kongmo Co"
+        },
+        {
+          "id": 13411504,
+          "name": "Kongmo Co"
+        }
+      ]
+    }
+  ]
+}

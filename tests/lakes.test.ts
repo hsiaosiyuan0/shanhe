@@ -5,6 +5,7 @@ import { gunzipSync } from 'node:zlib';
 import { createHash } from 'node:crypto';
 import { validateStyleMin } from '@maplibre/maplibre-gl-style-spec';
 import { lakeCatalog, searchLakes } from '../shared/lakes.js';
+import originalLakeCatalog from '../shared/data/lake-catalog.json' with { type: 'json' };
 import { lakeReference } from '../shared/lake-reference.js';
 import {
   lakeLabels,
@@ -52,6 +53,7 @@ test('HydroLAKES packages preserve source coordinates, ring structure and unique
   const ids = new Set();
   let points = 0;
   const catalog = new Map(lakeCatalog.map((l) => [l.id, l]));
+  const original = new Map(originalLakeCatalog.map((l) => [l.id, l]));
   for (const entry of [hydroManifest.overview, ...hydroManifest.tiles]) {
     const bytes = readFileSync(root + entry.file);
     assert.equal(hash(bytes), entry.sha256);
@@ -74,7 +76,11 @@ test('HydroLAKES packages preserve source coordinates, ring structure and unique
         ),
         lake.label,
       );
-      assert.equal(f.properties.label, lake.label);
+      assert.equal(
+        f.properties.label,
+        original.get(f.id)?.label ?? '',
+        'name overlay never rewrites source attributes',
+      );
     }
   }
   assert.equal(ids.size, 44492);
@@ -90,7 +96,7 @@ test('HydroLAKES packages preserve source coordinates, ring structure and unique
   assert.match(lakeDescription(dongting), /不代表.*完整范围/);
   assert.match(
     lakeFeatureInfo({ source_id: 'hydrolakes:999', Hylak_id: 999, Poly_src: 'SWBD' })!.label,
-    /未命名/,
+    /名称待补充/,
   );
 });
 
@@ -113,6 +119,75 @@ test('view selection retains crossing lakes and only loads detail at regional zo
     }).map((e) => e.message),
     [],
   );
+});
+
+test('name enrichment is traceable to GDW IDs or contained GeoNames water points; aliases reach the model', () => {
+  const meta = JSON.parse(readFileSync('public/data/lake-names/manifest.json', 'utf8'));
+  const gdwRaw = gunzipSync(readFileSync('public/data/lake-names/gdw-used.json.gz'));
+  const gnRaw = gunzipSync(readFileSync('public/data/lake-names/geonames-matched.json.gz'));
+  const allWaterRaw = gunzipSync(readFileSync('public/data/lake-names/geonames-water.json.gz'));
+  assert.equal(hash(gdwRaw), meta.gdw.excerptSha256);
+  assert.equal(hash(gnRaw), meta.geonames.excerptSha256);
+  assert.equal(hash(allWaterRaw), meta.geonames.waterSha256);
+  const allWater = new Map<string, any>(
+    JSON.parse(allWaterRaw.toString()).map((r: any) => [String(r.id), r]),
+  );
+  const gdw = new Map<string, any>(JSON.parse(gdwRaw.toString()).map((r: any) => [r.GDW_ID, r]));
+  const gn = new Map<string, any>(JSON.parse(gnRaw.toString()).map((r: any) => [String(r.id), r]));
+  const source = new Map<string, any>();
+  for (const entry of [hydroManifest.overview, ...hydroManifest.tiles])
+    for (const f of JSON.parse(readFileSync(root + entry.file, 'utf8')).features)
+      source.set(f.id, f);
+  for (const lake of lakeCatalog) {
+    const f = source.get(lake.id);
+    assert.ok(f);
+    for (const e of lake.nameEvidence ?? []) {
+      if (e.source === 'GDW v1.0') {
+        const r = gdw.get(e.sourceId);
+        assert.equal(Number(r.HYLAK_ID), f.properties.Hylak_id);
+        if (e.method === 'grand-id') assert.equal(Number(r.GRAND_ID), f.properties.Grand_id);
+        assert.equal(r[e.field], e.value);
+      }
+      if (e.source === 'GeoNames') {
+        const r = gn.get(e.sourceId);
+        const { hylakId: _joinedId, ...originalPoint } = r;
+        assert.deepEqual(originalPoint, allWater.get(e.sourceId));
+        assert.ok(['LK', 'RSV'].includes(r.code));
+        assert.equal(r.hylakId, lake.sourceId);
+        assert.deepEqual(e.point, r.center);
+        assert.ok([r.name, ...r.aliases].includes(e.value));
+        const polygons =
+          f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates;
+        assert.ok(
+          polygons.some(
+            ([outer, ...holes]: number[][][]) =>
+              pointInRing(r.center, outer) && !holes.some((h) => pointInRing(r.center, h)),
+          ),
+          lake.label,
+        );
+      }
+    }
+  }
+  assert.equal(lakeCatalog.length, meta.totalNamed);
+  assert.ok(meta.chineseNamed >= 1900);
+  for (const rejection of meta.rejected) {
+    if (rejection.source !== 'GeoNames' || !rejection.reason.endsWith('names-in-polygon')) continue;
+    assert.ok(
+      !lakeCatalog
+        .find((l) => String(l.sourceId) === rejection.id)
+        ?.nameEvidence?.some((e) => e.source === 'GeoNames'),
+    );
+  }
+  const tools = new StoryTools(createStory('湖泊名称', 'history'));
+  const target = (tools.call('search_lakes', { query: '仙宫湖' }) as any[])[0];
+  assert.equal(target.sourceId, 15423);
+  assert.equal(target.label, '紧水滩水库');
+  assert.equal(target.nameStatus, 'verified-name');
+  assert.ok(target.nameEvidence.some((e: any) => e.method === 'document-and-id'));
+  assert.equal(searchLakes('Jinshuitan')[0].id, target.id);
+  const associated = lakeCatalog.find((l) => l.nameStatus === 'dam-associated')!;
+  assert.match(associated.label, / · 库区$/);
+  assert.match(lakeDescription(associated), /不代表已确认湖泊名称/);
 });
 
 test('lake downloads handle gzip and HTTP-decoded bodies, cache results, reject corrupt or aborted loads', async () => {

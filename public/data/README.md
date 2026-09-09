@@ -5,6 +5,7 @@
 - `land.geojson`：`ne_110m_land.geojson`，全球陆地轮廓，未包含国界。
 - `rivers.geojson`：从 `ne_50m_rivers_lake_centerlines.geojson` 提取与 75–135°E / 15–54°N 区域相交的 80 条河流要素；保留 name、name_zh、scalerank 属性。另从 1:10m 数据补入 3 条淮河要素，共 83 条。
 - `hydrolakes/`：HydroLAKES v1.0 完整湖泊面，按视野分包。
+- `lake-names/`：GeoNames、GDW（CC BY 4.0）名称补充的原始字段摘录、匹配依据、冲突清单；名称层独立于原始水面。
 - `lake-reference/`：JRC 1984–2024 水面出现频率，鄱阳湖与洞庭湖区域离线核对图。
 
 陆地与河流数据使用 WGS84。来源、比例尺与用途限制见下文。

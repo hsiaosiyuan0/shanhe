@@ -10,7 +10,15 @@ export const featuredLakes = ['hydrolakes:151', 'hydrolakes:1470'].map((id) =>
 export const findLake = (id: string) => lakes.find((lake) => lake.id === id);
 type LakeInfo = Pick<
   (typeof lakes)[number],
-  'id' | 'label' | 'kind' | 'coverage' | 'sourceId' | 'polygonSource'
+  | 'id'
+  | 'label'
+  | 'kind'
+  | 'coverage'
+  | 'sourceId'
+  | 'polygonSource'
+  | 'aliases'
+  | 'nameEvidence'
+  | 'nameStatus'
 >;
 export const lakeFeatureInfo = (
   properties: Record<string, unknown> | undefined,
@@ -22,16 +30,50 @@ export const lakeFeatureInfo = (
       ? {
           id,
           sourceId: properties.Hylak_id,
-          label: String(properties.label || '未命名湖泊 / 水库'),
+          label: String(
+            properties.label ||
+              (properties.Lake_type === 2 ? '水库（名称待补充）' : '水面（名称待补充）'),
+          ),
           kind: properties.Lake_type === 2 ? 'Reservoir' : 'Lake',
           coverage: 'source-record',
           polygonSource: String(properties.Poly_src ?? ''),
+          nameStatus: 'missing',
         }
       : undefined)
   );
 };
-export const lakeDescription = (lake: LakeInfo) =>
-  `${lake.kind === 'Reservoir' ? '水库' : '湖泊'}水面 · 现代地理参考\n\n${lake.coverage === 'partial' ? '此处是 HydroLAKES 命名为 Dongting 的局部水面，不代表东、南、西洞庭湖的完整范围。周边水面按各自原始要素保留，未补画或连成全湖。\n\n' : ''}轮廓来自 HydroLAKES v1.0，保留源数据的湖岸和岛屿。中国区域约 1:25 万，采集时间因要素而异；不代表实时水位、丰枯水期或故事年代的湖岸。\n\n源要素：${lake.sourceId} · 原始底图：${lake.polygonSource}\n来源：HydroLAKES · CC BY 4.0\n${lakeSourceUrl}`;
+export const lakeDescription = (lake: LakeInfo) => {
+  const aliases = (lake.aliases ?? []).filter(
+    (n) => /[\u3400-\u9fff]/.test(n) && !n.endsWith(' · 库区'),
+  );
+  return [
+    `${lake.kind === 'Reservoir' ? '水库' : '湖泊'} · 现代地理参考`,
+    aliases.length ? `其他名称：${aliases.slice(0, 3).join('、')}` : '',
+    lake.nameStatus === 'missing' ? '已接入资料尚未确认这片水面的名称。' : '',
+    lake.nameStatus === 'dam-associated'
+      ? '资料收录了关联大坝名称；“库区”用于定位，不代表已确认湖泊名称。'
+      : '',
+    lake.coverage === 'partial'
+      ? '此处仅为洞庭湖的局部水面，不代表东、南、西洞庭湖的完整范围。'
+      : '',
+    '静态水面轮廓，不代表当前水位或故事年代的湖岸。',
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+};
+export const lakeDetails = (lake: LakeInfo) => ({
+  text: [
+    ...(lake.nameEvidence ?? []).map(
+      (e) =>
+        `名称依据：${e.source} #${e.sourceId}\n原字段：${e.field} = ${e.value}\n匹配：${e.method === 'point-in-polygon' ? '地名点位于此水面内（未采用就近匹配）' : e.method === 'document-and-id' ? '地方资料与水库编号核对' : '数据源关联编号'}`,
+    ),
+    `轮廓：HydroLAKES v1.0 #${lake.sourceId}\n原始底图：${lake.polygonSource} · CC BY 4.0\n中国区域约 1:25 万，采集时间因要素而异。`,
+  ].join('\n\n'),
+  links: [
+    ...(lake.nameEvidence ?? []).map((e) => ({ label: `${e.source} · 名称资料`, url: e.url })),
+    { label: 'HydroLAKES · 轮廓资料', url: lakeSourceUrl },
+  ],
+});
 export function lakeLabels(): FeatureCollection<Point> {
   return {
     type: 'FeatureCollection',

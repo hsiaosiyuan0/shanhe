@@ -30,7 +30,7 @@ export const toolDefinitions = [
     function: {
       name: 'search_lakes',
       description:
-        'Search HydroLAKES lake/reservoir names and IDs. Returns source-derived centers and bounds in WGS84, provenance, coverage caveats and optional JRC comparison windows. Use lakes:true and set_view to locate. lakeReference:true switches to JRC water occurrence comparison for the two supported windows. Neither source is a historical shore or live water level. Empty query lists the largest named lakes, limited to 30 by default (max 100).',
+        'Search lake/reservoir names, aliases and HydroLAKES IDs, enriched with GeoNames and GDW. Returns source-derived centers and bounds in WGS84, nameEvidence, nameStatus, coverage caveats and optional JRC comparison windows. nameStatus=dam-associated identifies the reservoir by its linked dam, not a confirmed lake name. Use lakes:true and set_view to locate. lakeReference:true switches to JRC water occurrence comparison for the two supported windows. Neither source is a historical shore or live water level. Empty query lists the largest named lakes, limited to 30 by default (max 100).',
       parameters: z.toJSONSchema(searchLakesSchema, { target: 'draft-7' }),
     },
   },

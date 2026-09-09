@@ -11,7 +11,26 @@
 - 保留源坐标、所有组成面、岛屿内洞和原始属性；没有平滑、补岸、合并或把分离水面相连。61 个源要素被 Shapely 判为拓扑无效，ID 已记录在 manifest；保留原始结构，未悄悄修复。这里的“保留”不等于对源数据精度背书。
 - 210 个面积不小于 100 km² 的湖泊组成概览包，其余按 5°网格组织为 100 个包；按视野从缩放 6 起加载小湖泊。跨网格的完整湖面只分配一次，包范围覆盖其完整边界，避免湖岸在网格边缘被切断或重画。
 - 每个文件以内容哈希命名，支持 gzip 与 HTTP 已解压两种响应，下载后验证 SHA-256；仅缓存最近使用的数据。构建时另记录每个要素的二进制坐标/环结构摘要。
-- 373 个要素带名称。中文名称对照在 `scripts/hydrolakes-names.json`；已有 Natural Earth 中文名只在明确空间对应后转用，保留 `ne_id` 与重叠率供审计，不使用其旧湖岸。发现的错误中文条目未转用。其余沿用 HydroLAKES 原名，未命名要素不编造名字。
+- 基础目录有 373 个带名称要素，另有独立名称补充层（见下文）。基础中文对照在 `scripts/hydrolakes-names.json`；已有 Natural Earth 中文名只在明确空间对应后转用，保留 `ne_id` 与重叠率供审计，不使用其旧湖岸。发现的错误中文条目未转用。
+
+### 湖泊与水库名称补充
+
+HydroLAKES 的 `Lake_name` 只覆盖少数大湖及有资料的水库，不能单独用作地名库。现在保留原始要素属性与轮廓，通过独立的 `shared/data/lake-name-enrichment.json` 扩展地图标签、点击弹窗和模型 `search_lakes` 的名称/别名查询。
+
+- [GDW v1.0 正式数据包](https://doi.org/10.6084/m9.figshare.25988293.v1)，CC BY 4.0，下载文件 `GDW_v1_0_shp.zip`。MD5 与作者发布值一致：`5064cf2315ef6159d9133b03596e761a`；SHA-256：`2fe0b367ed3fcfb299160cd9652b16a8a19338951026ee2ac91edfebf1f3b7ae`。优先通过 GRanD 编号连接，并要求 HydroLAKES 编号同时一致；非 GRanD 记录还要求 GDW 点位落在现有水面内。多坝共用同一水面、编号冲突的记录不自动采纳。
+- [GeoNames 地名包](https://download.geonames.org/export/dump/readme.txt)，CC BY 4.0，2026-09-09 的 `CN.zip` 快照，SHA-256：`547e7e972084a0aa600512fa54c95e3fcf04166130a2f8f77898d9daf66e74c8`。只使用单个湖泊 `H.LK`、水库 `H.RSV` 点，不以附近村镇、坝址或复数湖群代替湖名。地名点须唯一落在一个有效水面面内，该水面也须只有一个候选地名点；多名冲突及已有中文名冲突写入 manifest，不就近套用。
+- 中文标签使用源记录中文名称，或唯一中文别名；多个中文别名未任意挑选，仍可通过别名检索。地名点包含匹配是资料关联依据，不等于官方地名认证。原有已核对中文名优先保留。
+- 可检索的名称/库区条目从 **373 增加到 3,510**，其中 **1,994 个中文名称**。**991 条仅有大坝名称**，明确显示为“某某 · 库区”，模型返回 `nameStatus: dam-associated`，不得将其冒充已确认的湖名。大量小水面仍缺名称；弹窗显示“名称待补充”，不会用所在县市补一个假名称。
+- 截图中的 **HydroLAKES 15423 → GRanD 5566 → GDW 1723** 对应 Jinshuitan，结合[浙江地方资料](https://www.zjsjw.gov.cn/yixiankuaixun/201605/t20160520_2601658_ext.html)核对为**紧水滩水库，别名仙宫湖**。映射与资料入口记录在 `scripts/lake-name-overrides.json`，不是手工修改水面边界。
+- 每条补充记录保存 `nameEvidence`（来源、原字段、编号、匹配方式、资料链接）与 `nameStatus`。弹窗默认展示简要说明，来源可展开，长网址改为可点击的文字链接。
+
+`public/data/lake-names/` 保存 GDW 已用原字段、GeoNames 全部湖泊/水库点摘录、已匹配摘录及冲突清单。完整水面地名摘录也保留未匹配和冲突项；即便 GeoNames 日更新包发生变化，仍可重放这次匹配。GeoNames 与 GDW 均不能保证覆盖每个水面或所有中文名称。
+
+```sh
+python scripts/build-lake-names.py /path/to/GDW_v1_0_shp.zip /path/to/CN.zip
+# 或使用已归档的 2026-09-09 水面地名摘录，重放同一结果：
+python scripts/build-lake-names.py /path/to/GDW_v1_0_shp.zip public/data/lake-names/geonames-water.json.gz
+```
 
 ### 两座重点湖泊
 

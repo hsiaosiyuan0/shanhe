@@ -1,0 +1,12 @@
+{
+  "15423": {
+    "label": "紧水滩水库",
+    "aliases": ["仙宫湖", "Jinshuitan"],
+    "grandId": 5566,
+    "gdwId": 1723,
+    "damName": "Jinshuitan",
+    "sourceTitle": "浙江省纪委监委 · 仙宫湖介绍",
+    "url": "https://www.zjsjw.gov.cn/yixiankuaixun/201605/t20160520_2601658_ext.html",
+    "note": "GDW 1723 通过 GRanD 5566 与 HydroLAKES 15423 关联；地方资料明确仙宫湖由紧水滩水库形成。"
+  }
+}

@@ -22,6 +22,7 @@ import { AdminPackageLoader } from './map/adminPackage';
 import {
   featuredLakes,
   lakeDescription,
+  lakeDetails,
   lakeHitLayerIds,
   lakeLabels,
   lakeLayerIds,
@@ -124,7 +125,7 @@ function style(): StyleSpecification {
         type: 'geojson',
         data: empty,
         tolerance: 0,
-        attribution: `<a href="${lakeSourceUrl}" target="_blank" rel="noopener">Lakes: HydroLAKES · CC BY 4.0</a>`,
+        attribution: `<a href="${lakeSourceUrl}" target="_blank" rel="noopener">Lakes: HydroLAKES</a> · Names: <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a>, <a href="https://doi.org/10.6084/m9.figshare.25988293.v1" target="_blank" rel="noopener">GDW</a> · CC BY 4.0`,
       },
       'lake-labels': { type: 'geojson', data: lakeLabels() },
       'custom-rivers': { type: 'geojson', data: empty },
@@ -509,6 +510,7 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
           lake.label,
           lakeDescription(lake),
           'center',
+          lakeDetails(lake),
         );
         return;
       }

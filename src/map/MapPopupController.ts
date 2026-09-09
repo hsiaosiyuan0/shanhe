@@ -1,5 +1,10 @@
 import { Popup, type Map } from 'maplibre-gl';
 
+export type PopupDetails = {
+  text: string;
+  links: { label: string; url: string }[];
+};
+
 /** One map, one open place note. Marker clicks never rely on map-click bubbling. */
 export class MapPopupController {
   private active: { key: string; popup: Popup; trigger: HTMLButtonElement | null } | null = null;
@@ -24,6 +29,7 @@ export class MapPopupController {
     heading: string,
     description: string,
     anchor: 'center' | 'bottom' = 'bottom',
+    details?: PopupDetails,
   ) {
     const same = this.active?.key === key;
     this.close();
@@ -32,8 +38,31 @@ export class MapPopupController {
     const content = document.createElement('div');
     const title = document.createElement('strong');
     title.textContent = heading;
-    const body = document.createElement('p');
-    body.textContent = description;
+    const body = document.createElement('div');
+    body.className = 'map-popup-body';
+    const descriptionText = document.createElement('p');
+    descriptionText.textContent = description;
+    body.append(descriptionText);
+    if (details) {
+      const disclosure = document.createElement('details');
+      disclosure.className = 'map-popup-sources';
+      const summary = document.createElement('summary');
+      summary.textContent = '名称与轮廓来源';
+      const text = document.createElement('p');
+      text.textContent = details.text;
+      disclosure.append(summary, text);
+      for (const link of details.links) {
+        // Source data is untrusted. Only explicit web links can become anchors.
+        if (!/^https?:\/\//i.test(link.url)) continue;
+        const anchor = document.createElement('a');
+        anchor.textContent = link.label;
+        anchor.href = link.url;
+        anchor.target = '_blank';
+        anchor.rel = 'noopener noreferrer';
+        disclosure.append(anchor);
+      }
+      body.append(disclosure);
+    }
     content.append(title, body);
 
     // Leave room on either side of the map point for the automatic popup anchor.
