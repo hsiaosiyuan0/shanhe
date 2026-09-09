@@ -832,53 +832,6 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
   return (
     <>
       <div className="map-canvas" ref={container} aria-label="交互式故事地图" />
-      {(story.layers.rivers || story.layers.lakes) && (
-        <div className="river-key" aria-label="河流与湖泊，现代水系参考">
-          {story.layers.rivers &&
-            majorRivers.map((river) => (
-              <Button
-                key={river.id}
-                type="button"
-                aria-label={`${river.label}，查看河道说明`}
-                aria-haspopup="dialog"
-                aria-expanded={false}
-                onClick={(event) => {
-                  const m = map.current;
-                  if (!m) return;
-                  m.easeTo({
-                    center: river.center,
-                    zoom: Math.max(5, m.getZoom()),
-                    duration: motion(),
-                  });
-                  openRiver(river, river.center, event.currentTarget);
-                }}
-              >
-                <span style={{ backgroundColor: river.color }} aria-hidden="true" />
-                {river.label}
-              </Button>
-            ))}
-          {story.layers.lakes &&
-            featuredLakes.map((lake) => (
-              <Button
-                key={lake.id}
-                type="button"
-                aria-label={`定位${lake.label}`}
-                title={`查看${lake.label}水面与名称`}
-                onClick={() => {
-                  popups.current?.close();
-                  map.current?.fitBounds(lake.bounds as [number, number, number, number], {
-                    padding: 80,
-                    maxZoom: 8,
-                    duration: motion(),
-                  });
-                }}
-              >
-                <span className="lake-key-swatch" aria-hidden="true" />
-                {lake.label}
-              </Button>
-            ))}
-        </div>
-      )}
       <div className="map-admin-feedback" ref={adminFeedback}>
         {(offline || (story.layers.admin && adminState.status === 'error')) && (
           <div className="map-network" role="status">
@@ -948,6 +901,53 @@ const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(
                 </small>
               ) : null}
             </span>
+          </div>
+        )}
+        {(story.layers.rivers || story.layers.lakes) && (
+          <div className="river-key" aria-label="河流与湖泊，现代水系参考">
+            {story.layers.rivers &&
+              majorRivers.map((river) => (
+                <Button
+                  key={river.id}
+                  type="button"
+                  aria-label={`${river.label}，查看河道说明`}
+                  aria-haspopup="dialog"
+                  aria-expanded={false}
+                  onClick={(event) => {
+                    const m = map.current;
+                    if (!m) return;
+                    m.easeTo({
+                      center: river.center,
+                      zoom: Math.max(5, m.getZoom()),
+                      duration: motion(),
+                    });
+                    openRiver(river, river.center, event.currentTarget);
+                  }}
+                >
+                  <span style={{ backgroundColor: river.color }} aria-hidden="true" />
+                  {river.label}
+                </Button>
+              ))}
+            {story.layers.lakes &&
+              featuredLakes.map((lake) => (
+                <Button
+                  key={lake.id}
+                  type="button"
+                  aria-label={`定位${lake.label}`}
+                  title={`查看${lake.label}水面与名称`}
+                  onClick={() => {
+                    popups.current?.close();
+                    map.current?.fitBounds(lake.bounds as [number, number, number, number], {
+                      padding: 80,
+                      maxZoom: 8,
+                      duration: motion(),
+                    });
+                  }}
+                >
+                  <span className="lake-key-swatch" aria-hidden="true" />
+                  {lake.label}
+                </Button>
+              ))}
           </div>
         )}
       </div>

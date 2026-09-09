@@ -1280,13 +1280,12 @@ button svg {
   white-space: pre-line;
 }
 .river-key {
-  position: absolute;
-  top: 57px;
-  right: var(--map-edge);
+  position: static;
+  pointer-events: auto;
   z-index: 12;
   display: flex;
   flex-wrap: wrap;
-  max-width: calc(100% - 2 * var(--map-edge));
+  max-width: 100%;
   gap: 4px;
   padding: 2px 4px;
   border-radius: 6px;
@@ -3323,13 +3322,6 @@ button.admin-boundary-key[aria-pressed='true'] {
 @media (prefers-reduced-motion: reduce) {
   .brand-symbol img {
     transition: none;
-  }
-}
-@container (max-width: 460px) {
-  .river-key {
-    top: 151px;
-    left: var(--map-edge);
-    right: auto;
   }
 }
 .journey-panel {
